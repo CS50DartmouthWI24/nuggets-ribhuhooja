@@ -22,6 +22,9 @@ a.out
 \#*\#
 .\#*
 
+# vim backup files
+*.sw?
+
 # debugger symbols
 *.dSYM
 

@@ -3,14 +3,12 @@
 ### Torpedos, Winter 2024
 
 According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
-Our design also includes x, y, z modules.
+Our design also includes player, grid, and gridpoint modules.
 We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
 ## Player
-
-> Teams of 3 students should delete this section.
 
 The *client* acts in one of two modes:
 
@@ -20,11 +18,12 @@ The *client* acts in one of two modes:
 ### User interface
 
 See the requirements spec for both the command-line and interactive UI.
-
-> You may not need much more.
-
+    
 ### Inputs and outputs
 
+#### Inputs
+The clients will input individual keystrokes (without the need of a newline to send)
+The output of the program will be a visual, realtime display of the game grid, 
 > Briefly describe the inputs (keystrokes) and outputs (display).
 > If you write to log files, or log to stderr, describe that here.
 > Command-line arguments are not 'input'.
@@ -43,8 +42,9 @@ See the requirements spec for both the command-line and interactive UI.
 
 ### Major data structures
     grid- stores the grid string, a list of player objects,and goldNuggets. It should contain all the information to describe the current game state of nuggets. Additionally, it will have methods to send the grid with the correct amount of information to any player and spectator.
-    gridPoint
+    gridPoint- 
     player-
+    
     
 > A language-independent description of the major data structure(s) in this program.
 > Mention, but do not describe, any libcs50 data structures you plan to use.

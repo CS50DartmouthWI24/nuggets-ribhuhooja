@@ -42,7 +42,10 @@ See the requirements spec for both the command-line and interactive UI.
 > Then briefly describe each of the major functions, perhaps with level-4 #### headers.
 
 ### Major data structures
-
+    grid- stores the grid string, a list of player objects,and goldNuggets. It should contain all the information to describe the current game state of nuggets. Additionally, it will have methods to send the grid with the correct amount of information to any player and spectator.
+    gridPoint
+    player-
+    
 > A language-independent description of the major data structure(s) in this program.
 > Mention, but do not describe, any libcs50 data structures you plan to use.
 

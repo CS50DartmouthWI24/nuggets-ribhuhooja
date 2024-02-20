@@ -96,10 +96,6 @@ The server is composed of the following modules (other than main)
 
 ### Pseudo code for logic/algorithmic flow
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
-
 The server will run as follows:
 
 	execute from a command line per the requirement spec
@@ -112,20 +108,139 @@ The server will run as follows:
 	clean up
 
 
-> Then briefly describe each of the major functions, perhaps with level-4 #### headers.
+#### game initializer
+
+  load and validate map from the given map file into a grid object
+  places nuggets in the grid
+  
+### Major data structures
+
+#### Grid
+A data structure to represent a grid. Stores:
+
+- the grid string
+- a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
+
+#### Player
+A data structure to store the data of each player. Stores:
+
+- x and y coordinates
+- grid visible to the player
+- amount of gold
+- name
+- assigned letter
+- address (to send messages to)
+
+#### Game
+A data structure to hold global game state. Stores:
+
+- the 'base' grid which is the actual game map (as opposed to the
+limited-visibility grids seen by each player
+- the total amount of nuggets left
+- an array of active players
+- an array of removed players
+
+---
+
+## Grid
+This module implements the grid datastructure, which provides an abstraction for the 
+game grid
+
+### Functional decomposition
+
+  `grid_fromMap` - creates a new grid from a map file
+  `grid_charAt` - returns the character at a given point
+  `grid_goldAt` - returns the amount of gold at a given point
+  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  `grid_movePlayer` - moves the players within the grid
+  `grid_collectGold` - changes the grid to represent gold being collected by a player
+  `grid_display` - displays/prints the grid string
+  `grid_toMap` - saves the grid to a file for debug purposes
+
+Static helper functions
+
+  `indexOf` - returns the index of an (x,y) point in the string
+  `isVisible` - tells whether a point is visible from another
+
+### Pseudo code for logic/algorithmic flow
+
+#### fromMap
+
+  open the map file
+  read the map file character-by-character into the grid
+
+#### charAt
+
+  convert the coordinate to an index
+  index into the string to get the character
+
+#### goldAt
+
+  convert the coordinate to an index
+  return the result from `counters_get` on the nuggets counterset  using the index as a key
+
+#### generate visible grid
+
+  take a player and the base grid
+  use the isVisible function with all points to figure out which points to show players and nuggets on
+  use the player's already visible grid to show which points are 'remembered' - show the rooms, but not nuggets or players
+  replace the player's letter by @
+
+We can probably optimize the visibility algorithm to not check against every single
+other point, but for now we have decided to take the simple approach. If that approach ends up being too slow,
+we will optimize it.
+
+#### move player
+
+  check if the player can move
+  move the player coordinates
+  swap players if needed
+  if there is gold at the newly moved to location, call collectGold
+  update the grid string to reflect the changes
+  message all the players to inform them of the change
+
+#### collect gold
+
+  get the amount of gold at the given position
+  add that gold to the player's purse
+  update the game state to a new amount of gold
+  update the counterset; set the amount of gold at that index to 0
+  send the GOLD message to all the players to inform them of the change
+
+We do not update the grid string, because collect gold is only ever called when a player steps into that
+spot, and so the asterisk at that spot is replaced by a player character by move player
+
+#### display
+
+  print the grid string
+
+#### to map
+
+  put the string to the specified file
+
+### Major data structures
+This module defines the grid data structure, which is specified above.
+It exposes the structure as an opaque type.
+
+## Player
+
+> Repeat this section for each module that is included in either the client or server.
+
+### Functional decomposition
+
+> List each of the main functions implemented by this module, with a phrase or sentence description of each.
+
+### Pseudo code for logic/algorithmic flow
+
+> For any non-trivial function, add a level-4 #### header and provide tab-indented pseudocode.
+> This pseudocode should be independent of the programming language.
 
 ### Major data structures
 
-> Describe each major data structure in this program: what information does it represent, how does it represent the data, and what are its members.
+> Describe each major data structure in this module: what information does it represent, how does it represent the data, and what are its members.
 > This description should be independent of the programming language.
-> Mention, but do not describe, data structures implemented by other modules (such as the new modules you detail below, or any libcs50 data structures you plan to use).
 
-    grid- stores the grid string, a list of player objects,and goldNuggets. It should contain all the information to describe the current game state of nuggets. Additionally, it will have methods to send the grid with the correct amount of information to any player and spectator.
-    gridPoint- 
-    player-
----
-
-## XYZ module
+## Game
 
 > Repeat this section for each module that is included in either the client or server.
 

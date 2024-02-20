@@ -50,7 +50,6 @@ The client will run as follows:
   message loop with the input handler and message handler
 
 #### input handler
-
   take user keystrokes from stdin and send them to the server as a KEY message
 
 #### messageHandler
@@ -136,6 +135,7 @@ A data structure to store the data of each player. Stores:
 `player_leave - leaves a player from a game
 `player_collectGold` - adds the current gold on player (x,y) coordinate
 `player_move` - moves a player into a spot on the grid
+
 #### Game
 A data structure to hold global game state. Stores:
 

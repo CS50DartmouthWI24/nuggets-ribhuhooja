@@ -131,6 +131,11 @@ A data structure to store the data of each player. Stores:
 - assigned letter
 - address (to send messages to)
 
+### Functional Decomposition
+`player_join` - joins a player into a game
+`player_leave - leaves a player from a game
+`player_collectGold` - adds the current gold on player (x,y) coordinate
+`player_move` - moves a player into a spot on the grid
 #### Game
 A data structure to hold global game state. Stores:
 

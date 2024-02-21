@@ -205,14 +205,21 @@ A data structure to represent a grid. Stores:
 
 ## Player
 
-> Repeat this section for each module that is included in either the client or server.
+A data structure to store the data of each player. Stores:
+
+- x and y coordinates
+- grid visible to the player
+- amount of gold
+- name
+- assigned letter
+- address (for the server to send messages to)
 
 ### Functional decomposition
 
 The player is composed of the following modules (other than main)
 
 `player_join` - joins a player into a game
-`player_leave - leaves a player from a game
+`player_leave` - leaves a player from a game
 `player_move` - moves a player into a spot on grid
 `handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
 
@@ -223,15 +230,7 @@ The player is composed of the following modules (other than main)
 
 ### Major data structures
 
-#### Player
-A data structure to store the data of each player. Stores:
-
-- x and y coordinates
-- grid visible to the player
-- amount of gold
-- name
-- assigned letter
-- address (for the server to send messages to)
+We use a `grid` data structure to store the visibility grid of the player. All other aspects of the `player` struct will be defined as integers thus do not need a data struct
 
 ## Game
 

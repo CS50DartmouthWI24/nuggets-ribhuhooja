@@ -24,7 +24,7 @@ typedef struct player {
   int gold;
   char* name;
   char* letter; 
-  int address;
+  addr_t* address;
 } player_t;
 
 
@@ -38,7 +38,7 @@ typedef struct player {
  *  The initialized player, NULL if any failure
  *
 */
-player_t* player_new(player_t*, int x, int y, char* name, int address);
+player_t* player_new(player_t*, int x, int y, char* name, addr_t* address);
 
 
 /************* player_delete *************/
@@ -219,4 +219,4 @@ void player_setLetter(player_t* player, char* letter);
  * We return: 
  *  Void.
  */
-void player_setAddress(player_t* player, int address);
+void player_setAddress(player_t* player, addr_t* address);

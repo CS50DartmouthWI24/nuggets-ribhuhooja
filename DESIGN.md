@@ -128,9 +128,12 @@ A data structure to store the data of each player. Stores:
 
 ### Functional Decomposition
 1. `player_join` - joins a player into a game
-2. `player_leave - leaves a player from a game
+2. `player_leave` - leaves a player from a game
 3. `player_collectGold` - adds the current gold on player (x,y) coordinate
 4. `player_move` - moves a player into a spot on the grid
+5. `player_new` - makes a new player with the given arguments
+6. `player_delete` - deletes the palyer. 
+
 #### Game
 A data structure to hold global game state. Stores:
 

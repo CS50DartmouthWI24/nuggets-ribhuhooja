@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "../support/message.h"
+#include "grid.h"
 
 /************* global types *************/
 typedef struct player {

@@ -139,7 +139,7 @@ A data structure to store the data of each player. Stores:
 #### Game
 A data structure to hold global game state. Stores:
 
-- the 'base' grid which is the actual game map (as opposed to the
+- the 'base' grid which is the actual game map (as opposed to the)
 limited-visibility grids seen by each player
 - the total amount of nuggets left
 - an array of active players

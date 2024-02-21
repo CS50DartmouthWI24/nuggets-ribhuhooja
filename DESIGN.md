@@ -35,10 +35,10 @@ the format of the status line.
 
 Our client comprises the following modules:
 
-1. `parseArgs`, which parses the command line arguments
-2. `messageHandler`, which handles the messages received from the server
-3. `inputHandler`, which handles player input
-4. `displayer`, which displays the grid and status line to the user
+- `parseArgs`, which parses the command line arguments
+- `messageHandler`, which handles the messages received from the server
+- `inputHandler`, which handles player input
+- `displayer`, which displays the grid and status line to the user
  
 ### Pseudo code for logic/algorithmic flow
 
@@ -88,10 +88,10 @@ to tell them about the game state.
 
 The server is composed of the following modules (other than main)
 
-1. `parseArgs`, parses the command line arguments to the server
-2. `gameInitializer`, which sets up the data structures
-3. `messageHandler`, which handles messages
-4. `gameUpdater`, which updates the game based on player actions
+- `parseArgs`, parses the command line arguments to the server
+- `gameInitializer`, which sets up the data structures
+- `messageHandler`, which handles messages
+- `gameUpdater`, which updates the game based on player actions
 
 
 ### Pseudo code for logic/algorithmic flow
@@ -132,10 +132,10 @@ A data structure to store the data of each player. Stores:
 - address (to send messages to)
 
 ### Functional Decomposition
-`player_join` - joins a player into a game
-`player_leave - leaves a player from a game
-`player_collectGold` - adds the current gold on player (x,y) coordinate
-`player_move` - moves a player into a spot on the grid
+- `player_join` - joins a player into a game
+- `player_leave` - leaves a player from a game
+- `player_collectGold` - adds the current gold on player (x,y) coordinate
+- `player_move` - moves a player into a spot on the grid
 #### Game
 A data structure to hold global game state. Stores:
 
@@ -153,14 +153,14 @@ game grid
 
 ### Functional decomposition
 
-  `grid_fromMap` - creates a new grid from a map file
-  `grid_charAt` - returns the character at a given point
-  `grid_goldAt` - returns the amount of gold at a given point
-  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  `grid_movePlayer` - moves the players within the grid
-  `grid_collectGold` - changes the grid to represent gold being collected by a player
-  `grid_display` - displays/prints the grid string
-  `grid_toMap` - saves the grid to a file for debug purposes
+  - `grid_fromMap` - creates a new grid from a map file
+  - `grid_charAt` - returns the character at a given point
+  - `grid_goldAt` - returns the amount of gold at a given point
+  - `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  - `grid_movePlayer` - moves the players within the grid
+  - `grid_collectGold` - changes the grid to represent gold being collected by a player
+  - `grid_display` - displays/prints the grid string
+  - `grid_toMap` - saves the grid to a file for debug purposes
 
 Static helper functions
 

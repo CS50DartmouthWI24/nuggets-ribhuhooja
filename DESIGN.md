@@ -111,20 +111,7 @@ The server will run as follows:
   
 ### Major data structures
 
-#### Grid
-A data structure to represent a grid. Stores:
-
-- the grid string
-- a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
-
-#### Game
-A data structure to hold global game state. Stores:
-
-- the 'base' grid which is the actual game map (as opposed to the
-limited-visibility grids seen by each player
-- the total amount of nuggets left
-- an array of active players
-- an array of removed players
+There are no data structures definined in the server module.
 
 ---
 
@@ -206,8 +193,14 @@ spot, and so the asterisk at that spot is replaced by a player character by move
 
 ### Major data structures
 
-This module defines the grid data structure, which is specified above.
+This module defines the grid data structure, which is specified below.
 It exposes the structure as an opaque type.
+
+#### Grid
+A data structure to represent a grid. Stores:
+
+- the grid string
+- a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
 
 ## Player
 

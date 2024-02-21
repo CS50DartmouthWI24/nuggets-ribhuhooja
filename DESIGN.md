@@ -127,14 +127,14 @@ A data structure to store the data of each player. Stores:
 - address (to send messages to)
 
 ### Functional Decomposition
-`player_join` - joins a player into a game
-`player_leave - leaves a player from a game
-`player_collectGold` - adds the current gold on player (x,y) coordinate
-`player_move` - moves a player into a spot on the grid
+1. `player_join` - joins a player into a game
+2. `player_leave - leaves a player from a game
+3. `player_collectGold` - adds the current gold on player (x,y) coordinate
+4. `player_move` - moves a player into a spot on the grid
 #### Game
 A data structure to hold global game state. Stores:
 
-- the 'base' grid which is the actual game map (as opposed to the
+- the 'base' grid which is the actual game map (as opposed to the)
 limited-visibility grids seen by each player
 - the total amount of nuggets left
 - an array of active players
@@ -148,14 +148,14 @@ game grid
 
 ### Functional decomposition
 
-  - `grid_fromMap` - creates a new grid from a map file
-  - `grid_charAt` - returns the character at a given point
-  - `grid_goldAt` - returns the amount of gold at a given point
-  - `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  - `grid_movePlayer` - moves the players within the grid
-  - `grid_collectGold` - changes the grid to represent gold being collected by a player
-  - `grid_display` - displays/prints the grid string
-  - `grid_toMap` - saves the grid to a file for debug purposes
+  1. `grid_fromMap` - creates a new grid from a map file
+  2. `grid_charAt` - returns the character at a given point
+  3. `grid_goldAt` - returns the amount of gold at a given point
+  4. `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  5. `grid_movePlayer` - moves the players within the grid
+  6. `grid_collectGold` - changes the grid to represent gold being collected by a player
+  7. `grid_display` - displays/prints the grid string
+  8. `grid_toMap` - saves the grid to a file for debug purposes
 
 Static helper functions
 
@@ -244,10 +244,10 @@ A data structure to store the data of each player. Stores:
 
 The player is composed of the following modules (other than main)
 
-`player_join` - joins a player into a game
-`player_leave`` - leaves a player from a game
-`player_move` - moves a player into a spot on grid
-`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
+1. `player_join` - joins a player into a game
+2. `player_leave` - leaves a player from a game
+3. `player_move` - moves a player into a spot on grid
+4. `handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
 
 ### Pseudo code for logic/algorithmic flow
 
@@ -276,9 +276,9 @@ The game data structure will keep track of the following data which defines a ga
 
 ### Functional decomposition
 
-    `addClient` - adds a client with a port number to the array of clients
-    `removeClient` - removes a client with a port number from the array of clients
-    `endGame` - handles game over
+  1. `addClient` - adds a client with a port number to the array of clients
+  2. `removeClient` - removes a client with a port number from the array of clients
+  3. `endGame` - handles game over
 
 ### Pseudo code for logic/algorithmic flow
 

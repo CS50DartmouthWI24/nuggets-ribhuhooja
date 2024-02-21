@@ -8,7 +8,7 @@ We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
-## Player
+## Client
 
 The *client* acts in one of two modes:
 
@@ -22,23 +22,20 @@ See the requirements spec for both the command-line and interactive UI.
 ### Inputs and outputs
 
 #### Inputs
-The clients will input individual keystrokes (without the need of a newline to send)
-
-See the Requirements spec for the usage of each key
+Besides the command line arguments, the client will listen for individual keystrokes (without the need of a newline to break it up). These inputs will then be sent to the server
 
 #### Outputs
 The output of the program will be a visual, realtime display of the game grid. 
-Te program will also display a status line. See the requirements spec for 
-the format of the status line.
+The program will also display a status line. See the requirements spec for the format of the status line.
 
 ### Functional decomposition into modules
 
-Our client comprises the following modules:
+Our client comprises the following modules or functions:
 
-1. `parseArgs`, which parses the command line arguments
-2. `messageHandler`, which handles the messages received from the server
-3. `inputHandler`, which handles player input
-4. `displayer`, which displays the grid and status line to the user
+1. `parseArgs`, which parses the command line arguments and decide if client is a spectator or player
+2. `messageHandler`, which handles messages recieved from the server (this would call `displayGrid`)
+3. `inputHandler`, which handles keyboard input and sends it to the server
+4. `displayGrid`, which displays a the grid and a status line to the user
  
 ### Pseudo code for logic/algorithmic flow
 
@@ -89,7 +86,7 @@ The server is composed of the following modules (other than main)
 
 1. `parseArgs`, parses the command line arguments to the server
 2. `gameInitializer`, which sets up the data structures
-3. `messageHandler`, which handles messages
+3. `messageHandler`, which handles messages from the client (will call gameUpdater to update the grid)
 4. `gameUpdater`, which updates the game based on player actions
 
 
@@ -133,8 +130,9 @@ A data structure to store the data of each player. Stores:
 ### Functional Decomposition
 `player_join` - joins a player into a game
 `player_leave - leaves a player from a game
-`player_collectGold` - adds the current gold on player (x,y) coordinate
-`player_move` - moves a player into a spot on the grid
+`player_move` - moves a player into a spot on grid
+`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
+
 
 #### Game
 A data structure to hold global game state. Stores:

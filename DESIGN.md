@@ -125,7 +125,7 @@ A data structure to store the data of each player. Stores:
 - amount of gold
 - name
 - assigned letter
-- address (to send messages to)
+- address (for the server to send messages to)
 
 ### Functional Decomposition
 `player_join` - joins a player into a game

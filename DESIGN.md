@@ -32,10 +32,10 @@ The program will also display a status line. See the requirements spec for the f
 
 Our client comprises the following modules or functions:
 
-1. `parseArgs`, which parses the command line arguments and decide if client is a spectator or player
-2. `messageHandler`, which handles messages recieved from the server (this would call `displayGrid`)
-3. `inputHandler`, which handles keyboard input and sends it to the server
-4. `displayGrid`, which displays a the grid and a status line to the user
+1. `parseArgs`, which parses the command line arguments
+2. `messageHandler`, which handles the messages received from the server
+3. `inputHandler`, which handles player input
+4. `displayer`, which displays the grid and status line to the user
  
 ### Pseudo code for logic/algorithmic flow
 
@@ -50,7 +50,6 @@ The client will run as follows:
   take user keystrokes from stdin and send them to the server as a KEY message
 
 #### messageHandler
-
   receive messages from the server
   if the display needs to be updated, update the displaye
   if the server sends a quit message, quit
@@ -86,7 +85,7 @@ The server is composed of the following modules (other than main)
 
 1. `parseArgs`, parses the command line arguments to the server
 2. `gameInitializer`, which sets up the data structures
-3. `messageHandler`, which handles messages from the client (will call gameUpdater to update the grid)
+3. `messageHandler`, which handles messages
 4. `gameUpdater`, which updates the game based on player actions
 
 
@@ -111,7 +110,35 @@ The server will run as follows:
   
 ### Major data structures
 
-There are no data structures definined in the server module.
+#### Grid
+A data structure to represent a grid. Stores:
+
+- the grid string
+- a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
+
+#### Player
+A data structure to store the data of each player. Stores:
+
+- x and y coordinates
+- grid visible to the player
+- amount of gold
+- name
+- assigned letter
+- address (to send messages to)
+
+### Functional Decomposition
+`player_join` - joins a player into a game
+`player_leave - leaves a player from a game
+`player_collectGold` - adds the current gold on player (x,y) coordinate
+`player_move` - moves a player into a spot on the grid
+#### Game
+A data structure to hold global game state. Stores:
+
+- the 'base' grid which is the actual game map (as opposed to the
+limited-visibility grids seen by each player
+- the total amount of nuggets left
+- an array of active players
+- an array of removed players
 
 ---
 
@@ -121,19 +148,19 @@ game grid
 
 ### Functional decomposition
 
-  `grid_fromMap` - creates a new grid from a map file
-  `grid_charAt` - returns the character at a given point
-  `grid_goldAt` - returns the amount of gold at a given point
-  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  `grid_movePlayer` - moves the players within the grid
-  `grid_collectGold` - changes the grid to represent gold being collected by a player
-  `grid_display` - displays/prints the grid string
-  `grid_toMap` - saves the grid to a file for debug purposes
+  - `grid_fromMap` - creates a new grid from a map file
+  - `grid_charAt` - returns the character at a given point
+  - `grid_goldAt` - returns the amount of gold at a given point
+  - `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  - `grid_movePlayer` - moves the players within the grid
+  - `grid_collectGold` - changes the grid to represent gold being collected by a player
+  - `grid_display` - displays/prints the grid string
+  - `grid_toMap` - saves the grid to a file for debug purposes
 
 Static helper functions
 
-  `indexOf` - returns the index of an (x,y) point in the string
-  `isVisible` - tells whether a point is visible from another
+  - `indexOf` - returns the index of an (x,y) point in the string
+  - `isVisible` - tells whether a point is visible from another
 
 ### Pseudo code for logic/algorithmic flow
 
@@ -204,22 +231,6 @@ A data structure to represent a grid. Stores:
 
 ## Player
 
-### Functional decomposition
-
-The player is composed of the following modules (other than main)
-
-`player_join` - joins a player into a game
-`player_leave` - leaves a player from a game
-`player_move` - moves a player into a spot on grid
-`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
-
-### Pseudo code for logic/algorithmic flow
-
-The player module will just include simple functions.
-
-### Major data structures
-
-#### Player
 A data structure to store the data of each player. Stores:
 
 - x and y coordinates
@@ -229,7 +240,39 @@ A data structure to store the data of each player. Stores:
 - assigned letter
 - address (for the server to send messages to)
 
+### Functional decomposition
+
+The player is composed of the following modules (other than main)
+
+`player_join` - joins a player into a game
+`player_leave`` - leaves a player from a game
+`player_move` - moves a player into a spot on grid
+`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
+
+### Pseudo code for logic/algorithmic flow
+
+The player module will just include simple functions.
+
+### Major data structures
+
+We use a `grid` data structure to store the visibility grid of the player. All other aspects of the `player` struct will be defined as integers thus do not need a data struct
+
 ## Game
+
+The game data structure will keep track of the following data which defines a game. 
+
+`grid_t*` stores the underlying grid with full visibility (as opposed to the limited-visibility grids seen by each player)
+
+`player_t** activePlayers` an array of the active players who are playing the game
+`player_t** inactivePlayers` an array of the active players who have finished playing the game
+
+`int maxNameChars` stores the maximum number of charachters a player can name themselves
+`int maxPlayers` stores the maximum number of players a game can have
+`int goldTotal` stores the total amount of gold ot be distributed
+`int minNumGoldPiles` stores the minimum number of goldPiles
+`int maxNumGoldPiles` stores the maximum number of goldPiles
+
+> Repeat this section for each module that is included in either the client or server.
 
 ### Functional decomposition
 
@@ -251,14 +294,7 @@ The game module will just consist of helper functions.
 
 
 ### Major data structures
+We make ample use of `grid_t*` and `player_t*` data structures to store the `grid_t*` that defines the underlying map and a `player_t*` that defines each player who is added to the game
 
-#### game
-A data structure to hold global game state. Stores:
-
-- the 'base' grid which is the actual game map (as opposed to the
-limited-visibility grids seen by each player
-- the total amount of nuggets left
-- an array of active players
-- an array of removed players
 
 

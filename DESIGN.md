@@ -122,19 +122,19 @@ game grid
 
 ### Functional decomposition
 
-  `grid_fromMap` - creates a new grid from a map file
-  `grid_charAt` - returns the character at a given point
-  `grid_goldAt` - returns the amount of gold at a given point
-  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  `grid_movePlayer` - moves the players within the grid
-  `grid_collectGold` - changes the grid to represent gold being collected by a player
-  `grid_display` - displays/prints the grid string
-  `grid_toMap` - saves the grid to a file for debug purposes
+  - `grid_fromMap` - creates a new grid from a map file
+  - `grid_charAt` - returns the character at a given point
+  - `grid_goldAt` - returns the amount of gold at a given point
+  - `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  - `grid_movePlayer` - moves the players within the grid
+  - `grid_collectGold` - changes the grid to represent gold being collected by a player
+  - `grid_display` - displays/prints the grid string
+  - `grid_toMap` - saves the grid to a file for debug purposes
 
 Static helper functions
 
-  `indexOf` - returns the index of an (x,y) point in the string
-  `isVisible` - tells whether a point is visible from another
+  - `indexOf` - returns the index of an (x,y) point in the string
+  - `isVisible` - tells whether a point is visible from another
 
 ### Pseudo code for logic/algorithmic flow
 
@@ -234,6 +234,19 @@ We use a `grid` data structure to store the visibility grid of the player. All o
 
 ## Game
 
+The game data structure will keep track of the following data which defines a game. 
+
+`grid_t*` stores the underlying grid with full visibility (as opposed to the limited-visibility grids seen by each player)
+
+`player_t** activePlayers` an array of the active players who are playing the game
+`player_t** inactivePlayers` an array of the active players who have finished playing the game
+
+`int maxNameChars` stores the maximum number of charachters a player can name themselves
+`int maxPlayers` stores the maximum number of players a game can have
+`int goldTotal` stores the total amount of gold ot be distributed
+`int minNumGoldPiles` stores the minimum number of goldPiles
+`int maxNumGoldPiles` stores the maximum number of goldPiles
+
 > Repeat this section for each module that is included in either the client or server.
 
 ### Functional decomposition
@@ -254,14 +267,7 @@ We use a `grid` data structure to store the visibility grid of the player. All o
 
 
 ### Major data structures
+We make ample use of `grid_t*` and `player_t*` data structures to store the `grid_t*` that defines the underlying map and a `player_t*` that defines each player who is added to the game
 
-#### game
-A data structure to hold global game state. Stores:
-
-- the 'base' grid which is the actual game map (as opposed to the
-limited-visibility grids seen by each player
-- the total amount of nuggets left
-- an array of active players
-- an array of removed players
 
 

@@ -117,23 +117,6 @@ A data structure to represent a grid. Stores:
 - the grid string
 - a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
 
-#### Player
-A data structure to store the data of each player. Stores:
-
-- x and y coordinates
-- grid visible to the player
-- amount of gold
-- name
-- assigned letter
-- address (for the server to send messages to)
-
-### Functional Decomposition
-`player_join` - joins a player into a game
-`player_leave - leaves a player from a game
-`player_move` - moves a player into a spot on grid
-`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
-
-
 #### Game
 A data structure to hold global game state. Stores:
 
@@ -222,6 +205,7 @@ spot, and so the asterisk at that spot is replaced by a player character by move
   put the string to the specified file
 
 ### Major data structures
+
 This module defines the grid data structure, which is specified above.
 It exposes the structure as an opaque type.
 
@@ -231,7 +215,12 @@ It exposes the structure as an opaque type.
 
 ### Functional decomposition
 
-> List each of the main functions implemented by this module, with a phrase or sentence description of each.
+The player is composed of the following modules (other than main)
+
+`player_join` - joins a player into a game
+`player_leave - leaves a player from a game
+`player_move` - moves a player into a spot on grid
+`handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
 
 ### Pseudo code for logic/algorithmic flow
 
@@ -240,8 +229,15 @@ It exposes the structure as an opaque type.
 
 ### Major data structures
 
-> Describe each major data structure in this module: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
+#### Player
+A data structure to store the data of each player. Stores:
+
+- x and y coordinates
+- grid visible to the player
+- amount of gold
+- name
+- assigned letter
+- address (for the server to send messages to)
 
 ## Game
 
@@ -251,15 +247,27 @@ It exposes the structure as an opaque type.
 
     `addClient` - adds a client with a port number to the array of clients
     `removeClient` - removes a client with a port number from the array of clients
-    
-> List each of the main functions implemented by this module, with a phrase or sentence description of each.
+    `endGame` - handles game over
 
 ### Pseudo code for logic/algorithmic flow
 
-> For any non-trivial function, add a level-4 #### header and provide tab-indented pseudocode.
-> This pseudocode should be independent of the programming language.
+#### endGame
+
+  change display from map to a blank screen
+  display leaderboard of gold
+  while (players in game)
+    removeClient
+  close port
 
 ### Major data structures
 
-> Describe each major data structure in this module: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
+#### game
+A data structure to hold global game state. Stores:
+
+- the 'base' grid which is the actual game map (as opposed to the
+limited-visibility grids seen by each player
+- the total amount of nuggets left
+- an array of active players
+- an array of removed players
+
+

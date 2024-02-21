@@ -50,7 +50,6 @@ The client will run as follows:
   take user keystrokes from stdin and send them to the server as a KEY message
 
 #### messageHandler
-
   receive messages from the server
   if the display needs to be updated, update the displaye
   if the server sends a quit message, quit
@@ -111,8 +110,10 @@ The server will run as follows:
   
 ### Major data structures
 
-There are no data structures definined in the server module.
-
+We use a `player` struct to keep track of all the players's information (as defined below, their current visibility grid, gold, port address, etc.)
+We also use a `grid` struct to keep track of the underlying grid 
+We will use a `counters` object to keep track of the gold for any given  (x,y) pair
+importantly we will also keep a `game` data struct to keep track of all the global variables that define a game (max players, arrays of active and exited players, total gold left)
 ---
 
 ## Grid

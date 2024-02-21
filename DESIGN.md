@@ -249,6 +249,9 @@ It exposes the structure as an opaque type.
 
 ### Functional decomposition
 
+    `addClient` - adds a client with a port number to the array of clients
+    `removeClient` - removes a client with a port number from the array of clients
+    
 > List each of the main functions implemented by this module, with a phrase or sentence description of each.
 
 ### Pseudo code for logic/algorithmic flow

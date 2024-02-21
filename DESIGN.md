@@ -259,6 +259,7 @@ A data structure to store the data of each player. Stores:
     removeClient
   close port
 
+
 ### Major data structures
 
 #### game

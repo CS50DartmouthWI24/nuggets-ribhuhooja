@@ -115,5 +115,20 @@ static int parseArgs(const int argc, char* argv[]);
 
 ## Limitations
 
-> Bulleted list of any limitations of your implementation.
-> This section may not be relevant when you first write your Implementation Plan, but could be relevant after completing the implementation.
+### Strict update
+We re-evaluate the grid for each player (on the server) when ANY player moves.
+This is somewhat inefficient, because the changes might not have been visible to some players.
+But to keep it simple, we have chosen not to handle those complex visibility calculations.
+
+(We CAN avoid sending the same string over the network, though, if we compare against the previous
+grid string and check if it's the same.)
+
+e.g. if player 1 is in room 1 and players 2 & 3 are in room 2, then if player
+2 moves then player 1's display doesn't change. But player 1 nevertheless still 
+receives a display message from the grid.
+
+### Simple grid refresh
+When the client displays a grid, it displays the whole grid as received
+after wiping the previous grid. This is inefficient, because the vast majority of
+points on the screen did not change. To keep it simple, we do not do a smart grid
+refresh which would only change the changed poritions of the grid.

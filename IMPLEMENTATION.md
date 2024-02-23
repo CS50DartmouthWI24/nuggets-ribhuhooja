@@ -19,16 +19,27 @@ using the curses module to provide a UI. He is also responsible for testing the
 program.
 
 ### Ribhu
-Ribhu will write the grid module. he is responsible for handling all the grid
+Ribhu will write the grid module. He is responsible for handling all the grid
 game logic, including visibility, and testing the grid.
 
 ### Sam
-
+Sam will write the server program. He is responsible for making sure the program
+starts correctly and to handle/send messages to and from clients, and for making
+sure that the right functions for the helper modules are called. He is also 
+responsible for testing the sever module.
 
 ### Tayeb
+Tayeb will write the game module. He is responsible for handling the game 
+and making sure it integrates all the other modules correctly. He is also responsible
+for testing the module.
 
+### Notes
+This division of labor is note strict, in the sense that we will dynamically
+look at the amount of work needed for each person and try to distribute it evenly.
+We especially anticipate a lot of overlap between the duties of the three people assigned to
+server.
 
-## Player
+## Client
 
 ### Data structures
 
@@ -95,9 +106,23 @@ static int parseArgs(const int argc, char* argv[]);
 
 ---
 
-## XYZ module
+## Grid
 
-> For each module, repeat the same framework above.
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+## Game
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+## Player
 
 ### Data structures
 
@@ -110,8 +135,15 @@ static int parseArgs(const int argc, char* argv[]);
 ## Testing plan
 
 ### unit testing
+#### Grid
+Grid will be unit tested by a simple C driver that is just going to perform
+some grid actions and print out the resulting grid to stdout. Since the grid
+is a string, this does not require any displaying program to work.
 
-> How will you test each unit (module) before integrating them with a main program (client or server)?
+#### Game
+
+
+#### Player
 
 ### integration testing
 
@@ -142,3 +174,9 @@ When the client displays a grid, it displays the whole grid as received
 after wiping the previous grid. This is inefficient, because the vast majority of
 points on the screen did not change. To keep it simple, we do not do a smart grid
 refresh which would only change the changed poritions of the grid.
+
+### Redundant visibility checks
+The way we plan to check visibility involves checking each point on the grid. 
+This is somewhat redundant, as many points that lie on the same 'ray" through the 
+player will have the same visibility value. However, unless this implementation ends
+up being too slow, we don't plan to optimize out this redundancy.

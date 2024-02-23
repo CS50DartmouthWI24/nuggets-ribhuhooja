@@ -5,6 +5,9 @@
  * Ribhu Hooja, February 2024
  */
 
+#ifndef __GRID_H
+#define __GRID_H
+
 #include <stdbool.h>
 #include "counters.h"
 #include "player.h"
@@ -172,3 +175,4 @@ char** grid_display(grid_t* grid);
  */
 void grid_toMap(grid_t* grid, FILE* fp);
 
+#endif    // __GRID_H

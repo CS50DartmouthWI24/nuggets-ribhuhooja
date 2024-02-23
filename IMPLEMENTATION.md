@@ -1,24 +1,34 @@
 # CS50 Nuggets
 ## Implementation Spec
-### Team name, term, year
-
-> This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
+### Torpedos, Winter 2024
 
 According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
-Our design also includes x, y, z modules.
+Our design also includes Grid, Player, Spectator, Game.
 We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
 ## Plan for division of labor
 
-> Update your plan for distributing the project work among your 3(4) team members.
-> Who writes the client program, the server program, each module?
-> Who is responsible for various aspects of testing, for documentation, etc?
+Our team has four members - Paul, Ribhu, Sam, Tayeb. Here is our plan for dividing the
+labour between the team members.
+
+### Paul
+Paul will handle the client program completely. He will write the program,
+using the curses module to provide a UI. He is also responsible for testing the
+program.
+
+### Ribhu
+Ribhu will write the grid module. he is responsible for handling all the grid
+game logic, including visibility, and testing the grid.
+
+### Sam
+
+
+### Tayeb
+
 
 ## Player
-
-> Teams of 3 students should delete this section.
 
 ### Data structures
 

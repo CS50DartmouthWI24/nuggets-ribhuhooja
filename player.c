@@ -16,7 +16,6 @@
 
 // Local variables
 
-#include "message.h"  
 #include "player.h"
 #include "log.h"
 #include "grid.h"
@@ -163,7 +162,7 @@ void player_setGold(player_t* player, int gold){
         flog_v(stderr, "Cannot move null player.\n");
         return;
     }
-    player->gold +=gold;
+    player->gold += gold;
 
 }
 // to set a new visible for the player

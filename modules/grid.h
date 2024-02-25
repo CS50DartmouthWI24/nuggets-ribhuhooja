@@ -67,7 +67,7 @@ char grid_charAt(grid_t* grid, int x, int y);
  *  displaying. Calling it on a 'player' grid is undefined behavior. That
  *  can lead to issues such as a '*' block returning 0 gold nuggets.
  */
-int grid_goldAt(grid_t* grid, int x, int y);
+int grid_goldAt(grid_t* grid, const int x, const int y);
 
 /****************** grid_generateVisibleGrid **************
  *
@@ -114,7 +114,7 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
  *  character is. It is upto game to check that the character being 
  *  given here is valid.
  */
-bool grid_addPlayer(grid_t* grid, int x, int y, char playerChar);
+bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
 
 /****************** grid_movePlayer ***********************
  *

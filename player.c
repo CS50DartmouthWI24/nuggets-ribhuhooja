@@ -16,24 +16,13 @@
 
 // Local variables
 
+#include "message.h"
 #include "player.h"
 #include "log.h"
 #include "grid.h"
 #include "mem.h"    
 
 
-
-
-/************* global types *************/
-typedef struct player {
-  int x;
-  int y;
-  grid_t* visibleGrid;
-  int gold;
-  char* name;
-  char letter; 
-  addr_t address;
-} player_t;
 
 
 player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter ){
@@ -174,4 +163,13 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid){
     //mem_assert_const(visibleGrid, "Failed to free memory for grid"); /// should I call delete grid function-------------
     delete_grid(player->visibleGrid);
     player->visibleGrid = visibleGrid;
+}
+
+// to send message to a player
+void player_sendMessage(player_t* player, char* message){
+    if(player == NULL){
+        flog_v(stderr, "Cannot send message for null player.\n");
+        return;
+    }
+    message_send(player->address, message);
 }

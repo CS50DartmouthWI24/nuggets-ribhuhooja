@@ -203,38 +203,16 @@ void player_setGold(player_t* player, int gold);
  */
 void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
 
-/************* player_setName *************/
-/* 
- * Set the name of the player.
- * Caller provides: 
- *  Pointer to the player and a pointer to the new name string.
- * We do: 
- *  Set the name of the player to the new name.
- * We return: 
- *  none
- */
-void player_setName(player_t* player, char* name);
 
-/************* player_setLetter *************/
+/************* player_sendMessage *************/
 /* 
- * Set the letter of the player.
+ * Send message to a player
  * Caller provides: 
- *  Pointer to the player and a pointer to the new letter string.
+ *  A pointer to the player and a pointer to message string
  * We do: 
- *  Set the letter of the player to the letter.
+ *  Send the message to player
  * We return: 
  *  none
  */
-void player_setLetter(player_t* player, char* letter);
 
-/************* player_setAddress *************/
-/* 
- * Set the address of the player
- * Caller provides: 
- *  Pointer to the player and the address.
- * We do: 
- *  Set the address of the player to the new address.
- * We return: 
- *  none
- */
-void player_setAddress(player_t* player, addr_t* address);
+void player_sendMessage(player_t* player, char* message);

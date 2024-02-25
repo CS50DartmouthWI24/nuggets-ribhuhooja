@@ -17,8 +17,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <strings.h>
-#include <string.h>
 #include "message.h"
+#include <string.h>
 
 /**************** file-local functions ****************/
 

@@ -128,7 +128,7 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     
   }
 
-  // if 4 arguments, the last is the playerName
+  // if 4 arguments, the last is the playerNae
   if (argc == 4){
 
     // retrive the playerName

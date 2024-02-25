@@ -13,7 +13,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#include "../support/message.h"
+#include "message.h"
 #include "grid.h"
 
 /************* global types *************/
@@ -24,7 +24,7 @@ typedef struct player {
   int gold;
   char* name;
   char* letter; 
-  addr_t* address;
+  addr_t address;
 } player_t;
 
 
@@ -123,7 +123,7 @@ char* player_getName(const player_t* player);
  * We return: 
  *  A pointer to a string containing the letter of the player.
  */
-char* player_getLetter(const player_t* player);
+char player_getLetter(const player_t* player);
 
 /************* player_getAddress *************/
 /* 
@@ -135,7 +135,7 @@ char* player_getLetter(const player_t* player);
  * We return: 
  *  The address of the player as an int.
  */
-int player_getAddress(const player_t* player);
+addr_t player_getAddress(const player_t* player);
 
 /************* player_setX *************/
 /* 
@@ -184,39 +184,3 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
  *  void.
  */
 void player_setGold(player_t* player, int gold);
-
-/************* player_setName *************/
-/* 
- * Set the name of the player
- * Caller provides: 
- *  Pointer to the player and a pointer to the new name string.
- * We do: 
- *  Set the name of the player to the new name.
- * We return: 
- *  void.
- */
-void player_setName(player_t* player, char* name);
-
-/************* player_setLetter *************/
-/* 
- * Set the letter of the player
- * Caller provides: 
- *  Pointer to the player and a pointer to the new letter string.
- * We do: 
- *  Set the letter of the player to the letter.
- * We return: 
- *  void.
- */
-void player_setLetter(player_t* player, char* letter);
-
-/************* player_setAddress *************/
-/* 
- * Set the address of the player
- * Caller provides: 
- *  Pointer to the player and the address.
- * We do: 
- *  Set the address of the player to the new address.
- * We return: 
- *  Void.
- */
-void player_setAddress(player_t* player, addr_t* address);

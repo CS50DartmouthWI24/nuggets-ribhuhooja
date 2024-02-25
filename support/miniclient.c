@@ -17,7 +17,7 @@
 
 /**************** file-local functions ****************/
 
-static bool handleInput  (void* arg);
+static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 
 /***************** main *******************************/

@@ -1,10 +1,11 @@
 /*
- * player.h- header file for player.c file
+ * player.h - header file for player.c file
  * 
  * A 'player' is a struct to represent a player in a 'nuggets' game.
  * The struct keeps track of all information that defines a player 
  *
  * Paul Cherian, COSC 50, Febuary 2024
+ * Tayeb Mohammadi, February 2024
  * Ribhu Hooja, February 2024 - made opaque, protected from multiple includes,
  * added functionality needed by grid
  * 
@@ -18,17 +19,8 @@
 #include "message.h"
 #include "grid.h"
 
-/************* global types *************/
-typedef struct player {
-  int x;
-  int y;
-  grid_t* visibleGrid;
-  int gold;
-  char* name;
-  char character; 
-  addr_t* address;
-} player_t;
-
+/****************** global types *************************/
+typedef struct player player_t*;
 
 /************* player_new *************/
 /* Creates a new player struct
@@ -38,9 +30,11 @@ typedef struct player {
  *  Initialize a new player_t* data struct with the parameters
  * We return:
  *  The initialized player, NULL if any failure
+ * Notes: the caller should free memory for name and the player structure 
+ *  when done.
  *
 */
-player_t* player_new(player_t*, int x, int y, char* name, addr_t* address);
+player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter );
 
 
 /************* player_delete *************/
@@ -113,11 +107,11 @@ int player_getGold(const player_t* player);
  */
 char* player_getName(const player_t* player);
 
-/************* player_getLetter *************/
+/************* player_getChar *************/
 /* 
- * Get the letter of the player
+ * Get the character of the player
  * Caller provides: 
- *  A pointer to the player from whom to get the letter.
+ *  A pointer to the player from whom to get the character.
  * We do: 
  *  Retrieve the letter of the player.
  * We return: 
@@ -135,7 +129,7 @@ char player_getChar(const player_t* player);
  * We return: 
  *  The address of the player as an int.
  */
-int player_getAddress(const player_t* player);
+addr_t player_getAddress(const player_t* player);
 
 /************* player_setX *************/
 /* 
@@ -157,16 +151,6 @@ void player_setX(player_t* player, int x);
  */
 void player_setY(player_t* player, int y);
 
-/************* player_setVisibleGrid *************/
-/* 
- * Set the visible grid for the player
- * Caller provides: 
- *  A pointer to the player and a pointer to the new grid.
- * We do: 
- *  Set the visible grid of the player to the grid.
- */
-void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
-
 /************* player_setGold *************/
 /* 
  * Set the gold amount for the player
@@ -177,35 +161,37 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
  */
 void player_setGold(player_t* player, int gold);
 
-/************* player_setName *************/
+/************* player_setVisibleGrid *************/
 /* 
- * Set the name of the player
+ * Set the visible grid for the player
  * Caller provides: 
- *  Pointer to the player and a pointer to the new name string.
+ *  A pointer to the player and a pointer to the new grid.
  * We do: 
- *  Set the name of the player to the new name.
+ *  Set the visible grid of the player to the grid.
  */
-void player_setName(player_t* player, char* name);
+void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
 
-/************* player_setLetter *************/
+/************* player_setChar *************/
 /* 
  * Set the character of the player
  *
  * Caller provides: 
- *  Pointer to the player and the letter to set it to.
+ *  Pointer to the player and the character to set it to.
  * We do: 
  *  Set the character of the player to that character.
  */
 void player_setChar(player_t* player, char* letter);
 
-/************* player_setAddress *************/
+/************* player_sendMessage *************/
 /* 
- * Set the address of the player
+ * Send message to a player
  * Caller provides: 
- *  Pointer to the player and the address.
+ *  A pointer to the player and a pointer to message string
  * We do: 
- *  Set the address of the player to the new address.
+ *  Send the message to player
  */
-void player_setAddress(player_t* player, addr_t* address);
+void player_sendMessage(player_t* player, char* message);
 
 #endif // __PLAYER_H
+
+

@@ -13,7 +13,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#include "../support/message.h"
+#include "message.h"
 #include "grid.h"
 
 /************* global types *************/
@@ -24,7 +24,7 @@ typedef struct player {
   int gold;
   char* name;
   char* letter; 
-  addr_t* address;
+  addr_t address; // this should be the address not the pointer to address----------------------------
 } player_t;
 
 
@@ -36,9 +36,11 @@ typedef struct player {
  *  Initialize a new player_t* data struct with the parameters
  * We return:
  *  The initialized player, NULL if any failure
+ * Notes: the caller should free memory for name and the player structure 
+ *  when done.
  *
 */
-player_t* player_new(player_t*, int x, int y, char* name, addr_t* address);
+player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter );
 
 
 /************* player_delete *************/
@@ -123,7 +125,7 @@ char* player_getName(const player_t* player);
  * We return: 
  *  A pointer to a string containing the letter of the player.
  */
-char* player_getLetter(const player_t* player);
+char player_getLetter(const player_t* player);
 
 /************* player_getAddress *************/
 /* 
@@ -135,7 +137,7 @@ char* player_getLetter(const player_t* player);
  * We return: 
  *  The address of the player as an int.
  */
-int player_getAddress(const player_t* player);
+addr_t player_getAddress(const player_t* player);
 
 /************* player_setX *************/
 /* 
@@ -145,7 +147,7 @@ int player_getAddress(const player_t* player);
  * We do: 
  *  Set the x-coordinate of the player to the new value.
  * We return: 
- *  void.
+ *  none
  */
 void player_setX(player_t* player, int x);
 
@@ -157,21 +159,25 @@ void player_setX(player_t* player, int x);
  * We do: 
  *  Set the y-coordinate of the player to the new value.
  * We return: 
- *  void.
+ *  none
  */
 void player_setY(player_t* player, int y);
 
-/************* player_setVisibleGrid *************/
+
+/************* player_move *************/
 /* 
- * Set the visible grid for the player
+ * Set the x and y coordinates of the player
  * Caller provides: 
- *  A pointer to the player and a pointer to the new grid.
+ *  A pointer to the player and new  x and y coordinates.
  * We do: 
- *  Set the visible grid of the player to the grid.
+ *  Move the player diagonnaly x and y position
  * We return: 
- *  void.
+ *  none
  */
-void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
+
+
+void player_move(player_t* player, int x, int y);
+
 
 /************* player_setGold *************/
 /* 
@@ -181,31 +187,43 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
  * We do: 
  *  Set the gold amount of the player to the new amount.
  * We return: 
- *  void.
+ *  none
  */
 void player_setGold(player_t* player, int gold);
 
+/************* player_setVisibleGrid *************/
+/* 
+ * Set the visible grid for the player
+ * Caller provides: 
+ *  A pointer to the player and a pointer to the new grid.
+ * We do: 
+ *  Set the visible grid of the player to the grid.
+ * We return: 
+ *  none
+ */
+void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
+
 /************* player_setName *************/
 /* 
- * Set the name of the player
+ * Set the name of the player.
  * Caller provides: 
  *  Pointer to the player and a pointer to the new name string.
  * We do: 
  *  Set the name of the player to the new name.
  * We return: 
- *  void.
+ *  none
  */
 void player_setName(player_t* player, char* name);
 
 /************* player_setLetter *************/
 /* 
- * Set the letter of the player
+ * Set the letter of the player.
  * Caller provides: 
  *  Pointer to the player and a pointer to the new letter string.
  * We do: 
  *  Set the letter of the player to the letter.
  * We return: 
- *  void.
+ *  none
  */
 void player_setLetter(player_t* player, char* letter);
 
@@ -217,6 +235,6 @@ void player_setLetter(player_t* player, char* letter);
  * We do: 
  *  Set the address of the player to the new address.
  * We return: 
- *  Void.
+ *  none
  */
 void player_setAddress(player_t* player, addr_t* address);

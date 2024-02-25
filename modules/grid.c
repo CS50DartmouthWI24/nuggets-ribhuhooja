@@ -12,7 +12,9 @@
 #include <stdbool.h>
 #include "mem.h"
 #include "counters.h"
+#include "players.h"
 #include "grid.h"
+#include "mapchars.h"
 
 /****************** types ********************************/
 typedef struct grid_t {
@@ -180,14 +182,134 @@ grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar)
     return false;
   }
 
+  // we can only put a player at an empty room spot
+  if (grid_CharAt(grid, x, y) != mapchars_roomSpot){
+    return false;
+  }
 
-
-
-
+  grid->string[indexOf(x, y, grid->numcols)] = playerChar;
 }
 
+/****************** grid_movePlayer ***********************
+ *
+ * see grid.h for usage and description
+ *
+ */
+int
+grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
+{
+  if (grid == NULL || grid->string == NULL || player == NULL){
+    return -1;
+  }
 
+  if (x_move > 1 || x_move < -1 || y_move > 1 || y_move < -1){
+    return -1;
+  }
 
+  int x = player_getX(player);
+  int y = player_getY(player);
+  int x_new = x + x_move;
+  int y_new = y + y_move;
+
+  int numcols = grid->numcols;  // this is needed multiple times
+
+  if (!isValidCoordinate(x_new, y_new, grid->numrows, numcols)){
+    return -1;
+  }
+
+  // player can only move to a room spot or a passage spot, or a gold spot
+  // or there can be another player there, in which case we swap them
+  char moveSpot = grid_charAt(grid, x_new, y_new);
+  if (!(moveSpot == mapchars_roomSpot 
+        || moveSpot == mapchars_passageSpot
+        || moveSpot == mapchars_gold
+        || moveSpot == mapchars_player)){
+    return -1;
+  }
+
+  //TODO: add swap code
+  if (moveSpot == mapchars_player){
+    return -1;
+  }
+
+  player_setX(player, x_new);
+  player_setY(player, Y_new);
+
+  int gold = 0;
+  if (moveSpot == mapchars_gold){
+    gold = grid_collectGold(grid, player);
+  }
+
+  // update string visuals - TODO: doesn't do swapping yet
+  int oldIndex = indexOf(x, y, numcols);
+  int newIndex = indexOf(x_new, y_new, numcols);
+  char* string = grid->string;
+
+  // TODO - fix hallways getting converted to rooms
+  string[oldIndex] = mapchars_roomSpot;
+  string[newIndex] = player_getChar(player);
+
+  return gold;
+}
+
+/****************** grid_collectGold **********************
+ *
+ * see grid.h for usage and description
+ *
+ */
+int
+grid_collectGold(grid_t* grid, player_t* player)
+{
+  if (grid == NULL ||grid->nuggets == NULL || player == NULL){
+    return 0;
+  }
+
+  int x = player_getX(player);
+  int y = player_getY(player);
+
+  if (!isValidCoordinate(x, y, grid->numrows, grid->numcols)){
+    return 0;
+  }
+
+  int gold = grid_goldAt(grid, x, y);
+  player_setGold(player, player_getGold(player) + gold);
+  counters_set(grid->nuggets, indexOf(x, y, grid->numcols), 0);
+}
+
+/****************** grid_getDisplay **************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+char*
+grid_getDisplay(grid_t* grid)
+{
+  if (grid == NULL){
+    return NULL;
+  }
+
+  return grid->string;
+}
+
+/****************** grid_toMap ****************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+void
+grid_toMap(grid_t* grid, FILE* fp)
+{
+  if (grid == NULL || fp == NULL){
+    return;
+  }
+
+  char* toPrint = grid_getDisplay(grid);
+  if (toPrint == NULL){
+    return;
+  }
+
+  fputs(toPrint, fp);
+}
 
 
 /****************** indexOf *******************************

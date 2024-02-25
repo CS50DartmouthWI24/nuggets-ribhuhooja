@@ -7,12 +7,13 @@
 #ifndef __MAPCHARS_H
 #define __MAPCHARS_H
 
-const char playerChar = '@';
-const char solidRock = ' ';
-const char horizontalBoundary = '-';
-const char verticalBuondary = '|';
-const char cornerBoundary = '+';
-const char roomSpot = '.';
-const char goldChar = '*';
+const char mapchars_player= '@';
+const char mapchars_solidRock = ' ';
+const char mapchars_horizontalBoundary = '-';
+const char mapchars_verticalBuondary = '|';
+const char mapchars_cornerBoundary = '+';
+const char mapchars_room = '.';
+const char mapchars_passageSpot = '#';
+const char mapchars_gold = '*';
 
 #endif // __MAPCHARS_H

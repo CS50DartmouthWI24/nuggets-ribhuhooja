@@ -97,7 +97,9 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
  *
  * Caller provides:
  *  valid pointer to a grid
- *  valid character representation of the player
+ *  valid character representation of the player (eg A, B, etc.)
+ *  (Do not provide '@', or whatever the player is supposed to see themselves as;
+ *  provide what OTHER players are supposed to see the player as)
  * We do:
  *  update the grid to hold a representation of the player at that point
  * We return:
@@ -122,7 +124,7 @@ bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
  *
  * Caller provides:
  *  valid pointer to grid and player
- *  valid move directions
+ *  valid move directions - both x_move and y_move must be 0, 1 or -1
  * We do:
  *  update the grid to represent the player having moved.
  * We return:
@@ -149,19 +151,19 @@ int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
  */
 int grid_collectGold(grid_t* grid, player_t* player);
 
-/****************** grid_display **************************
+/****************** grid_getDisplay **************************
  *
- * returns (a pointer to) the grid string for display/debug purposes
+ * returns the grid string for display/debug purposes
  *
  * Caller provdes:
  *  valid pointer to a grid
  * We return:
- *  a pointer to the grid string within the grid
+ *  the grid string within the grid
  * Caller is responsible for:
  *  NOT freeing the returned string. The string is freed when grid_delete is
  *  called.
  */
-char** grid_display(grid_t* grid);
+char* grid_getDisplay(grid_t* grid);
 
 /****************** grid_toMap ****************************
  *

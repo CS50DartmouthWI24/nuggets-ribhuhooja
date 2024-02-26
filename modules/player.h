@@ -20,7 +20,7 @@
 #include "grid.h"
 
 /****************** global types *************************/
-typedef struct player player_t*;
+typedef struct player player_t;
 
 /************* player_new *************/
 /* Creates a new player struct

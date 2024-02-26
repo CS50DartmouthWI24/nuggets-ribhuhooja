@@ -97,10 +97,16 @@ int grid_goldAt(grid_t* grid, const int x, const int y);
  *  visibility checks later
  * Notes:
  *  The caller SHOULD NOT call grid_delete on the returned grid because
- *  it is stored inside the player
+ *  it is stored inside the player, and will be freed by player_delete
  *
  *  NONE of the other grid function in this module should be called on the grid
  *  returned by this, as this grid is for display purposes only
+ *
+ *  Only the following functions are defined on this grid:
+ *  - getDisplay
+ *  - toMap
+ *  - charAt
+ *
  */
 grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
 
@@ -145,6 +151,20 @@ bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
  *  the amount of gold collected if the operation succeeded
  */
 int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
+
+/****************** grid_removePlayer *********************
+ *
+ * removes a player from the grid
+ *
+ * Caller provides:
+ *  valid pointer to grid, and a player inside the grid
+ * We do:
+ *  remove the player from the grid
+ * We return:
+ *  true if the operation succeeded
+ *  false if the operation failed
+ */
+bool grid_removePlayer(grid_t* grid, player_t* player);
 
 /****************** grid_collectGold **********************
  *

@@ -152,6 +152,20 @@ bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
  */
 int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
 
+/****************** grid_removePlayer *********************
+ *
+ * removes a player from the grid
+ *
+ * Caller provides:
+ *  valid pointer to grid, and a player inside the grid
+ * We do:
+ *  remove the player from the grid
+ * We return:
+ *  true if the operation succeeded
+ *  false if the operation failed
+ */
+bool grid_removePlayer(grid_t* grid, player_t* player);
+
 /****************** grid_collectGold **********************
  *
  * Makes the player collect the gold at its location

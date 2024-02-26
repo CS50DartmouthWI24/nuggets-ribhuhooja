@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include "mem.h"
 #include "counters.h"
+#include "hashtable.h"
 #include "players.h"
 #include "grid.h"
 #include "mapchars.h"
@@ -22,6 +23,7 @@ typedef struct grid_t {
   int numrows;          // number of rows
   int numcols;          // number of columns
   counters_t* nuggets;  // number of nuggets at a location, keyed by string index
+  hashtable_t* playersStandingOn;   // what character each player is standing on
 }
 
 /****************** file-local global variables **********/
@@ -335,6 +337,32 @@ grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
 
   return gold;
 }
+
+/****************** grid_removePlayer *********************
+ *
+ * see grid.h for usage and description
+ *
+ */
+bool
+grid_removePlayer(grid_t* grid, player_t* player)
+{
+  if (grid == NULL || player == NULL){
+    return false;
+  }
+
+  int px = player_getX(player);
+  int py = player_getY(player);
+
+  if (!isValidCoordinate(px, py, grid->numrows, grid->numcols)){
+    return false;
+  }
+
+  grid->string[indexOf(px, py, numcols)] = getPlayerStandingOn(grid, 
+                                                              player_getChar(player));
+
+  return true;
+}
+
 
 /****************** grid_collectGold **********************
  *

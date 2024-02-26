@@ -122,6 +122,30 @@ grid_t* grid_fromMap(FILE* mapFile){
   return new;
 }
 
+/****************** grid_delete ***************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+void
+grid_delete(grid_t* grid)
+{
+  if (grid == NULL){
+    return;
+  }
+
+  if (grid->string != NULL){
+    free(string);
+  }
+
+  if (grid->nuggets != NULL){
+    counters_delete(nuggets);
+  }
+
+  free(grid);
+}
+
+
 /****************** grid_charAt ***************************
  *
  * see grid.h for usage and description

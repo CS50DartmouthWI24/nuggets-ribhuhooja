@@ -32,6 +32,19 @@ typedef struct grid grid_t;
  */
 grid_t* grid_fromMap(FILE* mapFile);
 
+/****************** grid_delete ***************************
+ *
+ * deletes a grid
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ * We do:
+ *  delete the grid and free all its associated memory
+ * Caller is responsible for:
+ *  never using that pointer again
+ */
+void grid_delete(grid_t* grid);
+
 /****************** grid_charAt ***************************
  *
  * Returns the character at the given (x,y) coordinate

@@ -30,11 +30,13 @@ typedef struct player player_t*;
  *  Initialize a new player_t* data struct with the parameters
  * We return:
  *  The initialized player, NULL if any failure
- * Notes: the caller should free memory for name and the player structure 
+ * Notes:
+ * The name is COPIED, not stored
+ * the caller should free memory for name and the player structure 
  *  when done.
  *
 */
-player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter );
+player_t* player_new (addr_t* address, int x, int y, char* name, char letter );
 
 
 /************* player_delete *************/
@@ -56,6 +58,7 @@ void player_delete(player_t* player);
  *  Retrieve the x-coordinate of the player.
  * We return: 
  *  X-coordinate of the player as an int.
+ *  -1 on failure
  */
 int player_getX(const player_t* player);
 
@@ -68,6 +71,7 @@ int player_getX(const player_t* player);
  *  Retrieve the y-coordinate of the player.
  * We return: 
  *  The y-coordinate of the player as an int.
+ *  01 on failure
  */
 int player_getY(const player_t* player);
 
@@ -80,6 +84,7 @@ int player_getY(const player_t* player);
  *  Retrieve the pointer to the visible grid of the  player.
  * We return: 
  *  A pointer to the visibleGrid struct.
+ *  NULL on failure
  */
 grid_t* player_getVisibleGrid(const player_t* player);
 
@@ -92,6 +97,7 @@ grid_t* player_getVisibleGrid(const player_t* player);
  *  Retrieve the gold amount of the player.
  * We return: 
  *  The gold amount of the player as an int.
+ *  0 on failure
  */
 int player_getGold(const player_t* player);
 
@@ -104,6 +110,7 @@ int player_getGold(const player_t* player);
  *  Retrieve the name of the player.
  * We return: 
  *  A pointer to a string containing the name of the player.
+ *  NULL on failure
  */
 char* player_getName(const player_t* player);
 
@@ -116,6 +123,7 @@ char* player_getName(const player_t* player);
  *  Retrieve the letter of the player.
  * We return: 
  *  A pointer to a string containing the letter of the player.
+ *  the null character on failure
  */
 char player_getChar(const player_t* player);
 
@@ -127,9 +135,10 @@ char player_getChar(const player_t* player);
  * We do: 
  *  Retrieve the address of the  player.
  * We return: 
- *  The address of the player as an int.
+ *  The pointer to the address of the player.
+ *  NULL on failure
  */
-addr_t player_getAddress(const player_t* player);
+addr_t* player_getAddress(const player_t* player);
 
 /************* player_setX *************/
 /* 

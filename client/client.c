@@ -22,7 +22,7 @@
 typedef struct clientData {
   // player's characteristics
   char id[2];
-  int goldTotal;
+  int purse;
   int port;
 
   // the size of the window
@@ -41,6 +41,24 @@ static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static int parseArgs(const int argc, char* argv[], clientData_t* cData);
 static void initializeTerminal(void);
+
+// handling specific communication
+  // commands to implement
+  // GRID nrows ncols
+  // GOLD n p r
+  // DISPLAY\nstring
+  // QUIT explanation
+  // ERROR explanation
+
+static void handleGRID(const char* message, void* arg);
+static void handleGOLD(const char* message, void* arg);
+static void handleDISPLAY(const char* message, void* arg);
+static void handleQUIT(const char* message, void *arg);
+static void handleERROR(const char* message);
+
+
+
+
 int
 main(const int argc, char* argv[])
 {
@@ -84,8 +102,6 @@ main(const int argc, char* argv[])
 
 }
 
-
-
 /**************** parseArgs ****************/
 static int parseArgs(const int argc, char* argv[], clientData_t* cData){
 
@@ -105,8 +121,6 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 3; // bad hostname/port
   }
-
-
   
   // if only three arguments- send a SPEC message (for spectator)
   if (argc == 3){
@@ -204,6 +218,7 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage() ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
+
   if(message == NULL) {
     fprintf(stderr, "ERROR message is NULL\n");
     return false;
@@ -219,4 +234,42 @@ static void initializeTerminal(void){
   cbreak(); 
   noecho(); 
   refresh(); 
+}
+
+/**************** handleGRID() ****************/
+static void handleGRID(const char* message, void* arg){
+
+  // initialize data to read in
+  int rows;
+  int cols;
+
+  // read in data from message
+  sscanf(message, "GRID %d %d", &rows, &cols);
+}
+
+/**************** handleGOLD() ****************/
+static void handleGOLD(const char* message, void* arg){
+  
+  // initialize data to read in
+  int nuggets;
+  int purse;
+  int remaining;
+
+  // read data from the message
+  sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining);
+}
+
+/**************** handleDISPLAY() ****************/
+static void handleDISPLAY(const char* message, void* arg){
+
+}
+
+/**************** handleQUIT() ****************/
+static void handleQUIT(const char* message, void *arg){
+
+}
+
+/**************** handleERROR() ****************/
+static void handleERROR(const char* message){
+
 }

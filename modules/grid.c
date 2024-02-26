@@ -13,7 +13,7 @@
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
-#include "players.h"
+#include "player.h"
 #include "grid.h"
 #include "mapchars.h"
 
@@ -483,8 +483,8 @@ isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
 static void
 getPlayerStandingOn(grid_t* grid, player_t* player)
 {
-if (grid == NULL || player == NULL){
-    return;
+  if (grid == NULL || player == NULL){
+    return mapchars_roomSpot;
   }
 
   char* charString = calloc(2, sizeof(char));

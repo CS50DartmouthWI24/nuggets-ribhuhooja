@@ -35,7 +35,8 @@ const int initGridStringSize = 2000; // the initial string size allocated when r
 static inline int indexOf(const int x, const int y, const int numcols);
 static inline bool isValidCoordinate(const int x, const int y, const int numrows
                                                                const int numcols);
-static bool isVisible(grid_t* grid, int px, int py, int x, int y);
+static bool isVisible(grid_t* grid, const int px, const int py, const int x, 
+                                                                const int y);
 
 /****************** global function prototypes ***********/
 /* see grid.h for description and usage */
@@ -189,6 +190,65 @@ grid_goldAt(grid_t* grid, const int x, const int y)
  * see grid.h for usage and description
  *
  */
+grid_t*
+grid_generateVisibleGrid(grid_t* grid, player_t* player)
+{
+  if (grid == NULL || player == NULL){
+    return NULL;
+  }
+
+  int px = player_getX(player);
+  int py = player_getY(player);
+  int numrows = grid->numrows;
+  int numcols = grid->numcols;
+
+  if (!isValidCoordinate(px, py, numcols)){
+      return NULL;
+  }
+
+  // this means that the visibility check has never been performed before
+  // start off the player with all map spots blank i.e. solid rock
+  if (player->grid == NULL){
+    grid_t* new = malloc(sizeof(grid_t));
+    mem_assert(new, "out of memory; could not make new grid for visibility\n");
+
+    new->numrows = numrows;
+    new->numcols = numcols;
+    new->nuggets = NULL;   // NUGGETS INFO MUST NOT BE ACCESSED FROM PLAYER GRIDS
+
+    int len = numrows * (numcols + 1);
+    char* newString = calloc(len, sizeof(char));
+    for (int i = 0; i < len; ++i){
+      if (i % numcols == 0){
+        newString[i] = '\n';
+      } else {
+        newString[i] = mapchars_solidRock;
+      }
+    }
+    new->string = newString;
+  }
+
+  grid_t* pgrid = player->grid;
+
+  for (int x = 0; x < numcols; ++x){
+    for (int y = 0; y < numrows; ++y){
+      //TODO: add history checking
+      if (isVisible(grid, px, py, x, y)){
+        pgrid->string[indexOf(x, y, numcols)] = grid_charAt(grid, x, y);
+      } else {
+        pgrid->string[indexOf(x, y, numcols)] = mapchars_solidRock;
+      }
+    }
+  }
+
+  pgrid->string[indexOf(px, py, numcols)] = mapchars_player;
+
+  return pgrid;
+}
+
+
+
+}
 
 /****************** grid_addPlayer ************************
  *
@@ -366,4 +426,16 @@ static inline bool
 isValidCoordinate(const int x, const int y, const int numrows, const int numcols)
 {
   return x >= 0 && y >= 0 && x < numcols && y < numrows;
+}
+
+/****************** isVisible *****************************
+ *
+ * returns whether the point (x,y) is visible from the point (px, py)
+ *
+ * TODO - fix this
+ */
+static bool
+isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
+{
+  return true;
 }

@@ -8,12 +8,9 @@
 // 1. should I have another array for inactive players
 // 2. when returning the array of players, what to do with inactive players.
 
-// Global Variables
+
 #include <stdio.h>
 #include <stdlib.h>
-
-
-// Local variables
 #include "grid.h"
 #include "player.h"
 #include "spectator.h"
@@ -28,8 +25,7 @@ typedef struct game{
     spectator_t* spectator; // the address of the spectator
     int numPlayer; // number of players joined the game so far
     int goldRemain; // the remaining gold in the game
-    int minNumGoldPiles; // the minimum number of goldPiles
-    int maxNumGoldPiles; // the maximum number of goldPiles
+    int numPiles; // the random number of piles between max and min number given as global variables.
 } game_t;
 
 

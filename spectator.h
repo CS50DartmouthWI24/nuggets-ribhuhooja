@@ -49,3 +49,13 @@ addr_t* spectator_getAddress(spectator_t* spectator);
  *  void
  */
 void spectator_delete(spectator_t* spectator);
+
+/************* spectator_sendMessage *************/
+/* 
+ * Send message to a player
+ * Caller provides: 
+ *  A pointer to the player and a pointer to message string
+ * We do: 
+ *  Send the message to player
+ */
+void spectator_sendMessage(spectator_t* spectator, char* message);

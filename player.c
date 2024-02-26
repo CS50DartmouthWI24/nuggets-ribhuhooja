@@ -9,13 +9,9 @@
  * 
  */
 
-// Global variables
-
+// Importing libraries 
 #include <stdio.h>
 #include <stdlib.h>
-
-// Local variables
-
 #include "message.h"
 #include "player.h"
 #include "log.h"
@@ -23,14 +19,13 @@
 #include "mem.h"    
 
 
-
-
+// to create a new player. Check player.h for more information 
 player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter ){
 
     player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player");
     player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player");
     strcpy(player->name, name); // to make a copy of the name for player.
-
+    // setting the atributes to players structure
     player->letter = letter;
     player->x = x;
     player->y = y;
@@ -39,22 +34,19 @@ player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* na
     player->gold = 0; // since the new player total gold is zero.
 
     return player;
-
 }
 
-
+// to delete the player. Check player.h for more information 
 void player_delete(player_t* player){
 
     if(player != NULL){// to make sure that player has already initialized before deleting it
         mem_free(player->name); // free the name
-        delete_grid(player->visibleGrid);
-        //mem_free(player->visibleGrid); // shoud I free memory here or call a delete grid function ?------------------------------------------------
+        grid_delete(player->visibleGrid);
         mem_free(player); // free the player
     }
-
 }
 
-// to get the x cordinates of the player
+// to get the x cordinates of the player. Check player.h for more information 
 int player_getX(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get x coordinate of null player.\n");
@@ -63,7 +55,7 @@ int player_getX(const player_t* player){
     return player->x;
 }
 
-// to get the y cordinates of the player
+// to get the y cordinates of the player. Check player.h for more information 
 int player_getY(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get y coordinate of null player.\n");
@@ -72,7 +64,7 @@ int player_getY(const player_t* player){
     return player->y;
 }
 
-// to get the visible grid of the player
+// to get the visible grid of the player. Check player.h for more information 
 grid_t* player_getVisibleGrid(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get visible grid of null player.\n");
@@ -81,7 +73,7 @@ grid_t* player_getVisibleGrid(const player_t* player){
     return player->visibleGrid;
 }
 
-// to get the total gold claimed by the player
+// to get the total gold claimed by the player. Check player.h for more information 
 int player_getGold(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get gold number of null player.\n");
@@ -91,7 +83,7 @@ int player_getGold(const player_t* player){
 
 }
 
-// to get the name of the player
+// to get the name of the player. Check player.h for more information 
 char* player_getName(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get name of null player.\n");
@@ -100,6 +92,7 @@ char* player_getName(const player_t* player){
     return player->name;
 }
 
+// to get the letter of the player. Check player.h for more information 
 char player_getLetter(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
@@ -109,6 +102,7 @@ char player_getLetter(const player_t* player){
 
 }
 
+// to get the address of the player. Check player.h for more information 
 addr_t player_getAddress(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
@@ -118,7 +112,7 @@ addr_t player_getAddress(const player_t* player){
 
 }
 
-// to move the player in x direction 
+// to move the player in x direction. Check player.h for more information 
 void player_setX(player_t* player, int x){
     if(player == NULL){
         flog_v(stderr, "Cannot set x coordinates of null player.\n");
@@ -126,7 +120,7 @@ void player_setX(player_t* player, int x){
     }
     player->x += x;
 }
- // to move the player in y direction 
+ // to move the player in y direction. Check player.h for more information  
 void player_setY(player_t* player, int y){
     if(player == NULL){
         flog_v(stderr, "Cannot set y coordinates of null player.\n");
@@ -135,7 +129,7 @@ void player_setY(player_t* player, int y){
     player->y += y;
 }
 
-// to move the player in diagonally
+// to move the player in diagonally. Check player.h for more information 
 void player_move(player_t* player, int x, int y){
     if(player == NULL){
         flog_v(stderr, "Cannot move null player.\n");
@@ -145,7 +139,7 @@ void player_move(player_t* player, int x, int y){
     player->y += y;
 }
 
-// to add the new amount of gold to player's gold
+// to add the new amount of gold to player's gold. Check player.h for more information 
 void player_setGold(player_t* player, int gold){
     if(player == NULL){
         flog_v(stderr, "Cannot move null player.\n");
@@ -154,7 +148,7 @@ void player_setGold(player_t* player, int gold){
     player->gold += gold;
 
 }
-// to set a new visible for the player
+// to set a new visible for the player. Check player.h for more information 
 void player_setVisibleGrid(player_t* player, grid_t* visibleGrid){
     if(player == NULL){
         flog_v(stderr, "Cannot set grid for null player.\n");
@@ -165,7 +159,7 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid){
     player->visibleGrid = visibleGrid;
 }
 
-// to send message to a player
+// to send message to a player. Check player.h for more information 
 void player_sendMessage(player_t* player, char* message){
     if(player == NULL){
         flog_v(stderr, "Cannot send message for null player.\n");

@@ -26,8 +26,8 @@ typedef struct clientData {
   int port;
 
   // the size of the window
-  char rows[5];
-  char cols[5];
+  int rows;
+  int cols;
   bool spectator;
   
 
@@ -41,6 +41,7 @@ static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static int parseArgs(const int argc, char* argv[], clientData_t* cData);
 static void initializeTerminal(void);
+static char getMapChar(char* map, int r, int c);
 
 // handling specific communication
   // commands to implement
@@ -50,11 +51,11 @@ static void initializeTerminal(void);
   // QUIT explanation
   // ERROR explanation
 
-static void handleGRID(const char* message, void* arg);
-static void handleGOLD(const char* message, void* arg);
+// static void handleGRID(const char* message, void* arg);
+// static void handleGOLD(const char* message, void* arg);
+// static void handleQUIT(const char* message, void *arg);
+// static void handleERROR(const char* message);
 static void handleDISPLAY(const char* message, void* arg);
-static void handleQUIT(const char* message, void *arg);
-static void handleERROR(const char* message);
 
 
 
@@ -236,40 +237,107 @@ static void initializeTerminal(void){
   refresh(); 
 }
 
-/**************** handleGRID() ****************/
-static void handleGRID(const char* message, void* arg){
 
-  // initialize data to read in
-  int rows;
-  int cols;
+// /**************** handleGRID() ****************/
+// static void handleGRID(const char* message, void* arg){
 
-  // read in data from message
-  sscanf(message, "GRID %d %d", &rows, &cols);
-}
+//   // initialize data to read in
+//   int rows;
+//   int cols;
 
-/**************** handleGOLD() ****************/
-static void handleGOLD(const char* message, void* arg){
+//   // read in data from message
+//   sscanf(message, "GRID %d %d", &rows, &cols);
+// }
+
+// /**************** handleGOLD() ****************/
+// static void handleGOLD(const char* message, void* arg){
   
-  // initialize data to read in
-  int nuggets;
-  int purse;
-  int remaining;
+//   // initialize data to read in
+//   int nuggets;
+//   int purse;
+//   int remaining;
 
-  // read data from the message
-  sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining);
-}
+//   // read data from the message
+//   sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining);
+// }
+
+// /**************** handleQUIT() ****************/
+// static void handleQUIT(const char* message, void *arg){
+
+// }
+
+// /**************** handleERROR() ****************/
+// static void handleERROR(const char* message){
+
+// }
+
 
 /**************** handleDISPLAY() ****************/
 static void handleDISPLAY(const char* message, void* arg){
 
+  clientData_t* cData = (clientData_t*) arg;
+
+  // copy the message so we can edit it
+  char* messageCopy = malloc(strlen(message) + 1);
+  strcpy(messageCopy, message);
+
+  // get the map by incrementing the starting pointer
+  char* map = messageCopy + strlen("DISPLAY\n"); 
+
+  int cols = cData->cols;
+  int rows = cData-> rows;
+
+
+  // loop through mapcopy
+  for (int y = 0; y < rows; y++) {
+    for (int x = 0; x < cols; x++) {
+      move(y,x);    
+      char c = getMapChar(map, y, x);       
+      addch(c);
+    }
+  }
+
+  refresh();                                 
+
+  // free the map
+  free(messageCopy);
+  free(map);
+
 }
 
-/**************** handleQUIT() ****************/
-static void handleQUIT(const char* message, void *arg){
 
-}
+/**************** getChar() ****************/
+static char getMapChar(char* map, int r, int c) {
 
-/**************** handleERROR() ****************/
-static void handleERROR(const char* message){
+  // set up counters to loop with
+  int currR = 0;
+  int currC = 0;
 
+  // loop through the map
+  for (char* p = map; *p; ++p) {
+
+    // if we are at the row and col we are looking for
+    if (currR == r && currC == c) {
+
+      // return the char
+      return *p;
+    }
+
+    // if we are at a newline
+    if (*p == '\n') {
+
+      // increment our curr row
+      currR++;
+
+      // reset curr col to 0
+      currC = 0; 
+    } 
+
+    else {
+      // move to col (next spot on row)
+      currC++;
+    }
+  }
+
+  return NULL; // return NULL if could not find character at positon specified
 }

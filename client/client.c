@@ -33,15 +33,11 @@ typedef struct clientData {
 
 } clientData_t;
 
-
-
-
-
 static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static int parseArgs(const int argc, char* argv[], clientData_t* cData);
 static void initializeTerminal(void);
-static char getMapChar(char* map, int r, int c);
+
 
 // handling specific communication
   // commands to implement
@@ -57,13 +53,10 @@ static char getMapChar(char* map, int r, int c);
 // static void handleERROR(const char* message);
 static void handleDISPLAY(const char* message, void* arg);
 
-
-
-
 int
 main(const int argc, char* argv[])
 {
-
+  
   // check if we can initialize the message
   if (message_init(NULL) == 0) {
     fprintf(stderr, "Error: could not initialize message log");
@@ -78,9 +71,16 @@ main(const int argc, char* argv[])
     return errorParseArgs;
   }
 
+  char* temp = "DISPLAY\nooooo\naaaaa\nbbbbb\nccccc\nlllll\nmmmmm\n_____";
+  cData.cols = 5;
 
+  cData.rows = 7;
+  
+  
   // initializes a screen
   initializeTerminal();
+
+  handleDISPLAY(temp, &cData);
 
   // set up arguments after parsing
   const char* serverHost = argv[1];
@@ -143,7 +143,7 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     
   }
 
-  // if 4 arguments, the last is the playerNae
+  // if 4 arguments, the last is the playerName
   if (argc == 4){
 
     // retrive the playerName
@@ -284,60 +284,42 @@ static void handleDISPLAY(const char* message, void* arg){
   // get the map by incrementing the starting pointer
   char* map = messageCopy + strlen("DISPLAY\n"); 
 
+  // varaiables for looping
   int cols = cData->cols;
-  int rows = cData-> rows;
+  int currY = 0; 
+	int currX = 0; 
+	int j = 0; 
 
+	// loop through the map
+	for (int i = 0; map[i] != '\0'; i++) {
 
-  // loop through mapcopy
-  for (int y = 0; y < rows; y++) {
-    for (int x = 0; x < cols; x++) {
-      move(y,x);    
-      char c = getMapChar(map, y, x);       
-      addch(c);
-    }
-  }
+    // check if at the end of a line or at the end of screen
+		if (map[i] == '\n' || j >= cols) {
 
-  refresh();                                 
+			// reset back to left of line, but go one line down
+			currY++;
+			currX = 0;
+			j = 0; // reset cols
+		} 
+    else {
+
+			// add char at the currX and currY and mv there
+			mvaddch(currY, currX, map[i]);
+			currX++;
+			j++;
+
+		}
+		if (map[i] == '\n') { 
+			j = 0;
+		}
+	}
+
+	// Refresh the screen to show changes
+	refresh();                              
 
   // free the map
   free(messageCopy);
-  free(map);
+  // free(map);
 
 }
 
-
-/**************** getChar() ****************/
-static char getMapChar(char* map, int r, int c) {
-
-  // set up counters to loop with
-  int currR = 0;
-  int currC = 0;
-
-  // loop through the map
-  for (char* p = map; *p; ++p) {
-
-    // if we are at the row and col we are looking for
-    if (currR == r && currC == c) {
-
-      // return the char
-      return *p;
-    }
-
-    // if we are at a newline
-    if (*p == '\n') {
-
-      // increment our curr row
-      currR++;
-
-      // reset curr col to 0
-      currC = 0; 
-    } 
-
-    else {
-      // move to col (next spot on row)
-      currC++;
-    }
-  }
-
-  return NULL; // return NULL if could not find character at positon specified
-}

@@ -47,7 +47,7 @@ static void initializeTerminal(void);
   // QUIT explanation
   // ERROR explanation
 
-// static void handleGRID(const char* message, void* arg);
+static void handleGRID(const char* message, void* arg);
 // static void handleGOLD(const char* message, void* arg);
 // static void handleQUIT(const char* message, void *arg);
 // static void handleERROR(const char* message);
@@ -238,16 +238,24 @@ static void initializeTerminal(void){
 }
 
 
-// /**************** handleGRID() ****************/
-// static void handleGRID(const char* message, void* arg){
+/**************** handleGRID() ****************/
+static void handleGRID(const char* message, void* arg){
+  clientData_t* cData = (clientData_t*) arg;
+  // initialize data to read in
+  int rows;
+  int cols;
 
-//   // initialize data to read in
-//   int rows;
-//   int cols;
+  sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
+  cData->rows = rows;
+  cData->cols = cols;
 
-//   // read in data from message
-//   sscanf(message, "GRID %d %d", &rows, &cols);
-// }
+  if (rows >0 && cols >0){
+    // adjust window's size to fit map
+    fprintf(stderr, "GRID message received: GRID %d %d \n", cData->rows, cData->cols);
+  }
+
+  refresh();
+}
 
 // /**************** handleGOLD() ****************/
 // static void handleGOLD(const char* message, void* arg){

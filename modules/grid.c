@@ -39,6 +39,8 @@ static inline bool isValidCoordinate(const int x, const int y, const int numrows
                                                                const int numcols);
 static bool isVisible(grid_t* grid, const int px, const int py, const int x, 
                                                                 const int y);
+static char getPlayerStandingOn(grid_t* grid, player_t* player);
+static void setPlayerStandingOn(grid_t* grid, player_t* player, const char newChar);
 
 /****************** global function prototypes ***********/
 /* see grid.h for description and usage */
@@ -120,7 +122,11 @@ grid_t* grid_fromMap(FILE* mapFile){
   counters_t* ctrs = counters_new();
   mem_assert(ctrs, "out of memory; could not allocate space for nuggets counter\n");
 
+  hashtable_t* ht = hashtable_new();
+  mem_assert(ht, "out of memory; could not allocate space for player hashtable\n");
+
   new->nuggets = ctrs;
+  new->playersStandingOn = ht;
   
   return new;
 }
@@ -138,11 +144,15 @@ grid_delete(grid_t* grid)
   }
 
   if (grid->string != NULL){
-    free(string);
+    free(grid->string);
   }
 
   if (grid->nuggets != NULL){
-    counters_delete(nuggets);
+    counters_delete(grid->nuggets);
+  }
+
+  if (grid->playersStandingOn != NULL){
+    hashtable_delete(grid->playersStandingOn);
   }
 
   free(grid);
@@ -248,10 +258,6 @@ grid_generateVisibleGrid(grid_t* grid, player_t* player)
   return pgrid;
 }
 
-
-
-}
-
 /****************** grid_addPlayer ************************
  *
  * see grid.h for usage and description
@@ -274,6 +280,7 @@ grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar)
   }
 
   grid->string[indexOf(x, y, grid->numcols)] = playerChar;
+  setPlayerStandingOn(grid, player, mapchars_roomSpot);
 }
 
 /****************** grid_movePlayer ***********************
@@ -331,8 +338,8 @@ grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
   int newIndex = indexOf(x_new, y_new, numcols);
   char* string = grid->string;
 
-  // TODO - fix hallways getting converted to rooms
-  string[oldIndex] = mapchars_roomSpot;
+  string[oldIndex] = getPlayerStandingOn(grid, player);
+  setPlayerStandingOn(grid, player, string[newIndex]);
   string[newIndex] = player_getChar(player);
 
   return gold;
@@ -467,3 +474,51 @@ isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
 {
   return true;
 }
+
+/****************** getPlayerStandingOn *******************
+ *
+ * returns the character that the player is standing on
+ *
+ */
+static void
+getPlayerStandingOn(grid_t* grid, player_t* player)
+{
+if (grid == NULL || player == NULL){
+    return;
+  }
+
+  char* charString = calloc(2, sizeof(char));
+  mem_assert(charString, "out of memory\n");
+
+  charString[0] = player_getChar(player);
+  charString[1] = '\0';
+
+  char result = hashtable-get(grid->playersStandingOn, charString);
+  free(charString);
+
+  return result;
+}
+
+/****************** setPlayerStandingOn *******************
+ *
+ * updates the grid's bookkeeping of what the player is standing on
+ *
+ */
+static void
+setPlayerStandingOn(grid_t* grid, player_t* player, const char newChar)
+{
+  if (grid == NULL || player == NULL){
+    return;
+  }
+
+  char* charString = calloc(2, sizeof(char));
+  mem_assert(charString, "out of memory\n");
+
+  charString[0] = player_getChar(player);
+  charString[1] = '\0';
+
+  hashtable_insert(grid->playersStandingOn, charString, newChar);
+  free(charString);
+}
+
+

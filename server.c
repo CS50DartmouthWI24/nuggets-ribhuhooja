@@ -10,19 +10,29 @@ const int GOLDTOTAL = 250;      // amount of gold in the game
 const int GoldMinNumPiles = 10; // minimum number of gold piles
 const int GoldMaxNumPiles = 30; // maximum number of gold piles
 const int TIMEOUT = 15;
+char letters[26] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
 
 int ncols;
 int nrows;
+
+game_t* game;
 
 /**************** main() ****************/
 int main(const int argc, char* argv[]) {
 
     char* map = NULL;
     char* seed = NULL;
+    game_t* game;
 
     parseArgs(argc, argv, &map, &seed);
+    game = game_init(map);
 
-    message_init(stderr);
+    int port = message_init(stderr);
+    if (port == 0) {
+        return 2; // failure to initialize message module
+    } else {
+        printf("serverPort=%d\n", port);
+    }
     message_loop(NULL, TIMEOUT, handleTimeout, handleStdin, handleMessage);
     message_done();
 
@@ -52,6 +62,7 @@ static void parseArgs(const int argc, char* argv[],
         *map = argv[1];
 
         if (argc == 3) {
+            // This isn't set up yet
             *seed = argv[2];
         }
 
@@ -97,7 +108,10 @@ static void handleMessage(void* arg, const addr_t from, const char* buf) {
     } else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) { // KEY
         const char* content = message + strlen("PLAY ");
         handleKey(arg, from, content);
-    }
+    } else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
+        const char* content = message + strlen("SPECTATE");
+        handleSpectate(arg, from, content);
+    } 
 
 }
 
@@ -106,20 +120,47 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
     // SYNTAX: PLAY real name
 
     if(content != NULL) {
-        char playerLetter = game_playerAdd(from, content);
+        //if playerCount != max
+        int x = randomNumber(0, ncols);
+        int y = randomNumber(0, nrows);
+        player_t* player = player_new(x, y, content, from);
+        game_addPlayer(game, player);
+        char playerLetter = letters[(game->numPlayer)-1]
+        player->letter = playerLetter;
         message_send(from, "OK %c", playerLetter);
         message_send(from, "GRID %d %d", nrows, ncols);
+        // else
+        message_send(from, "QUIT Game is full: no more players can join.");
 
+    } else {
+        message_send(from, "QUIT Sorry - you must provide player's name.");
     }
 
 }
 
-static void handleKEY(void* arg, const addr_t from, const char* content) {
+static void handleKey(void* arg, const addr_t from, const char* content) {
 
     // SYNTAX: KEY k
 
     if(content != NULL) {
         //
     }
+
+}
+
+static void handleSpectate(void* arg, const addr_t from, const char* content) {
+
+    // Add spectator to game
+    game_addspectator(from, content);
+
+    // Send grid message
+    message_send(from, "GRID %d %d", nrows, ncols);
+
+    // Send gold message
+    // need function to find player from address int n = player_getGold()
+    message_send(from, "GOLD %d %d %d", n, p, r);
+    // Send full map
+    char* string = grid_getDisplay(game->grid);
+    message_send(from, "DISPLAY\n%s", string);
 
 }

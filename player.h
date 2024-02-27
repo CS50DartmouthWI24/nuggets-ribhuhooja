@@ -24,9 +24,10 @@ typedef struct player {
   int y;
   grid_t* visibleGrid;
   int gold;
+  bool isActive;
   char* name;
   char* letter; 
-  addr_t address;
+  addr_t* address;
 } player_t;
 
 

@@ -16,11 +16,11 @@
 #include "player.h"
 #include "log.h"
 #include "grid.h"
-#include "mem.h"    
+#include "mem.h"
 
 
 // to create a new player. Check player.h for more information 
-player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* name, char letter ){
+player_t* player_new (grid_t* playerGrid, addr_t* address, int x, int y, char* name, char letter ){
 
     player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player");
     player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player");
@@ -29,6 +29,7 @@ player_t* player_new (grid_t* playerGrid, addr_t address, int x, int y, char* na
     player->letter = letter;
     player->x = x;
     player->y = y;
+    player->isActive = true;
     player->address= address;
     player->visibleGrid = playerGrid;
     player->gold = 0; // since the new player total gold is zero.
@@ -103,7 +104,7 @@ char player_getLetter(const player_t* player){
 }
 
 // to get the address of the player. Check player.h for more information 
-addr_t player_getAddress(const player_t* player){
+addr_t* player_getAddress(const player_t* player){
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return NULL; // what to return when player is null ------------------------------------------ do we even need this?---------

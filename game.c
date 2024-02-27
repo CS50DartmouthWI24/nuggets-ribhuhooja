@@ -96,7 +96,7 @@ game_t* game_init(FILE* mapfile){
     game->goldRemain = GoldTotal;// set the gold remaining in the game to GoldTotal.
 
 
-    // initialize gold and set it randomly on the map
+    // initialize gold and set it randomly on the map. 
     gold_init(game->masterGrid, game);
 
     // initialize player 
@@ -110,8 +110,8 @@ game_t* game_init(FILE* mapfile){
 }
 
 
-// to add a player to the game
-void game_addPlayer(game_t* game, player_t* player){// how to check if the player was already in array
+// to add a player to the game.Check game.h for more information.
+void game_addPlayer(game_t* game, player_t* player){
     if (game != NULL || player != NULL){
         if (game->numPlayer < 26){
             game->players[game->numPlayer] = player;
@@ -123,19 +123,49 @@ void game_addPlayer(game_t* game, player_t* player){// how to check if the playe
     }
 }
 
+// to remove player from the game. Check game.h for more information.
+void game_removePlayer(game_t* game, player_t* player){
+    if (game != NULL || player != NULL){
+        player_t* player = game_findPlayer(game,player->address);
+        if(player == NULL){
+            flogv(stderr, "Cannot remove a player that is not in players array.\n");
+            return;
+        }
+        player_sendMessage(player,"QUIT Thanks for playing!\n");
+        player->isActive = false;
+    }
 
-// to add a spectator to the game 
-void game_addspectator(game_t* game, addr_t* address){
+}
+
+// to add a spectator to the game. Check game.h for more information.
+void game_addSpectator(game_t* game, addr_t* address){
     if (game != NULL){
         if (game->spectator != NULL){ // it means that there is already a spepctator in the game
             spectator_sendMessage(game->spectator, "QUIT You have been replaced by a new spectator.\n");
             spectator_delete(game->spectator);
         }
-        spectator_new(address);
+        game-> spectator = spectator_new(address);
     }
 }
 
-// to get the players array 
+// to remove spectator from the game. Check game.h for more information.
+void game_removeSpectator(game_t* game, addr_t* address){
+    if (game != NULL || address != NULL){
+
+        // to check if the spectator is already in the game
+        spectator_t* spectator = game->spectator;
+        if (!(message_eqAddr(*spectator->address, *address))){
+            flogv(stderr,"cannot remove a spectator that is not in the game.\n");
+            return;
+        }
+        spectator_sendMessage(spectator,"QUIT Thanks for watching!\n");
+        spectator_delete(spectator);
+        game->spectator = NULL;
+    }
+}
+
+
+// to get the players array. Check game.h for more information.
 player_t** game_getPlayers(game_t* game){
     if (game == NULL){
         flogv(stderr, "Cannot get the players array of null game.\n");
@@ -143,8 +173,17 @@ player_t** game_getPlayers(game_t* game){
     return game->players;
 }
 
-// to find a player by its address
-player_t* game_findPlayer(game_t* game, addr_t address){
+// to get the spectator. Check game.h for more information.
+spectator_t* game_getSpectator(game_t* game){
+    if (game == NULL){
+        flogv(stderr, "Cannot get the spectator of null game.\n");
+    }
+    return game->spectator;
+}
+
+
+// to find a player by its address. Check game.h for more information.
+player_t* game_findPlayer(game_t* game, addr_t* address){
     if (game = NULL){
         flogv(stderr, "Cannot find player in null game");
         return NULL;
@@ -153,7 +192,7 @@ player_t* game_findPlayer(game_t* game, addr_t address){
         player_t* player;
         for (int i = 0; i < game->numPlayer; i++){
             player = game->players[i];
-            if (message_eqAddr(player->address, address)){
+            if (message_eqAddr(*player->address, *address)){
                 return player;
             }
         }
@@ -163,7 +202,7 @@ player_t* game_findPlayer(game_t* game, addr_t address){
     }
 }
 
-// to delete everything in the game that was initialized before
+// to delete everything in the game that was initialized before. Check game.h for more information. 
 void game_over(game_t* game){
 
     /************* delete players ************/
@@ -180,11 +219,4 @@ void game_over(game_t* game){
     grid_delete(game->masterGrid);
     // free game structure
     mem_free(game);
-
 }
-
-
-
-
-
-

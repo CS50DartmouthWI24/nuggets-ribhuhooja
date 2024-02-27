@@ -22,8 +22,8 @@
 // to create a new player. Check player.h for more information 
 player_t* player_new (grid_t* playerGrid, addr_t* address, int x, int y, char* name, char letter ){
 
-    player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player");
-    player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player");
+    player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player.\n");
+    player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player.\n");
     strcpy(player->name, name); // to make a copy of the name for player.
     // setting the atributes to players structure
     player->letter = letter;

@@ -48,8 +48,8 @@ static void initializeTerminal(void);
   // QUIT explanation
   // ERROR explanation
 
-static void handleGRID(const char* message, void* arg);
-// static void handleGOLD(const char* message, void* arg);
+// static void handleGRID(const char* message, void* arg);
+static void handleGOLD(const char* message, void* arg);
 // static void handleQUIT(const char* message, void *arg);
 // static void handleERROR(const char* message);
 // static void handleDISPLAY(const char* message, void* arg);
@@ -57,39 +57,37 @@ static void handleGRID(const char* message, void* arg);
 int
 main(const int argc, char* argv[])
 {
-  
-  // check if we can initialize the message
-  if (message_init(NULL) == 0) {
+  if (message_init(NULL) == 0) { // check if we can initialize the message
     fprintf(stderr, "Error: could not initialize message log");
     return 1; 
   }
 
-  clientData_t cData;
-  // parse arguments to create the client
-  int errorParseArgs = parseArgs(argc, argv, &cData);
-
+  clientData_t cData; // set up client data
+ 
+  int errorParseArgs = parseArgs(argc, argv, &cData); // parse arguments
   if (errorParseArgs != 0){
     return errorParseArgs;
   }
   
-  
-  // initializes a screen
-  initializeTerminal();
-
-  char* temp = "GRID 81 30";
-  handleGRID(temp, &cData);
+  initializeTerminal(); // initializes a screen
 
   // set up arguments after parsing
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
+  (&cData)->port = atoi(argv[2]);
+  addr_t server; 
 
-  addr_t server;
-  if (!message_setAddr(serverHost, serverPort, &server)) {
+
+  char* temp = "GOLD 3 5 9";
+  handleGOLD(temp, &cData);
+
+  // create server address
+  if (!message_setAddr(serverHost, serverPort, &server)) { 
     fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 4; // bad hostname/port
   }
 
-  printf("Please send your mesages below:\n");
+  // listen for and send messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
   // shut down the message module
@@ -120,44 +118,30 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     return 3; // bad hostname/port
   }
   
-  // if only three arguments- send a SPEC message (for spectator)
-  if (argc == 3){
+  if (argc == 3){ // if only three arguments- spectator
     
-    // malloc space for a message
-    char* message = malloc(sizeof(char) * 9);
+    char* message = malloc(sizeof(char) * 9); // malloc space for message
+    sprintf(message, "SPECTATE"); // print into the message SPECTATE
+    cData->spectator = true; // flag the cData struct to turn on spectator
+    message_send(server, message); // send the message
+    free(message); // free the message
 
-    // print into the message SPECTATE
-    sprintf(message, "SPECTATE");
+  }
 
-    // flag the cData struct to turn on spectator
-    cData->spectator = true; 
+  
+  if (argc == 4){ // if 4 arguments, the last is the playerName
 
-    // send the message
-    message_send(server, message);
-
-    // free the message
-    free(message);
+    char* playerName = argv[3]; // retrive the playerName
+    char* message = malloc(sizeof(char) * 
+    (strlen("PlAY ") + strlen(playerName) + 1)); // malloc space for message
+    sprintf(message, "PLAY %s", playerName); // print into the message
+    cData->spectator = false; // turn off spectator
+    message_send(server, message); // send message to server
+    free(message); // free the message
     
   }
 
-  // if 4 arguments, the last is the playerName
-  if (argc == 4){
-
-    // retrive the playerName
-    char* playerName = argv[3];
-
-    // malloc space for the message
-    char* message = malloc(sizeof(char) * (strlen("PlAY ") + strlen(playerName) + 1));
-
-    // print into the message
-    sprintf(message, "PLAY %s", playerName);
-    cData->spectator = true; 
-    message_send(server, message);
-    free(message);
-    
-  }
-
-  return 0;
+  return 0; // return success
 
 }
 
@@ -235,65 +219,93 @@ static void initializeTerminal(void){
 }
 
 
-/**************** handleGRID() ****************/
-static void handleGRID(const char* message, void* arg){
+// /**************** handleGRID() ****************/
+// static void handleGRID(const char* message, void* arg){
 
-  // cast the client data to an argument
-  clientData_t* cData = (clientData_t*) arg;
+//   // cast the client data to an argument
+//   clientData_t* cData = (clientData_t*) arg;
+
+//   // initialize data to read in
+//   int rows;
+//   int cols;
+
+//   sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
+
+
+//   int nrows;
+//   int ncols;
+
+//   getmaxyx(stdscr, nrows, ncols);
+
+//   cData->rows = rows;
+//   cData->cols = cols;
+
+//   while (nrows < rows || ncols < cols){
+//     printw("Your window must be at least %d high and %d wide \n", rows, cols);
+//     printw("Resize your window then press Space. \n");
+
+//     if (getch() == ' ') {
+//       getmaxyx(stdscr, nrows, ncols);
+//     }
+    
+//     // refresh screen
+//     clear();
+//     refresh();
+//   }
+  
+//   refresh();
+// }
+
+/**************** handleGOLD() ****************/
+static void handleGOLD(const char* message, void* arg){
+
+  clientData_t* cData = (clientData_t*) arg; // cast client from arg
 
   // initialize data to read in
-  int rows;
-  int cols;
+  int nuggets;
+  int purse;
+  int remaining;
 
-  sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
+  // read data from the message
+  sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining); 
+  cData->purse = purse;
 
-
-  int nrows;
-  int ncols;
-
-  getmaxyx(stdscr, nrows, ncols);
-
-  cData->rows = rows;
-  cData->cols = cols;
-
-
-  while (nrows < rows || ncols < cols){
-    refresh();
-    getmaxyx(stdscr, nrows, ncols);
+  if (cData->spectator) { // if client is spectator, only print remaining nuggets
+    move(0,0);
     
-  
+    int lenMessage = strlen("Spectator: nuggets unclaimed. Play at plank") + 20;
+    char message[lenMessage];
 
-    sleep(2);
-  }
-  
-  printf("screen increased");
-  if (rows >0 && cols >0){
-    // adjust window's size to fit map
-    fprintf(stderr, "GRID message received: GRID %d %d \n", cData->rows, cData->cols);
-  }
+    // print spectate message
+    sprintf(message, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
+    addstr(message);
+    refresh();
 
-  refresh();
+  }
+  else {
+
+    // print gold message
+    move(0,0);
+    int lenMessage = strlen("Player has nuggets (nuggets unclaimed). GOLD received:") + 30;
+    char message[lenMessage];
+    sprintf(message, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
+    addstr(message);
+    refresh();
+      
+  } 
 }
-
-// /**************** handleGOLD() ****************/
-// static void handleGOLD(const char* message, void* arg){
-  
-//   // initialize data to read in
-//   int nuggets;
-//   int purse;
-//   int remaining;
-
-//   // read data from the message
-//   sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining);
-// }
 
 // /**************** handleQUIT() ****************/
 // static void handleQUIT(const char* message, void *arg){
-
+//   // end the game
+//   nocbreak();
+//   endwin();
+//   exit(0);
 // }
 
 // /**************** handleERROR() ****************/
 // static void handleERROR(const char* message){
+  
 
 // }
 

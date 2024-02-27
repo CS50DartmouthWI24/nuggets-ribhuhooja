@@ -13,6 +13,7 @@
 #include "../support/log.h"
 #include "../support/message.h"
 #include <ncurses.h>
+#include <unistd.h>
 
 /**************** local types ****************/
 /*
@@ -51,7 +52,7 @@ static void handleGRID(const char* message, void* arg);
 // static void handleGOLD(const char* message, void* arg);
 // static void handleQUIT(const char* message, void *arg);
 // static void handleERROR(const char* message);
-static void handleDISPLAY(const char* message, void* arg);
+// static void handleDISPLAY(const char* message, void* arg);
 
 int
 main(const int argc, char* argv[])
@@ -70,17 +71,13 @@ main(const int argc, char* argv[])
   if (errorParseArgs != 0){
     return errorParseArgs;
   }
-
-  char* temp = "DISPLAY\nooooo\naaaaa\nbbbbb\nccccc\nlllll\nmmmmm\n_____";
-  cData.cols = 5;
-
-  cData.rows = 7;
   
   
   // initializes a screen
   initializeTerminal();
 
-  handleDISPLAY(temp, &cData);
+  char* temp = "GRID 81 30";
+  handleGRID(temp, &cData);
 
   // set up arguments after parsing
   const char* serverHost = argv[1];
@@ -240,15 +237,36 @@ static void initializeTerminal(void){
 
 /**************** handleGRID() ****************/
 static void handleGRID(const char* message, void* arg){
+
+  // cast the client data to an argument
   clientData_t* cData = (clientData_t*) arg;
+
   // initialize data to read in
   int rows;
   int cols;
 
   sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
+
+
+  int nrows;
+  int ncols;
+
+  getmaxyx(stdscr, nrows, ncols);
+
   cData->rows = rows;
   cData->cols = cols;
 
+
+  while (nrows < rows || ncols < cols){
+    refresh();
+    getmaxyx(stdscr, nrows, ncols);
+    
+  
+
+    sleep(2);
+  }
+  
+  printf("screen increased");
   if (rows >0 && cols >0){
     // adjust window's size to fit map
     fprintf(stderr, "GRID message received: GRID %d %d \n", cData->rows, cData->cols);
@@ -280,54 +298,54 @@ static void handleGRID(const char* message, void* arg){
 // }
 
 
-/**************** handleDISPLAY() ****************/
-static void handleDISPLAY(const char* message, void* arg){
+// /**************** handleDISPLAY() ****************/
+// static void handleDISPLAY(const char* message, void* arg){
 
-  clientData_t* cData = (clientData_t*) arg;
+//   clientData_t* cData = (clientData_t*) arg;
 
-  // copy the message so we can edit it
-  char* messageCopy = malloc(strlen(message) + 1);
-  strcpy(messageCopy, message);
+//   // copy the message so we can edit it
+//   char* messageCopy = malloc(strlen(message) + 1);
+//   strcpy(messageCopy, message);
 
-  // get the map by incrementing the starting pointer
-  char* map = messageCopy + strlen("DISPLAY\n"); 
+//   // get the map by incrementing the starting pointer
+//   char* map = messageCopy + strlen("DISPLAY\n"); 
 
-  // varaiables for looping
-  int cols = cData->cols;
-  int currY = 0; 
-	int currX = 0; 
-	int j = 0; 
+//   // varaiables for looping
+//   int cols = cData->cols;
+//   int currY = 0; 
+// 	int currX = 0; 
+// 	int j = 0; 
 
-	// loop through the map
-	for (int i = 0; map[i] != '\0'; i++) {
+// 	// loop through the map
+// 	for (int i = 0; map[i] != '\0'; i++) {
 
-    // check if at the end of a line or at the end of screen
-		if (map[i] == '\n' || j >= cols) {
+//     // check if at the end of a line or at the end of screen
+// 		if (map[i] == '\n' || j >= cols) {
 
-			// reset back to left of line, but go one line down
-			currY++;
-			currX = 0;
-			j = 0; // reset cols
-		} 
-    else {
+// 			// reset back to left of line, but go one line down
+// 			currY++;
+// 			currX = 0;
+// 			j = 0; // reset cols
+// 		} 
+//     else {
 
-			// add char at the currX and currY and mv there
-			mvaddch(currY, currX, map[i]);
-			currX++;
-			j++;
+// 			// add char at the currX and currY and mv there
+// 			mvaddch(currY, currX, map[i]);
+// 			currX++;
+// 			j++;
 
-		}
-		if (map[i] == '\n') { 
-			j = 0;
-		}
-	}
+// 		}
+// 		if (map[i] == '\n') { 
+// 			j = 0;
+// 		}
+// 	}
 
-	// Refresh the screen to show changes
-	refresh();                              
+// 	// Refresh the screen to show changes
+// 	refresh();                              
 
-  // free the map
-  free(messageCopy);
-  // free(map);
+//   // free the map
+//   free(messageCopy);
+//   // free(map);
 
-}
+// }
 

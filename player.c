@@ -166,5 +166,5 @@ void player_sendMessage(player_t* player, char* message){
         flog_v(stderr, "Cannot send message for null player.\n");
         return;
     }
-    message_send(player->address, message);
+    message_send(*player->address, message);
 }

@@ -39,6 +39,27 @@ main()
   printf("char at (3,1) is %c\n", grid_charAt(grid, 3, 1));
   printf("char at (4,3) is %c\n", grid_charAt(grid, 4, 3));
 
+  printf("Test: adding player, getting player to move\n\n");
+  grid_addPlayer(grid, 5, 2, '@');
+  grid_toMap(grid, stdout);
+  printf("\n\n");
+  grid_movePlayer(grid, 5, 2, 0, 1); // should fail
+  grid_toMap(grid, stdout);
+  printf("\n\n");
+  grid_movePlayer(grid, 5, 2, -1, 0);
+  grid_toMap(grid, stdout);
+  printf("\n\n");
+
+  printf("Test: The hallway problem, also more movement checks\n\n");
+  grid_movePlayer(grid, 4, 2, 0, 1); 
+  grid_movePlayer(grid, 4, 3, 0, 1); 
+  grid_toMap(grid, stdout);
+
+  // TODO: Check
+  // addPlayer, movePlayer, removePlayer
+  // nuggetsPopulate, goldAt, collectGold
+  // visibility - probably needs to be checked separately 
+
 
 
   grid_delete(grid);

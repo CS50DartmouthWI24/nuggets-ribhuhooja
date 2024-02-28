@@ -408,18 +408,15 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   // player can only move to a room spot or a passage spot, or a gold spot
   // or there can be another player there, in which case we swap them
+  // TODO: Currently does not support another player standing there
   char moveSpot = grid_charAt(grid, x_new, y_new);
   if (!(moveSpot == mapchars_roomSpot 
         || moveSpot == mapchars_passageSpot
-        || moveSpot == mapchars_gold
-        || moveSpot == mapchars_player)){
+        || moveSpot == mapchars_gold)){
     return -1;
   }
 
   //TODO: add swap code
-  if (moveSpot == mapchars_player){
-    return -1;
-  }
 
   int gold = 0;
   if (moveSpot == mapchars_gold){
@@ -606,17 +603,23 @@ setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar)
 
   char* charString = calloc(2, sizeof(char));
   mem_assert(charString, "out of memory\n");
-
-  // we can't insert a character as an item, we must insert a pointer to one
-  // We can't just use the memory location of new char as that's on the stack
-  char* pNewChar = malloc(sizeof(char));
-  mem_assert(pNewChar, "out of memory\n");
-  *pNewChar = newChar;
-
   charString[0] = playerChar;
   charString[1] = '\0';
 
-  hashtable_insert(grid->playersStandingOn, charString, pNewChar);
+  // We can't insert a char; we need to insert a pointer to one
+  // We can't just use the memory location of new char as that's on the stack
+
+  hashtable_t* ht = grid->playersStandingOn;
+  char* pChar = hashtable_find(ht, charString);
+  if (pChar == NULL){
+  pChar = malloc(sizeof(char));
+  mem_assert(pChar, "out of memory\n");
+  hashtable_insert(ht, charString, pChar);
+  } 
+
+  *pChar = newChar;
+  
+
   free(charString); // the key got copied
 }
 

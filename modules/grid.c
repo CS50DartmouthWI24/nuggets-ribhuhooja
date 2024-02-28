@@ -84,7 +84,8 @@ grid_t* grid_fromMap(FILE* mapFile){
   // number of characters read before reading a newline
   string[numcols] = '\n';
 
-  int numrows = 1;  // the number of rows is equal to the number of newlines read
+  // the number of rows is equal to the number of newlines read
+  int numrows = 1;  
   int i = numcols + 1;
   while ((readChar = fgetc(mapFile)) != EOF){
     if (readChar == '\n'){
@@ -103,7 +104,11 @@ grid_t* grid_fromMap(FILE* mapFile){
 
   // do some size checks; i should be numrows * (numcols + 1)
   if (i != numrows * (numcols + 1)){
-    fprintf(stderr, "inconsitent map read\n");
+    fprintf(stderr, "inconsistent map read:\n");
+    fprintf(stderr, "Read %d rows and %d columns\n", numrows, numcols);
+    fprintf(stderr, "Read %d characters\n", i);
+    fprintf(stderr, "Expected rows * (columns + 1) = %d characters\n", 
+                                                     numrows * (numcols + 1));
     free(string);
     return NULL;
   }

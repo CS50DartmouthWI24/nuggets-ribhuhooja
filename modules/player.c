@@ -105,10 +105,6 @@ char* player_getName(const player_t* player){
     return player->name;
 }
 
-<<<<<<< HEAD:player.c
-// to get the letter of the player. Check player.h for more information 
-char player_getLetter(const player_t* player){
-=======
 /****************** player_getChar ****************************
  *
  * see player.h for description and usage
@@ -117,19 +113,10 @@ char player_getLetter(const player_t* player){
 char
 player_getChar(const player_t* player)
 {
->>>>>>> main:modules/player.c
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return -1;
     }
-<<<<<<< HEAD:player.c
-    return player->letter;
-
-}
-
-// to get the address of the player. Check player.h for more information 
-addr_t* player_getAddress(const player_t* player){
-=======
     return player->character;
 }
 
@@ -141,7 +128,6 @@ addr_t* player_getAddress(const player_t* player){
 addr_t*
 player_getAddress(const player_t* player)
 {
->>>>>>> main:modules/player.c
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return NULL; // what to return when player is null ------------------------------------------ do we even need this?---------
@@ -191,16 +177,11 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid){
         flog_v(stderr, "Cannot set grid for null player.\n");
         return;
     }
-<<<<<<< HEAD:player.c
-    //mem_assert_const(visibleGrid, "Failed to free memory for grid"); /// should I call delete grid function-------------
-    delete_grid(player->visibleGrid);
-=======
 
     if (player->visibleGrid != NULL){
       grid_delete(player->visibleGrid);
     }
 
->>>>>>> main:modules/player.c
     player->visibleGrid = visibleGrid;
 }
 
@@ -210,10 +191,6 @@ void player_sendMessage(player_t* player, char* message){
         flog_v(stderr, "Cannot send message for null player.\n");
         return;
     }
-<<<<<<< HEAD:player.c
-    message_send(*player->address, message);
-=======
 
     message_send(*(player->address), message);
->>>>>>> main:modules/player.c
 }

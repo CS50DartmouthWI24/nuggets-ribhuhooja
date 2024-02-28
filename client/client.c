@@ -173,7 +173,6 @@ static bool handleInput(void* arg) {
 
     } 
     else {
-
       return false;
 }
   sprintf(message, "KEY %c", key);
@@ -250,9 +249,9 @@ static void handleGRID(const char* message, void* arg){
 
   while (nrows < rows || ncols < cols){
     printw("Your window must be at least %d high and %d wide \n", rows, cols);
-    printw("Resize your window then press Space. \n");
+    printw("Resize your window then press 1 when resized. \n");
 
-    if (getch() == ' ') {
+    if (getch() == '1') {
       getmaxyx(stdscr, nrows, ncols);
     }
     
@@ -282,7 +281,6 @@ static void handleGOLD(const char* message, void* arg){
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
     mvprintw(0,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
-
     refresh();  
 
   }

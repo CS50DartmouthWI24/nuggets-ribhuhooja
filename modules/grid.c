@@ -522,6 +522,51 @@ grid_toMap(grid_t* grid, FILE* fp)
   free(toPrint);
 }
 
+/****************** grid_debugGoldNumbersDisplay **********
+ *
+ * see grid.h for usage and description
+ *
+ */
+char*
+grid_debugGoldNumbersDisplay(grid_t* grid)
+{
+  if (grid == NULL){
+    return NULL;
+  }
+
+  char* string = grid_getDisplay(grid);
+  
+  for (int i = 0; string[i] != '\0'; ++i){
+    if (string[i] == mapchars_gold){
+      int num = counters_get(grid->nuggets, i);
+      string[i] = num + '0'; // convert to character version of integer
+    }
+  }
+
+  return string;
+}
+
+ /****************** grid_DebugGoldNumbersToMap ***********
+ *
+ * see grid.h for usage and description
+ *
+ */
+void
+grid_debugGoldNumbersToMap(grid_t* grid, FILE* fp)
+{
+  if (grid == NULL || fp == NULL){
+    return;
+  }
+
+  char* toPrint = grid_debugGoldNumbersDisplay(grid);
+  if (toPrint == NULL){
+    return;
+  }
+
+  fputs(toPrint, fp);
+  free(toPrint);
+} 
+
 
 /****************** indexOf *******************************
  *

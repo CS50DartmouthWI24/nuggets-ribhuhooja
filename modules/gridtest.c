@@ -77,6 +77,8 @@ main()
   grid_nuggetsPopulate(grid, 5, 10, 30);
   grid_toMap(grid, stdout);
   printf("\nDebug: See the gold amounts\n");
+  grid_debugGoldNumbersToMap(grid, stdout);
+  printf("\n");
 
 
 

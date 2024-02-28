@@ -12,7 +12,7 @@ const char mapchars_solidRock = ' ';
 const char mapchars_horizontalBoundary = '-';
 const char mapchars_verticalBuondary = '|';
 const char mapchars_cornerBoundary = '+';
-const char mapchars_room = '.';
+const char mapchars_roomSpot = '.';
 const char mapchars_passageSpot = '#';
 const char mapchars_gold = '*';
 

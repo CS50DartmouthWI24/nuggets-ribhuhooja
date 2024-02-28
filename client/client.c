@@ -364,4 +364,3 @@ static void handleDISPLAY(const char* message, void* arg){
   // free(map);
 
 }
-

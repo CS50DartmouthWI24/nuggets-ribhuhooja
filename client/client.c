@@ -70,11 +70,16 @@ main(const int argc, char* argv[])
   addr_t server; 
 
 
-  char* grid = "GRID 3 4";
+  char* grid = "GRID 16 9";
   handleGRID(grid, &cData);
 
-  char* display = "DISPLAY\naaaa\nbbbb\nccccc";
+  char* display = "DISPLAY\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789";
   handleDISPLAY(display, &cData);
+
+
+  char* gold =  "GOLD 0 5 3";
+
+  handleGOLD(gold, &cData);
 
   // create server address
   if (!message_setAddr(serverHost, serverPort, &server)) { 
@@ -188,8 +193,6 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage() ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-
-
   if(message == NULL) {
       fprintf(stderr, "ERROR message is invalid \n");
       return false;
@@ -211,8 +214,9 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     handleERROR(message);
   } 
   else {
-      printf("Error: passed in an erroneous message.\n");
-      refresh();
+    refresh();
+     mvprintw((&cData)->rows,0, "Error: passed in an erroneous message.\n");
+
   }
   return false;
 }
@@ -238,18 +242,21 @@ static void handleGRID(const char* message, void* arg){
 
   sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
 
-
+  // initialize rows
   int nrows;
   int ncols;
 
+  // get current terminal size
   getmaxyx(stdscr, nrows, ncols);
 
+  // store needed size in cData
   cData->rows = rows;
   cData->cols = cols;
 
-  while (nrows < rows || ncols < cols){
-    printw("Your window must be at least %d high and %d wide \n", rows, cols);
-    printw("Resize your window then press 1 when resized. \n");
+  // 
+  while (nrows < rows+1 || ncols < cols+1){
+    printw("Window size requirements: %d rows by %d cols \n", rows+1, cols+1);
+    printw("Please resize your window and press 1 when completed \n");
 
     if (getch() == '1') {
       getmaxyx(stdscr, nrows, ncols);
@@ -280,18 +287,18 @@ static void handleGOLD(const char* message, void* arg){
 
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
-    mvprintw(0,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
+    mvprintw((cData)->rows,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
     refresh();  
 
   }
   else if (cData->nuggets == 0) {  
     move(0,0);
-    mvprintw(0,0, "Player %s has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
+    mvprintw((cData)->rows,0, "Player %s has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
     refresh();  
   }
   else {
     move(0,0);
-    mvprintw(0,0, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
+    mvprintw((cData)->rows,0, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }
@@ -364,3 +371,25 @@ static void handleDISPLAY(const char* message, void* arg){
   // free(map);
 
 }
+
+// static logStderr(char* message){
+
+//   // prefix to start the log
+//   const char* prefix = ""; 
+
+//   // size_t for size of new message
+//   int newSize = strlen(prefix) + strlen(message) + 1; 
+
+//   // allocate memory for message to log
+//   char* newMessage = (char*)malloc(newSize);
+ 
+//   // print into message
+//   sprintf(newMessage, "%s%s", prefix, message);
+
+//   // print message to stderr
+//   fprintf(stderr, "%s\n", newMessage);
+
+//   // Free the allocated memory
+//   free(newMessage);
+
+// }

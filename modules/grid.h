@@ -10,7 +10,6 @@
 
 #include <stdbool.h>
 #include "counters.h"
-#include "player.h"
 
 /****************** global types *************************/
 typedef struct grid grid_t;
@@ -61,7 +60,7 @@ void grid_delete(grid_t* grid);
  *  is querier. The base grid will return the player letter, and the
  *  player's own map will return an @.
  */
-char grid_charAt(grid_t* grid, int x, int y);
+char grid_charAt(grid_t* grid, const int x, const int y);
 
 /****************** grid_goldAt ***************************
  *
@@ -108,7 +107,9 @@ int grid_goldAt(grid_t* grid, const int x, const int y);
  *  - charAt
  *
  */
-grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
+grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,
+                                               const int px,
+                                               const int py);
 
 /****************** grid_addPlayer ************************
  *
@@ -135,46 +136,50 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
  *  character is. It is upto game to check that the character being 
  *  given here is valid.
  */
-bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
+bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar);
 
 /****************** grid_movePlayer ***********************
  *
  * Moves a player
  *
  * Caller provides:
- *  valid pointer to grid and player
+ *  valid pointer to grid, valid player coordinates inside grid
  *  valid move directions - both x_move and y_move must be 0, 1 or -1
  * We do:
  *  update the grid to represent the player having moved.
+ * We do NOT:
+ *  update the player's internal state. That is handled by the game
  * We return:
  *  -1 if the operation failed
  *  the amount of gold collected if the operation succeeded
  */
-int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
+int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
+                                                              const int y_move);
 
 /****************** grid_removePlayer *********************
  *
  * removes a player from the grid
  *
  * Caller provides:
- *  valid pointer to grid, and a player inside the grid
+ *  valid pointer to grid
+ *  valid coordinates to player in grid
  * We do:
  *  remove the player from the grid
  * We return:
  *  true if the operation succeeded
  *  false if the operation failed
  */
-bool grid_removePlayer(grid_t* grid, player_t* player);
+bool grid_removePlayer(grid_t* grid, const char playerChar, const int px,
+                                                            const int py);
 
 /****************** grid_collectGold **********************
  *
  * Makes the player collect the gold at its location
  *
  * Caller provides:
- *  valid pointer to grid and player
- * We do:
- *  Add the gold to the player
+ *  valid pointer to grid and valid coordiantes inside grid
  * We do NOT:
+ *  Update the amount of gold stored inside the player. That must be done by game.
  *  Update the grid character, because the player moved onto that character
  * We return:
  *  The amount of gold collected
@@ -182,7 +187,7 @@ bool grid_removePlayer(grid_t* grid, player_t* player);
  *  The responsibility for updating game state and sending messages is NOT
  *  handled by this module
  */
-int grid_collectGold(grid_t* grid, player_t* player);
+int grid_collectGold(grid_t* grid, const int px, const int py);
 
 /****************** grid_getDisplay **************************
  *

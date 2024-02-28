@@ -13,34 +13,36 @@
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
-#include "player.h"
 #include "grid.h"
 #include "mapchars.h"
 
 /****************** types ********************************/
-typedef struct grid_t {
+typedef struct grid {
   char* string;         // the string representation of the grid
   int numrows;          // number of rows
   int numcols;          // number of columns
   counters_t* nuggets;  // number of nuggets at a location, keyed by string index
   hashtable_t* playersStandingOn;   // what character each player is standing on
-}
+} grid_t;
 
 /****************** file-local global variables **********/
 /* none */
 
 /****************** file-local global constants **********/
-const int initGridStringSize = 2000; // the initial string size allocated when reading
-                                     // a grid from a file
+// the initial string size allocated when reading a grid from a file
+static const int initGridStringSize = 2000; 
+static const int numSlotsPlayerHt = 26;
 
 /****************** local function prototypes ************/
 static inline int indexOf(const int x, const int y, const int numcols);
-static inline bool isValidCoordinate(const int x, const int y, const int numrows
+static inline bool isValidCoordinate(const int x, const int y, const int numrows,
                                                                const int numcols);
 static bool isVisible(grid_t* grid, const int px, const int py, const int x, 
                                                                 const int y);
-static char getPlayerStandingOn(grid_t* grid, player_t* player);
-static void setPlayerStandingOn(grid_t* grid, player_t* player, const char newChar);
+static char getPlayerStandingOn(grid_t* grid, const char playerChar);
+static void setPlayerStandingOn(grid_t* grid, const char playerChar,
+                                              const char newChar);
+static void freeCharItemdelete(void* pChar);
 
 /****************** global function prototypes ***********/
 /* see grid.h for description and usage */
@@ -76,7 +78,7 @@ grid_t* grid_fromMap(FILE* mapFile){
       mem_assert(string, "out of memory\n");
     }
     string[numcols] = readChar;
-    ++numCols;
+    ++numcols;
   }
   // at this point readChar is a newline, and numcols is the 
   // number of characters read before reading a newline
@@ -95,7 +97,7 @@ grid_t* grid_fromMap(FILE* mapFile){
       string = realloc(string, stringBufsize * sizeof(char));
       mem_assert(string, "out of memory\n");
     }
-    string[i] = readchar;
+    string[i] = readChar;
     ++i;
   }
 
@@ -122,7 +124,7 @@ grid_t* grid_fromMap(FILE* mapFile){
   counters_t* ctrs = counters_new();
   mem_assert(ctrs, "out of memory; could not allocate space for nuggets counter\n");
 
-  hashtable_t* ht = hashtable_new();
+  hashtable_t* ht = hashtable_new(numSlotsPlayerHt);
   mem_assert(ht, "out of memory; could not allocate space for player hashtable\n");
 
   new->nuggets = ctrs;
@@ -151,8 +153,8 @@ grid_delete(grid_t* grid)
     counters_delete(grid->nuggets);
   }
 
-  if (grid->playersStandingOn != NULL){
-    hashtable_delete(grid->playersStandingOn);
+  if (grid->playersStandingOn != NULL){ 
+    hashtable_delete(grid->playersStandingOn, freeCharItemdelete); 
   }
 
   free(grid);
@@ -165,7 +167,7 @@ grid_delete(grid_t* grid)
  *
  */
 char
-grid_charAt(grid_t* grid, int x, int y)
+grid_charAt(grid_t* grid, const int x, const int y)
 {
   // we do a lot of validity checking in this function
   // to avoid bad-indexing an array
@@ -194,7 +196,7 @@ grid_goldAt(grid_t* grid, const int x, const int y)
     return 0;
   }
 
-  return counters_get(nuggets, indexOf(x, y, grid->numcols));
+  return counters_get(grid->nuggets, indexOf(x, y, grid->numcols));
 }
 
 /****************** grid_generateVisibleGrid **************
@@ -203,59 +205,56 @@ grid_goldAt(grid_t* grid, const int x, const int y)
  *
  */
 grid_t*
-grid_generateVisibleGrid(grid_t* grid, player_t* player)
+grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int px,
+                                                                     const int py)
 {
-  if (grid == NULL || player == NULL){
+  if (grid == NULL){
     return NULL;
   }
 
-  int px = player_getX(player);
-  int py = player_getY(player);
   int numrows = grid->numrows;
   int numcols = grid->numcols;
 
-  if (!isValidCoordinate(px, py, numcols)){
+  if (!isValidCoordinate(px, py, numrows, numcols)){
       return NULL;
   }
 
   // this means that the visibility check has never been performed before
   // start off the player with all map spots blank i.e. solid rock
-  if (player->grid == NULL){
-    grid_t* new = malloc(sizeof(grid_t));
-    mem_assert(new, "out of memory; could not make new grid for visibility\n");
-
-    new->numrows = numrows;
-    new->numcols = numcols;
-    new->nuggets = NULL;   // NUGGETS INFO MUST NOT BE ACCESSED FROM PLAYER GRIDS
-
-    int len = numrows * (numcols + 1);
-    char* newString = calloc(len, sizeof(char));
-    for (int i = 0; i < len; ++i){
-      if (i % numcols == 0){
-        newString[i] = '\n';
-      } else {
-        newString[i] = mapchars_solidRock;
-      }
-    }
-    new->string = newString;
-  }
-
-  grid_t* pgrid = player->grid;
+  // if (player->grid == NULL){
+  //   grid_t* new = malloc(sizeof(grid_t));
+  //   mem_assert(new, "out of memory; could not make new grid for visibility\n");
+ 
+  //   new->numrows = numrows;
+  //   new->numcols = numcols;
+  //   new->nuggets = NULL;   // NUGGETS INFO MUST NOT BE ACCESSED FROM PLAYER GRIDS
+ 
+  //   int len = numrows * (numcols + 1);
+  //   char* newString = calloc(len, sizeof(char));
+  //   for (int i = 0; i < len; ++i){
+  //     if (i % numcols == 0){
+  //       newString[i] = '\n';
+  //     } else {
+  //       newString[i] = mapchars_solidRock;
+  //     }
+  //   }
+  //   new->string = newString;
+  // }
 
   for (int x = 0; x < numcols; ++x){
     for (int y = 0; y < numrows; ++y){
       //TODO: add history checking
       if (isVisible(grid, px, py, x, y)){
-        pgrid->string[indexOf(x, y, numcols)] = grid_charAt(grid, x, y);
+        currentlyVisibleGrid->string[indexOf(x, y, numcols)] = grid_charAt(grid, x, y);
       } else {
-        pgrid->string[indexOf(x, y, numcols)] = mapchars_solidRock;
+        currentlyVisibleGrid->string[indexOf(x, y, numcols)] = mapchars_solidRock;
       }
     }
   }
 
-  pgrid->string[indexOf(px, py, numcols)] = mapchars_player;
+  currentlyVisibleGrid->string[indexOf(px, py, numcols)] = mapchars_player;
 
-  return pgrid;
+  return currentlyVisibleGrid;
 }
 
 /****************** grid_addPlayer ************************
@@ -264,7 +263,7 @@ grid_generateVisibleGrid(grid_t* grid, player_t* player)
  *
  */
 bool
-grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar)
+grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar)
 {
   if (grid == NULL){
     return false;
@@ -275,12 +274,14 @@ grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar)
   }
 
   // we can only put a player at an empty room spot
-  if (grid_CharAt(grid, x, y) != mapchars_roomSpot){
+  if (grid_charAt(grid, x, y) != mapchars_roomSpot){
     return false;
   }
 
   grid->string[indexOf(x, y, grid->numcols)] = playerChar;
-  setPlayerStandingOn(grid, player, mapchars_roomSpot);
+  setPlayerStandingOn(grid, playerChar, mapchars_roomSpot);
+
+  return true;
 }
 
 /****************** grid_movePlayer ***********************
@@ -289,9 +290,10 @@ grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar)
  *
  */
 int
-grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
+grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
+                                                          const int y_move)
 {
-  if (grid == NULL || grid->string == NULL || player == NULL){
+  if (grid == NULL || grid->string == NULL){
     return -1;
   }
 
@@ -299,10 +301,9 @@ grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
     return -1;
   }
 
-  int x = player_getX(player);
-  int y = player_getY(player);
-  int x_new = x + x_move;
-  int y_new = y + y_move;
+  int x_new = px + x_move;
+  int y_new = py + y_move;
+  
 
   int numcols = grid->numcols;  // this is needed multiple times
 
@@ -325,22 +326,20 @@ grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
     return -1;
   }
 
-  player_setX(player, x_new);
-  player_setY(player, Y_new);
-
   int gold = 0;
   if (moveSpot == mapchars_gold){
-    gold = grid_collectGold(grid, player);
+    gold = grid_collectGold(grid, px, py);
   }
 
   // update string visuals - TODO: doesn't do swapping yet
-  int oldIndex = indexOf(x, y, numcols);
+  int oldIndex = indexOf(px, py, numcols);
   int newIndex = indexOf(x_new, y_new, numcols);
   char* string = grid->string;
+  char playerChar = string[oldIndex];
 
-  string[oldIndex] = getPlayerStandingOn(grid, player);
-  setPlayerStandingOn(grid, player, string[newIndex]);
-  string[newIndex] = player_getChar(player);
+  string[oldIndex] = getPlayerStandingOn(grid, playerChar);
+  setPlayerStandingOn(grid, playerChar, string[newIndex]);
+  string[newIndex] = playerChar; 
 
   return gold;
 }
@@ -351,21 +350,18 @@ grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move)
  *
  */
 bool
-grid_removePlayer(grid_t* grid, player_t* player)
+grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py)
 {
-  if (grid == NULL || player == NULL){
+  if (grid == NULL){
     return false;
   }
-
-  int px = player_getX(player);
-  int py = player_getY(player);
 
   if (!isValidCoordinate(px, py, grid->numrows, grid->numcols)){
     return false;
   }
 
-  grid->string[indexOf(px, py, numcols)] = getPlayerStandingOn(grid, 
-                                                              player_getChar(player));
+  grid->string[indexOf(px, py, grid->numcols)] = getPlayerStandingOn(grid,
+                                                                     playerChar);
 
   return true;
 }
@@ -377,22 +373,20 @@ grid_removePlayer(grid_t* grid, player_t* player)
  *
  */
 int
-grid_collectGold(grid_t* grid, player_t* player)
+grid_collectGold(grid_t* grid, const int px, const int py)
 {
-  if (grid == NULL ||grid->nuggets == NULL || player == NULL){
+  if (grid == NULL ||grid->nuggets == NULL){
     return 0;
   }
 
-  int x = player_getX(player);
-  int y = player_getY(player);
-
-  if (!isValidCoordinate(x, y, grid->numrows, grid->numcols)){
+  if (!isValidCoordinate(px, py, grid->numrows, grid->numcols)){
     return 0;
   }
 
-  int gold = grid_goldAt(grid, x, y);
-  player_setGold(player, player_getGold(player) + gold);
-  counters_set(grid->nuggets, indexOf(x, y, grid->numcols), 0);
+  int gold = grid_goldAt(grid, px, py);
+  counters_set(grid->nuggets, indexOf(px, py, grid->numcols), 0);
+
+  return gold;
 }
 
 /****************** grid_getDisplay **************************
@@ -480,23 +474,27 @@ isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
  * returns the character that the player is standing on
  *
  */
-static void
-getPlayerStandingOn(grid_t* grid, player_t* player)
+static char
+getPlayerStandingOn(grid_t* grid, const char playerChar)
 {
-  if (grid == NULL || player == NULL){
+  if (grid == NULL){
     return mapchars_roomSpot;
   }
 
   char* charString = calloc(2, sizeof(char));
   mem_assert(charString, "out of memory\n");
 
-  charString[0] = player_getChar(player);
+  charString[0] = playerChar;
   charString[1] = '\0';
 
-  char result = hashtable-get(grid->playersStandingOn, charString);
+  char* pResult = hashtable_find(grid->playersStandingOn, charString);
   free(charString);
 
-  return result;
+  if (pResult == NULL){
+    return mapchars_roomSpot;
+  }
+
+  return *pResult;
 }
 
 /****************** setPlayerStandingOn *******************
@@ -505,20 +503,40 @@ getPlayerStandingOn(grid_t* grid, player_t* player)
  *
  */
 static void
-setPlayerStandingOn(grid_t* grid, player_t* player, const char newChar)
+setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar)
 {
-  if (grid == NULL || player == NULL){
+  if (grid == NULL){
     return;
   }
 
   char* charString = calloc(2, sizeof(char));
   mem_assert(charString, "out of memory\n");
 
-  charString[0] = player_getChar(player);
+  // we can't insert a character as an item, we must insert a pointer to one
+  // We can't just use the memory location of new char as that's on the stack
+  char* pNewChar = malloc(sizeof(char));
+  mem_assert(pNewChar, "out of memory\n");
+  *pNewChar = newChar;
+
+  charString[0] = playerChar;
   charString[1] = '\0';
 
-  hashtable_insert(grid->playersStandingOn, charString, newChar);
-  free(charString);
+  hashtable_insert(grid->playersStandingOn, charString, pNewChar);
+  free(charString); // the key got copied
 }
 
+/****************** freeCharItemdelete ********************
+ *
+ * itemdelete for the standingOn hashtable
+ * we cannot simply pass in 'free' because we need to deal with the null case
+ *
+ */
+static void
+freeCharItemdelete(void* pChar)
+{
+  if (pChar == NULL){
+    return;
+  }
 
+  free(pChar);
+}

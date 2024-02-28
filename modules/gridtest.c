@@ -14,7 +14,7 @@
 int
 main()
 {
-  FILE* fp = fopen("../maps/small.txt", "r");
+  FILE* fp = fopen("../maps/fewspots.txt", "r");
   if (fp == NULL){
     printf("null fp\n");
     return 1;

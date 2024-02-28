@@ -11,7 +11,7 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 LIBS = 
 LLIBS = ../support/support.a ../libcs50/libcs50-given.a
 
-all: grid player
+all: grid.o player.o
 
 .PHONY: all clean gridtest
 
@@ -27,3 +27,7 @@ gridtest.o: grid.h
 
 ../support/support.a:
 	$(MAKE) -C ../support
+
+clean:
+	rm -f *.o
+	rm -f gridtest

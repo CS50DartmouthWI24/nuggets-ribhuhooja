@@ -25,6 +25,7 @@ typedef struct clientData {
   char id[2];
   int purse;
   int port;
+  int nuggets;
 
   // the size of the window
   int rows;
@@ -38,21 +39,14 @@ static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static int parseArgs(const int argc, char* argv[], clientData_t* cData);
 static void initializeTerminal(void);
-
-
-// handling specific communication
-  // commands to implement
-  // GRID nrows ncols
-  // GOLD n p r
-  // DISPLAY\nstring
-  // QUIT explanation
-  // ERROR explanation
-
-// static void handleGRID(const char* message, void* arg);
+static void handleGRID(const char* message, void* arg);
 static void handleGOLD(const char* message, void* arg);
-// static void handleQUIT(const char* message, void *arg);
-// static void handleERROR(const char* message);
-// static void handleDISPLAY(const char* message, void* arg);
+static void handleQUIT(const char* message, void *arg);
+static void handleERROR(const char* message);
+static void handleDISPLAY(const char* message, void* arg);
+
+// global client data since can't pass through
+clientData_t cData; // set up client data
 
 int
 main(const int argc, char* argv[])
@@ -61,8 +55,6 @@ main(const int argc, char* argv[])
     fprintf(stderr, "Error: could not initialize message log");
     return 1; 
   }
-
-  clientData_t cData; // set up client data
  
   int errorParseArgs = parseArgs(argc, argv, &cData); // parse arguments
   if (errorParseArgs != 0){
@@ -78,8 +70,11 @@ main(const int argc, char* argv[])
   addr_t server; 
 
 
-  char* temp = "GOLD 3 5 9";
-  handleGOLD(temp, &cData);
+  char* grid = "GRID 3 4";
+  handleGRID(grid, &cData);
+
+  char* display = "DISPLAY\naaaa\nbbbb\nccccc";
+  handleDISPLAY(display, &cData);
 
   // create server address
   if (!message_setAddr(serverHost, serverPort, &server)) { 
@@ -157,43 +152,37 @@ static bool handleInput(void* arg) {
   }
 
   // initialze char
-  char c;
+  char key;
 
   // initialize valid chars to send
   const char* validChars = "hljkuybnHLJKUYBN";
-  
   const int messageSize = 12;
-  // read a char
 
-  printf("Reading characters");
-  if ((c = getch()) != 'q') { 
 
-    // create array to hold message to be send
+  if ((key = getch()) != 'q') { 
+
     char message[messageSize];
-    if (strchr(validChars, c)) {
-        snprintf(message, sizeof(message), "KEY %c", c);
+    if (strchr(validChars, key)) {
+
+      snprintf(message, sizeof(message), "KEY %c", key);
+
     } 
-    else if (c == 'q') {
-        snprintf(message, sizeof(message), "QUIT");
+    else if (key == 'q') {
+
+      snprintf(message, sizeof(message), "QUIT");
+
     } 
     else {
-        return false;
+
+      return false;
 }
+  sprintf(message, "KEY %c", key);
+  message_send(*server, message);
+  return false;
 
-    // Format the message to include the character pressed
-    sprintf(message, "KEY %c", c);
-
-    // send the message to the server
-    message_send(*server, message);
-
-
-    // return false - to indicate to keep going
-    return false;
   } 
   else {
-    // close ncurses
     endwin();
-    // return true to stop looping
     return true;
   }
 }
@@ -201,11 +190,31 @@ static bool handleInput(void* arg) {
 /**************** handleMessage() ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
 
+
   if(message == NULL) {
-    fprintf(stderr, "ERROR message is NULL\n");
-    return false;
+      fprintf(stderr, "ERROR message is invalid \n");
+      return false;
   }
-  refresh();
+
+  if(strncmp(message, "GRID ", strlen("GRID ")) == 0) { 
+    handleGRID(message, &cData);
+  } 
+  if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
+    handleQUIT(message, &cData);
+  } 
+  else if(strncmp(message, "GOLD ", strlen("GOLD ")) == 0) { 
+    handleGOLD(message, &cData);
+  } 
+  else if(strncmp(message, "DISPLAY\n", strlen("DISPLAY\n")) == 0) {
+    handleDISPLAY(message, &cData);
+  } 
+  else if(strncmp(message, "ERROR ", strlen("ERROR ")) == 0) {
+    handleERROR(message);
+  } 
+  else {
+      printf("Error: passed in an erroneous message.\n");
+      refresh();
+  }
   return false;
 }
 
@@ -218,43 +227,42 @@ static void initializeTerminal(void){
   refresh(); 
 }
 
+/**************** handleGRID() ****************/
+static void handleGRID(const char* message, void* arg){
 
-// /**************** handleGRID() ****************/
-// static void handleGRID(const char* message, void* arg){
+  // cast the client data to an argument
+  clientData_t* cData = (clientData_t*) arg;
 
-//   // cast the client data to an argument
-//   clientData_t* cData = (clientData_t*) arg;
+  // initialize data to read in
+  int rows;
+  int cols;
 
-//   // initialize data to read in
-//   int rows;
-//   int cols;
-
-//   sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
+  sscanf(message, "GRID %d %d", &rows, &cols); // read in data from message
 
 
-//   int nrows;
-//   int ncols;
+  int nrows;
+  int ncols;
 
-//   getmaxyx(stdscr, nrows, ncols);
+  getmaxyx(stdscr, nrows, ncols);
 
-//   cData->rows = rows;
-//   cData->cols = cols;
+  cData->rows = rows;
+  cData->cols = cols;
 
-//   while (nrows < rows || ncols < cols){
-//     printw("Your window must be at least %d high and %d wide \n", rows, cols);
-//     printw("Resize your window then press Space. \n");
+  while (nrows < rows || ncols < cols){
+    printw("Your window must be at least %d high and %d wide \n", rows, cols);
+    printw("Resize your window then press Space. \n");
 
-//     if (getch() == ' ') {
-//       getmaxyx(stdscr, nrows, ncols);
-//     }
+    if (getch() == ' ') {
+      getmaxyx(stdscr, nrows, ncols);
+    }
     
-//     // refresh screen
-//     clear();
-//     refresh();
-//   }
+    // refresh screen
+    clear();
+    refresh();
+  }
   
-//   refresh();
-// }
+  refresh();
+}
 
 /**************** handleGOLD() ****************/
 static void handleGOLD(const char* message, void* arg){
@@ -269,95 +277,93 @@ static void handleGOLD(const char* message, void* arg){
   // read data from the message
   sscanf(message, "GOLD %d %d %d", &nuggets, &purse, &remaining); 
   cData->purse = purse;
+  cData->nuggets = nuggets;
 
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
-    
-    int lenMessage = strlen("Spectator: nuggets unclaimed. Play at plank") + 20;
-    char message[lenMessage];
+    mvprintw(0,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
 
-    // print spectate message
-    sprintf(message, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
-    addstr(message);
-    refresh();
+    refresh();  
 
   }
-  else {
-
-    // print gold message
+  else if (cData->nuggets == 0) {  
     move(0,0);
-    int lenMessage = strlen("Player has nuggets (nuggets unclaimed). GOLD received:") + 30;
-    char message[lenMessage];
-    sprintf(message, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
-    addstr(message);
+    mvprintw(0,0, "Player %s has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
+    refresh();  
+  }
+  else {
+    move(0,0);
+    mvprintw(0,0, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
     refresh();
-      
   } 
 }
 
-// /**************** handleQUIT() ****************/
-// static void handleQUIT(const char* message, void *arg){
-//   // end the game
-//   nocbreak();
-//   endwin();
-//   exit(0);
-// }
+/**************** handleQUIT() ****************/
+static void handleQUIT(const char* message, void *arg){
+  // end the game
+  nocbreak();
+  endwin();
+  exit(0);
+}
 
-// /**************** handleERROR() ****************/
-// static void handleERROR(const char* message){
+/**************** handleERROR() ****************/
+static void handleERROR(const char* message){
   
+}
 
-// }
 
+/**************** handleDISPLAY() ****************/
+static void handleDISPLAY(const char* message, void* arg){
 
-// /**************** handleDISPLAY() ****************/
-// static void handleDISPLAY(const char* message, void* arg){
+  clientData_t* cData = (clientData_t*) arg;
 
-//   clientData_t* cData = (clientData_t*) arg;
+  // copy message to edit
+  char* messageCopy = malloc(strlen(message) + 1); 
+  strcpy(messageCopy, message);
 
-//   // copy the message so we can edit it
-//   char* messageCopy = malloc(strlen(message) + 1);
-//   strcpy(messageCopy, message);
+  // get the map by incrementing  the pointer
+  char* map = messageCopy + strlen("DISPLAY\n");  
 
-//   // get the map by incrementing the starting pointer
-//   char* map = messageCopy + strlen("DISPLAY\n"); 
+  // varaiables for looping
+  int cols = cData->cols;
+  int currY = 0; 
+	int currX = 0; 
+	int j = 0; 
 
-//   // varaiables for looping
-//   int cols = cData->cols;
-//   int currY = 0; 
-// 	int currX = 0; 
-// 	int j = 0; 
+	// loop through the map
+	for (int i = 0; map[i] != '\0'; i++) {
 
-// 	// loop through the map
-// 	for (int i = 0; map[i] != '\0'; i++) {
+    // check if at the end of a line or at the end of screen
+		if (map[i] == '\n' || j >= cols) {
 
-//     // check if at the end of a line or at the end of screen
-// 		if (map[i] == '\n' || j >= cols) {
+			// reset back to left of line, but go one line down
+			currY++;
+			currX = 0;
+			j = 0; // reset cols
+		} 
+    else {
 
-// 			// reset back to left of line, but go one line down
-// 			currY++;
-// 			currX = 0;
-// 			j = 0; // reset cols
-// 		} 
-//     else {
+			// add char at the currX and currY and mv there
+			mvaddch(currY, currX, map[i]);
+			currX++;
+			j++;
 
-// 			// add char at the currX and currY and mv there
-// 			mvaddch(currY, currX, map[i]);
-// 			currX++;
-// 			j++;
+		}
 
-// 		}
-// 		if (map[i] == '\n') { 
-// 			j = 0;
-// 		}
-// 	}
+    // check if at newline, if so reset to start
+		if (map[i] == '\n') { 
+			j = 0;
+		}
+	}
 
-// 	// Refresh the screen to show changes
-// 	refresh();                              
+	// refresh screen
+	refresh();                              
 
-//   // free the map
-//   free(messageCopy);
-//   // free(map);
+  // free messageCopy
+  free(messageCopy);
 
-// }
+  // free map
+  // free(map);
+
+}
 

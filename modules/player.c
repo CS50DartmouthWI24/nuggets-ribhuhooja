@@ -20,24 +20,7 @@
 #include "mem.h"
 
 
-// to create a new player. Check player.h for more information 
-player_t* player_new (grid_t* playerGrid, addr_t* address, int x, int y, char* name, char letter ){
 
-<<<<<<< HEAD:player.c
-    player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player.\n");
-    player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player.\n");
-    strcpy(player->name, name); // to make a copy of the name for player.
-    // setting the atributes to players structure
-    player->letter = letter;
-    player->x = x;
-    player->y = y;
-    player->isActive = true;
-    player->address= address;
-    player->visibleGrid = playerGrid;
-    player->gold = 0; // since the new player total gold is zero.
-
-    return player;
-=======
 /****************** player_new ****************************
  *
  * see player.h for description and usage
@@ -64,7 +47,6 @@ player_new (addr_t* address, int x, int y, char* name, char character )
   player->gold = 0; // start off a new player with 0 gold
 
   return player;
->>>>>>> main:modules/player.c
 }
 
 // to delete the player. Check player.h for more information 

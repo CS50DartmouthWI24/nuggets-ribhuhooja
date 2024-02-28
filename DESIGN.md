@@ -155,10 +155,11 @@ game grid
   2. `grid_charAt` - returns the character at a given point
   3. `grid_goldAt` - returns the amount of gold at a given point
   4. `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  5. `grid_movePlayer` - moves the players within the grid
-  6. `grid_collectGold` - changes the grid to represent gold being collected by a player
-  7. `grid_display` - displays/prints the grid string
-  8. `grid_toMap` - saves the grid to a file for debug purposes
+  5. `grid_addPlayer` - adds a player to a grid
+  6. `grid_movePlayer` - moves the players within the grid
+  7. `grid_collectGold` - changes the grid to represent gold being collected by a player
+  8. `grid_getDisplay` - returns the grid string
+  9. `grid_toMap` - saves the grid to a file for debug purposes
 
 Static helper functions
 
@@ -193,6 +194,14 @@ We can probably optimize the visibility algorithm to not check against every sin
 other point, but for now we have decided to take the simple approach. If that approach ends up being too slow,
 we will optimize it.
 
+#### add player
+
+  check if the provided location is add-able
+  put the player character at that location on the grid
+
+Does not handle checking if the add is valid accoring to any rules other than location.
+Does NOT allow adding on a location that has gold on it.
+
 #### move player
 
   check if the player can move
@@ -200,22 +209,21 @@ we will optimize it.
   swap players if needed
   if there is gold at the newly moved to location, call collectGold
   update the grid string to reflect the changes
-  message all the players to inform them of the change
 
+Does NOT handle messaging
 #### collect gold
 
   get the amount of gold at the given position
   add that gold to the player's purse
-  update the game state to a new amount of gold
   update the counterset; set the amount of gold at that index to 0
-  send the GOLD message to all the players to inform them of the change
 
+Does not handle messaging or updating the game state.
 We do not update the grid string, because collect gold is only ever called when a player steps into that
 spot, and so the asterisk at that spot is replaced by a player character by move player
 
-#### display
+#### getDisplay
 
-  print the grid string
+  return the grid string
 
 #### to map
 
@@ -274,8 +282,6 @@ The game data structure will keep track of the following data which defines a ga
 `int goldTotal` stores the total amount of gold ot be distributed
 `int minNumGoldPiles` stores the minimum number of goldPiles
 `int maxNumGoldPiles` stores the maximum number of goldPiles
-
-> Repeat this section for each module that is included in either the client or server.
 
 ### Functional decomposition
 

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
@@ -493,7 +494,11 @@ grid_getDisplay(grid_t* grid)
     return NULL;
   }
 
-  return grid->string;
+  int length = (grid->numcols + 1) * grid->numrows;
+  char* string = calloc(length + 1, sizeof(char));
+  strncpy(string, grid->string, length + 1);
+
+  return string;
 }
 
 /****************** grid_toMap ****************************
@@ -514,6 +519,7 @@ grid_toMap(grid_t* grid, FILE* fp)
   }
 
   fputs(toPrint, fp);
+  free(toPrint);
 }
 
 
@@ -618,8 +624,6 @@ setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar)
   } 
 
   *pChar = newChar;
-  
-
   free(charString); // the key got copied
 }
 

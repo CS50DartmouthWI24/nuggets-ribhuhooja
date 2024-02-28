@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "grid.h"
 
 /****************** main *********************************/
@@ -54,9 +55,32 @@ main()
   grid_movePlayer(grid, 4, 2, 0, 1); 
   grid_movePlayer(grid, 4, 3, 0, 1); 
   grid_toMap(grid, stdout);
+  printf("\n");
+  grid_movePlayer(grid, 4, 4, 1, 0); // should fail
+  grid_toMap(grid, stdout);
+  printf("\n");
+  grid_movePlayer(grid, 4, 4, 0, 1); 
+  grid_movePlayer(grid, 4, 5, 0, 1); 
+  grid_movePlayer(grid, 4, 6, 0, 1); 
+  grid_movePlayer(grid, 4, 7, 0, 1); 
+  grid_toMap(grid, stdout);
+  printf("\n");
+
+  printf("Test: removing players\n");
+  grid_removePlayer(grid, '@', 4, 8);
+  grid_toMap(grid, stdout);
+  printf("\n");
+
+  printf("Test: Gold nuggets. Using preset seed to have consistent test behavior\n\n");
+
+  srand(42);
+  grid_nuggetsPopulate(grid, 5, 10, 30);
+  grid_toMap(grid, stdout);
+  printf("\nDebug: See the gold amounts\n");
+
+
 
   // TODO: Check
-  // addPlayer, movePlayer, removePlayer
   // nuggetsPopulate, goldAt, collectGold
   // visibility - probably needs to be checked separately 
 

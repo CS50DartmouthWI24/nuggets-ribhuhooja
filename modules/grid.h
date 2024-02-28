@@ -241,10 +241,9 @@ int grid_collectGold(grid_t* grid, const int px, const int py);
  * Caller provdes:
  *  valid pointer to a grid
  * We return:
- *  the grid string within the grid
+ *  a copy of the grid string within the grid
  * Caller is responsible for:
- *  NOT freeing the returned string. The string is freed when grid_delete is
- *  called.
+ *  freeing the returned string.
  */
 char* grid_getDisplay(grid_t* grid);
 

@@ -1,24 +1,45 @@
 # CS50 Nuggets
 ## Implementation Spec
-### Team name, term, year
-
-> This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
+### Torpedos, Winter 2024
 
 According to the [Requirements Spec](REQUIREMENTS.md), the Nuggets game requires two standalone programs: a client and a server.
-Our design also includes x, y, z modules.
+Our design also includes Grid, Player, Spectator, Game.
 We describe each program and module separately.
 We do not describe the `support` library nor the modules that enable features that go beyond the spec.
 We avoid repeating information that is provided in the requirements spec.
 
 ## Plan for division of labor
 
-> Update your plan for distributing the project work among your 3(4) team members.
-> Who writes the client program, the server program, each module?
-> Who is responsible for various aspects of testing, for documentation, etc?
+Our team has four members - Paul, Ribhu, Sam, Tayeb. Here is our plan for dividing the
+labour between the team members.
 
-## Player
+### Paul
+Paul will handle the client program completely. He will write the program,
+using the curses module to provide a UI. He is also responsible for testing the
+program.
 
-> Teams of 3 students should delete this section.
+### Ribhu
+Ribhu will write the grid module. He is responsible for handling all the grid
+game logic, including visibility, and testing the grid.
+
+### Sam
+Sam will write the server program. He is responsible for making sure the program
+starts correctly and to handle/send messages to and from clients, and for making
+sure that the right functions for the helper modules are called. He is also 
+responsible for testing the sever module.
+
+### Tayeb
+Tayeb will write the game module. He is responsible for handling the game 
+and making sure it integrates all the other modules correctly. He is also responsible
+for testing the module.
+
+### Notes
+This division of labor is note strict, in the sense that we will dynamically
+look at the amount of work needed for each person and try to distribute it evenly.
+We especially anticipate a lot of overlap between the duties of the three people assigned to
+server.
+
+## Client
 
 ### Data structures
 
@@ -85,9 +106,23 @@ static int parseArgs(const int argc, char* argv[]);
 
 ---
 
-## XYZ module
+## Grid
 
-> For each module, repeat the same framework above.
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+## Game
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+## Player
 
 ### Data structures
 
@@ -100,8 +135,15 @@ static int parseArgs(const int argc, char* argv[]);
 ## Testing plan
 
 ### unit testing
+#### Grid
+Grid will be unit tested by a simple C driver that is just going to perform
+some grid actions and print out the resulting grid to stdout. Since the grid
+is a string, this does not require any displaying program to work.
 
-> How will you test each unit (module) before integrating them with a main program (client or server)?
+#### Game
+
+
+#### Player
 
 ### integration testing
 
@@ -132,3 +174,9 @@ When the client displays a grid, it displays the whole grid as received
 after wiping the previous grid. This is inefficient, because the vast majority of
 points on the screen did not change. To keep it simple, we do not do a smart grid
 refresh which would only change the changed poritions of the grid.
+
+### Redundant visibility checks
+The way we plan to check visibility involves checking each point on the grid. 
+This is somewhat redundant, as many points that lie on the same 'ray" through the 
+player will have the same visibility value. However, unless this implementation ends
+up being too slow, we don't plan to optimize out this redundancy.

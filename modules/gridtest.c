@@ -29,14 +29,17 @@ main()
     return 1;
   }
 
-  printf("Test: Displaying map\n\n");
+  printf("Test: Displaying map, numrows, numcols\n\n");
   grid_toMap(grid, stdout);
+  printf("\nnumber of rows: %d\n number of columns: %d \n", grid_numrows(grid), grid_numcols(grid));
 
 
   printf("Test: CharAt\n\n");
   printf("char at (2,0) is %c\n", grid_charAt(grid, 2, 0));
   printf("char at (3,1) is %c\n", grid_charAt(grid, 3, 1));
   printf("char at (4,3) is %c\n", grid_charAt(grid, 4, 3));
+
+
 
   grid_delete(grid);
 

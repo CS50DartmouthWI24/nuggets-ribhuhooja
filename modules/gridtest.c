@@ -14,6 +14,7 @@
 int
 main()
 {
+  printf("Test: Loading map\n\n");
   FILE* fp = fopen("../maps/fewspots.txt", "r");
   if (fp == NULL){
     printf("null fp\n");
@@ -28,7 +29,14 @@ main()
     return 1;
   }
 
+  printf("Test: Displaying map\n\n");
   grid_toMap(grid, stdout);
+
+
+  printf("Test: CharAt\n\n");
+  printf("char at (2,0) is %c\n", grid_charAt(grid, 2, 0));
+  printf("char at (3,1) is %c\n", grid_charAt(grid, 3, 1));
+  printf("char at (4,3) is %c\n", grid_charAt(grid, 4, 3));
 
   grid_delete(grid);
 

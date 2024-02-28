@@ -44,6 +44,26 @@ grid_t* grid_fromMap(FILE* mapFile);
  */
 void grid_delete(grid_t* grid);
 
+/****************** grid_numrows **************************
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ * We return:
+ *  the number of rows in the grid
+ *  0 if error
+ */
+int grid_numrows(grid_t* grid);
+
+/****************** grid_numcols **************************
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ * We return:
+ *  the number of columns in the grid
+ *  0 if error
+ */
+int grid_numcols(grid_t* grid);
+
 /****************** grid_charAt ***************************
  *
  * Returns the character at the given (x,y) coordinate

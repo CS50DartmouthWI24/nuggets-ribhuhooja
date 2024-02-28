@@ -165,6 +165,35 @@ grid_delete(grid_t* grid)
   free(grid);
 }
 
+/****************** grid_numrows **************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+int
+grid_numrows(grid_t* grid)
+{
+  if (grid == NULL){
+    return NULL;
+  }
+
+  return grid->numrows;
+}
+
+/****************** grid_numcols **************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+int
+grid_numcols(grid_t* grid)
+{
+  if (grid == NULL){
+    return NULL;
+  }
+
+  return grid->numcols;
+}
 
 /****************** grid_charAt ***************************
  *
@@ -442,11 +471,11 @@ indexOf(const int x, const int y, const int numcols)
 {
   // each line of the string contains numcols + 1 characters
   // because of the newline. So the index of the first character
-  // on line 0 is 0, last char is numcols, first char on line 1
-  // is numcols + 1. => first char of line n is n*numcols + 1
-  // (x,y) has index numcols * y + x
+  // on line 0 is 0, last char is numcols - 1, first char on line 1
+  // is numcols + 1. => first char of line n is n*(numcols + 1)
+  // (x,y) has index (numcols + 1) * y + x
   
-  return numcols * y + x;
+  return (numcols + 1) * y + x;
 }
 
 /****************** isValidCoordinate *********************

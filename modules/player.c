@@ -12,6 +12,7 @@
 // Importing libraries 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "message.h"
 #include "player.h"
 #include "log.h"
@@ -22,6 +23,7 @@
 // to create a new player. Check player.h for more information 
 player_t* player_new (grid_t* playerGrid, addr_t* address, int x, int y, char* name, char letter ){
 
+<<<<<<< HEAD:player.c
     player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player.\n");
     player->name = mem_malloc_assert(sizeof(name), "Failed to alocate memory for name of the player.\n");
     strcpy(player->name, name); // to make a copy of the name for player.
@@ -35,6 +37,34 @@ player_t* player_new (grid_t* playerGrid, addr_t* address, int x, int y, char* n
     player->gold = 0; // since the new player total gold is zero.
 
     return player;
+=======
+/****************** player_new ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+player_t*
+player_new (addr_t* address, int x, int y, char* name, char character )
+{
+  if (address == NULL || name == NULL){
+    return NULL;
+  }
+
+  player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player");
+
+  int len = strlen(name);
+
+  player->name = mem_malloc_assert(len * sizeof(char), "Failed to alocate memory for name of the player");
+  strncpy(player->name, name, len); // make a copy of the passed in string
+
+  player->character = character;
+  player->x = x;
+  player->y = y;
+  player->address= address;
+  player->gold = 0; // start off a new player with 0 gold
+
+  return player;
+>>>>>>> main:modules/player.c
 }
 
 // to delete the player. Check player.h for more information 
@@ -93,24 +123,48 @@ char* player_getName(const player_t* player){
     return player->name;
 }
 
+<<<<<<< HEAD:player.c
 // to get the letter of the player. Check player.h for more information 
 char player_getLetter(const player_t* player){
+=======
+/****************** player_getChar ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+char
+player_getChar(const player_t* player)
+{
+>>>>>>> main:modules/player.c
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return -1;
     }
+<<<<<<< HEAD:player.c
     return player->letter;
 
 }
 
 // to get the address of the player. Check player.h for more information 
 addr_t* player_getAddress(const player_t* player){
+=======
+    return player->character;
+}
+
+/****************** player_getAddress ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+addr_t*
+player_getAddress(const player_t* player)
+{
+>>>>>>> main:modules/player.c
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return NULL; // what to return when player is null ------------------------------------------ do we even need this?---------
     }
     return player->address;
-
 }
 
 // to move the player in x direction. Check player.h for more information 
@@ -155,8 +209,16 @@ void player_setVisibleGrid(player_t* player, grid_t* visibleGrid){
         flog_v(stderr, "Cannot set grid for null player.\n");
         return;
     }
+<<<<<<< HEAD:player.c
     //mem_assert_const(visibleGrid, "Failed to free memory for grid"); /// should I call delete grid function-------------
     delete_grid(player->visibleGrid);
+=======
+
+    if (player->visibleGrid != NULL){
+      grid_delete(player->visibleGrid);
+    }
+
+>>>>>>> main:modules/player.c
     player->visibleGrid = visibleGrid;
 }
 
@@ -166,5 +228,10 @@ void player_sendMessage(player_t* player, char* message){
         flog_v(stderr, "Cannot send message for null player.\n");
         return;
     }
+<<<<<<< HEAD:player.c
     message_send(*player->address, message);
+=======
+
+    message_send(*(player->address), message);
+>>>>>>> main:modules/player.c
 }

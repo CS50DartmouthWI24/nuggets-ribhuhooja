@@ -10,7 +10,6 @@
 
 #include <stdbool.h>
 #include "counters.h"
-#include "player.h"
 
 /****************** global types *************************/
 typedef struct grid grid_t;
@@ -45,6 +44,26 @@ grid_t* grid_fromMap(FILE* mapFile);
  */
 void grid_delete(grid_t* grid);
 
+/****************** grid_numrows **************************
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ * We return:
+ *  the number of rows in the grid
+ *  0 if error
+ */
+int grid_numrows(grid_t* grid);
+
+/****************** grid_numcols **************************
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ * We return:
+ *  the number of columns in the grid
+ *  0 if error
+ */
+int grid_numcols(grid_t* grid);
+
 /****************** grid_charAt ***************************
  *
  * Returns the character at the given (x,y) coordinate
@@ -61,7 +80,7 @@ void grid_delete(grid_t* grid);
  *  is querier. The base grid will return the player letter, and the
  *  player's own map will return an @.
  */
-char grid_charAt(grid_t* grid, int x, int y);
+char grid_charAt(grid_t* grid, const int x, const int y);
 
 /****************** grid_goldAt ***************************
  *
@@ -82,6 +101,31 @@ char grid_charAt(grid_t* grid, int x, int y);
  */
 int grid_goldAt(grid_t* grid, const int x, const int y);
 
+/****************** grid_nuggetsPopulate ******************
+ *
+ * Populate the grid with nuggets
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ *  valid values for minNumPiles, maxNumPiles and goldTotal
+ *  NOTES: maxNumPiles MUST BE <= goldTotal
+ *  maxNumPiles must also be <= the number of room spots in the grid
+ * We return:
+ *  true if the operation was successful
+ *  false if the operation failed
+ * We do:
+ *  We select an integer randomly from [minNumPiles, maxNumPiles]
+ *  We create this number of piles on the grid
+ *  For each gold nugget, we randomly select one of these piles and put it there
+ * We do NOT:
+ *  call srand(). srand() must have been called before this function is called.
+ * Notes:
+ *  If this is called twice on the same grid it will add more nuggets to the grid,
+ *  though none of the positions will overlap
+ */
+bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles,
+                                                               const int goldTotal);
+
 /****************** grid_generateVisibleGrid **************
  *
  * Generates the grid visible to a given player
@@ -97,12 +141,20 @@ int grid_goldAt(grid_t* grid, const int x, const int y);
  *  visibility checks later
  * Notes:
  *  The caller SHOULD NOT call grid_delete on the returned grid because
- *  it is stored inside the player
+ *  it is stored inside the player, and will be freed by player_delete
  *
  *  NONE of the other grid function in this module should be called on the grid
  *  returned by this, as this grid is for display purposes only
+ *
+ *  Only the following functions are defined on this grid:
+ *  - getDisplay
+ *  - toMap
+ *  - charAt
+ *
  */
-grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
+grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,
+                                               const int px,
+                                               const int py);
 
 /****************** grid_addPlayer ************************
  *
@@ -129,32 +181,50 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, player_t* player);
  *  character is. It is upto game to check that the character being 
  *  given here is valid.
  */
-bool grid_addPlayer(grid_t* grid, const int x, const int y, char playerChar);
+bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar);
 
 /****************** grid_movePlayer ***********************
  *
  * Moves a player
  *
  * Caller provides:
- *  valid pointer to grid and player
+ *  valid pointer to grid, valid player coordinates inside grid
  *  valid move directions - both x_move and y_move must be 0, 1 or -1
  * We do:
  *  update the grid to represent the player having moved.
+ * We do NOT:
+ *  update the player's internal state. That is handled by the game
  * We return:
  *  -1 if the operation failed
  *  the amount of gold collected if the operation succeeded
  */
-int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
+int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
+                                                              const int y_move);
+
+/****************** grid_removePlayer *********************
+ *
+ * removes a player from the grid
+ *
+ * Caller provides:
+ *  valid pointer to grid
+ *  valid coordinates to player in grid
+ * We do:
+ *  remove the player from the grid
+ * We return:
+ *  true if the operation succeeded
+ *  false if the operation failed
+ */
+bool grid_removePlayer(grid_t* grid, const char playerChar, const int px,
+                                                            const int py);
 
 /****************** grid_collectGold **********************
  *
  * Makes the player collect the gold at its location
  *
  * Caller provides:
- *  valid pointer to grid and player
- * We do:
- *  Add the gold to the player
+ *  valid pointer to grid and valid coordiantes inside grid
  * We do NOT:
+ *  Update the amount of gold stored inside the player. That must be done by game.
  *  Update the grid character, because the player moved onto that character
  * We return:
  *  The amount of gold collected
@@ -162,7 +232,7 @@ int grid_movePlayer(grid_t* grid, player_t* player, int x_move, int y_move);
  *  The responsibility for updating game state and sending messages is NOT
  *  handled by this module
  */
-int grid_collectGold(grid_t* grid, player_t* player);
+int grid_collectGold(grid_t* grid, const int px, const int py);
 
 /****************** grid_getDisplay **************************
  *

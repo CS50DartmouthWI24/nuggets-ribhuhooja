@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "message.h"
 #include "player.h"
 #include "log.h"
@@ -36,7 +37,7 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t* address, int x, int y, char* name, char letter )
+player_new (addr_t* address, int x, int y, char* name, char character )
 {
   if (address == NULL || name == NULL){
     return NULL;
@@ -49,7 +50,7 @@ player_new (addr_t* address, int x, int y, char* name, char letter )
   player->name = mem_malloc_assert(len * sizeof(char), "Failed to alocate memory for name of the player");
   strncpy(player->name, name, len); // make a copy of the passed in string
 
-  player->letter = letter;
+  player->character = character;
   player->x = x;
   player->y = y;
   player->address= address;
@@ -158,21 +159,19 @@ player_getName(const player_t* player)
     return player->name;
 }
 
-/****************** player_getLetter ****************************
+/****************** player_getChar ****************************
  *
  * see player.h for description and usage
  *
  */
 char
-player_getLetter(const player_t* player)
+player_getChar(const player_t* player)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return '\0';
     }
-
-    return player->letter;
-
+    return player->character;
 }
 
 /****************** player_getAddress ****************************
@@ -180,7 +179,7 @@ player_getLetter(const player_t* player)
  * see player.h for description and usage
  *
  */
-addr_t
+addr_t*
 player_getAddress(const player_t* player)
 {
     if(player == NULL){
@@ -189,7 +188,6 @@ player_getAddress(const player_t* player)
     }
 
     return player->address;
-
 }
 
 /****************** player_setX ****************************
@@ -254,7 +252,7 @@ player_setVisibleGrid(player_t* player, grid_t* visibleGrid)
         return;
     }
 
-    if (player->grid != NULL){
+    if (player->visibleGrid != NULL){
       grid_delete(player->visibleGrid);
     }
 
@@ -274,5 +272,5 @@ player_sendMessage(player_t* player, char* message)
         return;
     }
 
-    message_send(player->address, message);
+    message_send(*(player->address), message);
 }

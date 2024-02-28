@@ -101,6 +101,31 @@ char grid_charAt(grid_t* grid, const int x, const int y);
  */
 int grid_goldAt(grid_t* grid, const int x, const int y);
 
+/****************** grid_nuggetsPopulate ******************
+ *
+ * Populate the grid with nuggets
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ *  valid values for minNumPiles, maxNumPiles and goldTotal
+ *  NOTES: maxNumPiles MUST BE <= goldTotal
+ *  maxNumPiles must also be <= the number of room spots in the grid
+ * We return:
+ *  true if the operation was successful
+ *  false if the operation failed
+ * We do:
+ *  We select an integer randomly from [minNumPiles, maxNumPiles]
+ *  We create this number of piles on the grid
+ *  For each gold nugget, we randomly select one of these piles and put it there
+ * We do NOT:
+ *  call srand(). srand() must have been called before this function is called.
+ * Notes:
+ *  If this is called twice on the same grid it will add more nuggets to the grid,
+ *  though none of the positions will overlap
+ */
+bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles,
+                                                               const int goldTotal);
+
 /****************** grid_generateVisibleGrid **************
  *
  * Generates the grid visible to a given player

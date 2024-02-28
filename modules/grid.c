@@ -174,7 +174,7 @@ int
 grid_numrows(grid_t* grid)
 {
   if (grid == NULL){
-    return NULL;
+    return 0;
   }
 
   return grid->numrows;
@@ -189,7 +189,7 @@ int
 grid_numcols(grid_t* grid)
 {
   if (grid == NULL){
-    return NULL;
+    return 0;
   }
 
   return grid->numcols;
@@ -231,6 +231,67 @@ grid_goldAt(grid_t* grid, const int x, const int y)
   }
 
   return counters_get(grid->nuggets, indexOf(x, y, grid->numcols));
+}
+
+/****************** grid_nuggetsPopulate ******************
+ *
+ * see grid.h for usage and description
+ *
+ */
+bool
+grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles,
+                                                          const int goldTotal)
+{
+  if (grid == NULL || minNumPiles <= 0 || maxNumPiles <= 0 || goldTotal <= 0){
+    return false;
+  }
+
+  if (minNumPiles > maxNumPiles || maxNumPiles > goldTotal){
+    return false;
+  }
+
+  // checking if there are enough room spots
+  // also simultaneously get the length of the string
+  char* string = grid->string;
+  int numRoomSpots = 0;
+  for (int i = 0; string[i] != '\0'; ++i){
+    if (string[i] == mapchars_roomSpot){
+      ++numRoomSpots;
+    }
+  }
+
+  if (numRoomSpots < maxNumPiles){
+    return false;
+  }
+
+  // generate number of piles
+  int numPiles;
+  numPiles = minNumPiles + (rand() % (maxNumPiles - minNumPiles + 1));
+
+  // choose the spots for the piles, and put them in an array for
+  // later populating with nuggets
+  int spots[numPiles];
+  counters_t* nuggets = grid->nuggets;
+  int stringLength = (grid->numcols + 1) * grid->numrows;
+  for (int i = 0; i < numPiles; ){ // only incrementing when correctly chosen spot
+    // randomly get a spot
+    // if it is a roomSpot, put a nugget there and increment the counter
+    int chosenSpot = rand() % stringLength;
+    if (string[chosenSpot] == mapchars_roomSpot){
+      string[chosenSpot] = mapchars_gold;
+      spots[i] = chosenSpot;
+      counters_set(nuggets, chosenSpot, 0);
+      ++i;
+    }
+  }
+
+  // for each nugget, put it in one of the chosen piles
+  for (int i = 0; i < goldTotal; ++i){
+    int chosenIndex = rand() % numPiles;
+    counters_add(nuggets, spots[chosenIndex]);
+  }
+
+  return true;
 }
 
 /****************** grid_generateVisibleGrid **************

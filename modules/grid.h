@@ -258,32 +258,5 @@ char* grid_getDisplay(grid_t* grid);
  */
 void grid_toMap(grid_t* grid, FILE* fp);
 
-/****************** grid_debugGoldNumbersDisplay **********
- *
- * prints the grid string, with all gold nuggets replaced by
- * a number indicating the number of nuggets there
- *
- * Caller provdes:
- *  valid pointer to a grid
- * We return:
- *  a copy of the grid string within the grid
- * Caller is responsible for:
- *  freeing the returned string.
- */
-char* grid_debugGoldNumbersDisplay(grid_t* grid);
-
-/****************** grid_debugGoldNumbersToMap ************
- *
- * prints the debug gold string to a file
- *
- * Caller provides:
- *  valid pointer to a grid 
- *  valid file open for writing
- * We do:
- *  print the debug gold string
- */
-void grid_debugGoldNumbersToMap(grid_t* grid, FILE* fp);
-
-
 
 #endif    // __GRID_H

@@ -76,8 +76,6 @@ main()
   srand(42);
   grid_nuggetsPopulate(grid, 5, 10, 30);
   grid_toMap(grid, stdout);
-  printf("\nDebug: See the gold amounts\n");
-  grid_debugGoldNumbersToMap(grid, stdout);
   printf("\n");
 
   printf("Test: Have a player collect the gold\n\n");
@@ -91,8 +89,6 @@ main()
   printf("Gold collected: %d\n", goldCollected);
   grid_movePlayer(grid, 6, 1, 0, 1);
   grid_toMap(grid, stdout);
-  printf("\n");
-  grid_debugGoldNumbersToMap(grid, stdout);
   printf("\n");
 
 

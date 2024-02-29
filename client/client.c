@@ -22,7 +22,7 @@
 */
 typedef struct clientData {
   // player's characteristics
-  char id[2];
+  char id;
   int purse;
   int port;
   int nuggets;
@@ -44,6 +44,7 @@ static void handleGOLD(const char* message, void* arg);
 static void handleQUIT(const char* message, void *arg);
 static void handleERROR(const char* message);
 static void handleDISPLAY(const char* message, void* arg);
+static void handleOK(const char* message, void* arg);
 
 // global client data since can't pass through
 clientData_t cData; // set up client data
@@ -51,10 +52,13 @@ clientData_t cData; // set up client data
 int
 main(const int argc, char* argv[])
 {
-  if (message_init(NULL) == 0) { // check if we can initialize the message
+  int ourPort = message_init(stderr);
+  if (ourPort == 0) { // check if we can initialize the message
     fprintf(stderr, "Error: could not initialize message log");
     return 1; 
   }
+
+  log_v("START OF LOG\n");
  
   int errorParseArgs = parseArgs(argc, argv, &cData); // parse arguments
   if (errorParseArgs != 0){
@@ -84,17 +88,18 @@ main(const int argc, char* argv[])
   // create server address
 
   if (!message_setAddr(serverHost, serverPort, &server)) { 
-    fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
+    // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 4; // bad hostname/port
   }
 
   // listen for and send messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
+
   // shut down the message module
   message_done();
 
-
+  
   return ok? 0 : 1; // status code depends on result of message_loop
 
 }
@@ -104,7 +109,7 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
 
   // check numArgs passed
   if (argc != 3 && argc != 4) {
-    fprintf(stderr, "Error: improper number of arguments specified\n");
+    // fprintf(stderr, "Error: improper number of arguments specified\n");
     return 2;
   }
 
@@ -115,7 +120,7 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
   // set up an addr_t for the server
   addr_t server; // address of the server
   if (!message_setAddr(serverHost, serverPort, &server)) {
-    fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
+    // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 3; // bad hostname/port
   }
   
@@ -142,6 +147,7 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     
   }
 
+
   return 0; // return success
 
 }
@@ -153,35 +159,24 @@ static bool handleInput(void* arg) {
 
   // check if valid
   if (server == NULL) {
-    fprintf(stderr, "Error: invalid server address");
     return true;
   }
 
   // initialze char
   char key;
 
-  // initialize valid chars to send
-  const char* validChars = "hljkuybnHLJKUYBN";
   const int messageSize = 12;
-
 
   if ((key = getch()) != 'q') { 
 
     char message[messageSize];
-    if (strchr(validChars, key)) {
-
-      snprintf(message, sizeof(message), "KEY %c", key);
-
-    } 
-    else if (key == 'q') {
-
+    if (key == 'q') {
       snprintf(message, sizeof(message), "QUIT");
-
     } 
     else {
-      return false;
-}
-  sprintf(message, "KEY %c", key);
+      snprintf(message, sizeof(message), "KEY %c", key);
+    } 
+
   message_send(*server, message);
   return false;
 
@@ -208,8 +203,6 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
   else if(strncmp(message, "GOLD ", strlen("GOLD ")) == 0) { 
     handleGOLD(message, &cData);
   } 
-
-
   else if(strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
     handleDISPLAY(message, &cData);
   } 
@@ -217,9 +210,12 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
   else if(strncmp(message, "ERROR ", strlen("ERROR ")) == 0) {
     handleERROR(message);
   } 
+  else if(strncmp(message, "OK ", strlen("OK ")) == 0) {
+    handleOK(message, &cData);
+  } 
   else {
     refresh();
-     mvprintw((&cData)->rows,0, "Error: passed in an erroneous message.\n");
+     mvprintw((&cData)->rows,0, "Error: message is invalid.\n");
 
   }
   refresh();
@@ -296,17 +292,19 @@ static void handleGOLD(const char* message, void* arg){
     refresh();  
 
   }
+
   else if (cData->nuggets == 0) {  
     move(0,0);
-    mvprintw((cData)->rows,0, "Player %s has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
+    mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
     refresh();  
   }
   else {
     move(0,0);
-    mvprintw((cData)->rows,0, "Player %s has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
+    mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }
+
 
 /**************** handleQUIT() ****************/
 static void handleQUIT(const char* message, void *arg){
@@ -375,6 +373,21 @@ static void handleDISPLAY(const char* message, void* arg){
 
   // free map
   // free(map);
+
+}
+
+/**************** handleDISPLAY() ****************/
+static void handleOK(const char* message, void* arg){
+
+  // cast the client data to an argument
+  clientData_t* cData = (clientData_t*) arg;
+
+  // initialize the playerID character
+  char playerID;
+  sscanf(message, "OK %c", &playerID);
+
+  // store the characterID into 
+  cData->id = playerID;
 
 }
 

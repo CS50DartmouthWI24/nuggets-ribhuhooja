@@ -16,11 +16,11 @@
 #include "game.h"
 
 // Global Variables
-const MaxNameLength = 50;        // max number of chars in playerName
-const  MaxPlayers = 26;          // maximum number of players
-GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
-const GoldMinNumPiles = 10;      // minimum number of gold piles
-const GoldMaxNumPiles = 30;      // maximum number of gold piles
+static const MaxNameLength = 50;        // max number of chars in playerName
+static const  MaxPlayers = 26;          // maximum number of players
+static GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
+static const GoldMinNumPiles = 10;      // minimum number of gold piles
+static const GoldMaxNumPiles = 30;      // maximum number of gold piles
 
 typedef struct game{
     player_t** players;         // array of players
@@ -59,29 +59,6 @@ static int random_goldNumber(grid_t* grid, int numPiles, int count, int remainin
     return randomNumber(1, gold);
 
 }
-// this function find a random free spot in grid and set its value in Gridcounter (Nuggests) and put a '*' instead of '.'
-void gold_init(grid_t* grid, game_t* game){
-    int numPiles = game->numPiles;
-    char* string = grid->string;
-    int gold;
-
-    int count = 0;
-    while (count < numPiles){
-        // minimum is 0 and maximum is the length of the string 
-        int min = 0;
-        int max = strlen(string);
-        int random = randomNumber(min , max);
-        // to check it the spot is free.
-        if (string[count] = '.'){
-            string[count] = "*";
-            gold = random_goldNumber(grid, numPiles,count, game->goldRemain);
-            game->goldRemain -= gold;
-            counters_set(grid->nuggets, count, gold);
-            count++;
-        }
-    }
-}
-
 // this function initializes the whole game by initializing each small other small part of it.
 game_t* game_init(FILE* mapfile){
 
@@ -97,7 +74,10 @@ game_t* game_init(FILE* mapfile){
 
 
     // initialize gold and set it randomly on the map. 
-    gold_init(game->masterGrid, game);
+    if (grid_nuggetsPopulate(game->masterGrid, GoldMinNumPiles, GoldMaxNumPiles,game->goldRemain)){
+        flog_v(stderr, "Could not initialie the gold in random spots.\n");
+    }
+    
 
     // initialize player 
     game->players = mem_calloc_assert(26, sizeof(player_t*), "Failed to allocate memory for Player.\n"); // is it a pointer to player or the player itself?------------------

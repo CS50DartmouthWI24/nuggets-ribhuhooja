@@ -77,10 +77,30 @@ int grid_numcols(grid_t* grid);
  *  the character at that (x,y) coordinate
  * Notes:   
  *  The character for a player coordinate will depend on which grid
- *  is querier. The base grid will return the player letter, and the
+ *  is queried. The base grid will return the player letter, and the
  *  player's own map will return an @.
  */
 char grid_charAt(grid_t* grid, const int x, const int y);
+
+/****************** grid_baseCharAt ***************************
+ *
+ * Returns the BASE character at the given (x,y) coordinate
+ * i.e. the character in the base map, before nuggets and players
+ * were added
+ *
+ * Caller provides:
+ *  valid grid pointer
+ *  x coordinate in [0, ncols - 1]
+ *  y coordinate in [0, nrows - 1]
+ * We return:
+ *  null character '\0' if error
+ *  the base character at that (x,y) coordinate
+ * Notes:   
+ *  The character for a player coordinate will depend on which grid
+ *  is queried. The base grid will return the player letter, and the
+ *  player's own map will return an @.
+ */
+char grid_baseCharAt(grid_t* grid, const int x, const int y);
 
 /****************** grid_goldAt ***************************
  *

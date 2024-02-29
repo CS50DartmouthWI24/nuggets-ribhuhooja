@@ -13,16 +13,21 @@ LLIBS = ../support/support.a ../libcs50/libcs50-given.a
 
 all: grid.o player.o
 
-.PHONY: all clean gridtest
+.PHONY: all clean
+
+visibilitytest: visibilitytest.o grid.o $(LLIBS)
+	$(CC) $(CFLAGS) $^ -o $@
+	$(VALGRIND) ./$@
 
 gridtest: gridtest.o grid.o $(LLIBS)
 	$(CC) $(CFLAGS) $^ -o $@
 	$(VALGRIND) ./$@
 
-grid.o: grid.h
+grid.o: grid.h mapchars.h
 player.o: player.h grid.h
 
 gridtest.o: grid.h
+visibilitytest.o: grid.h
 
 
 ../support/support.a:

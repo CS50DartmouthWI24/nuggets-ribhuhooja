@@ -91,14 +91,6 @@ main()
   grid_toMap(grid, stdout);
   printf("\n");
 
-
-
-  // TODO: Check
-  // nuggetsPopulate, goldAt, collectGold
-  // visibility - probably needs to be checked separately 
-
-
-
   grid_delete(grid);
 
   return 0;

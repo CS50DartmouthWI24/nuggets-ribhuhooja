@@ -14,6 +14,7 @@
 #include "log.h"
 #include "mem.h"
 #include "game.h"
+#include "mapchars.h"
 
 // Global Variables
 static const MaxNameLength = 50;        // max number of chars in playerName
@@ -98,7 +99,7 @@ void game_addPlayer(game_t* game, player_t* player){
             game->numPlayer++;
         }
         else{
-            player_sendMessage("QUIT Game is full: no more players can join.\n");
+            player_sendMessage(player, "QUIT Game is full: no more players can join.\n");
         }
     }
 }
@@ -182,6 +183,76 @@ player_t* game_findPlayer(game_t* game, addr_t* address){
     }
 }
 
+
+
+// to change the coordinates and visble grid of player once it moves. 
+void game_move(game_t* game, addr_t* address, int dx, int dy){
+    if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
+        flog_v(stderr, "The coordinates to move the player is not with [-1, +1].\n");
+        return;
+    }
+    if (game == NULL || address == NULL){
+        flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
+        return;
+    }
+    // to update the coordinates
+    player_t* player = game_findPlayer(game, address);
+    player_moveDiagonal(player, dx, dy);
+
+    // to get the current x and y position of the player
+    int px = player_getX(player);
+    int py = player_getY(player);
+
+    // to update the visible grid 
+    grid_t* visibleGrid = player_getVisibleGrid(player);
+    grid_movePlayer(visibleGrid, px, py, dx, dy); // will it change the player's visible grid directly-------------- is it the master gird here?
+
+    // to get the updated x and y position of the player 
+    int px = player_getX(player);
+    int py = player_getY(player);
+    
+    // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
+    int claimedGold = grid_collectGold(game->masterGrid, px, py);
+    if (claimedGold > 0){ //is it the master gird here?
+        player_setGold(player, claimedGold);
+
+        int purse = player_getGold(player); // the amount of gold player has in its purse.
+        int remain = game->goldRemain;      // the amount of gold remaining in the game.
+        char* message = ("GOLD %d %d %d", claimedGold, purse, remain); // do i need to allocate memory for this?--------------
+        player_sendMessage(player, message);
+    }
+}
+
+
+// this functin is to move the player a long as it can move only to one direction, either diagonally, vertically or horizontally.
+void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
+    if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
+        flog_v(stderr, "The coordinates to long move the player is not with [-1, +1].\n");
+        return;
+    }
+    if (game == NULL || address == NULL){
+        flog_v(stderr, "Cannot long move player. Either Null player or Null game c.\n");
+        return;
+    }
+
+    player_t* player = game_findPlayer(game, address);
+
+    char moveSpot = grid_charAt(game->masterGrid, dx, dy);// thr grid is master grid here ?------------------------
+    while (moveSpot == mapchars_roomSpot || moveSpot == mapchars_passageSpot || moveSpot == mapchars_gold){
+        game_move(game, address, dx, dy);
+  }
+}
+
+// A helper funciton to for printing the last results.
+void static print_result(player_t* player){// how to manage the new line added by each log here?---------------------
+    if (player != NULL){
+        log_c("%c",player_getletter(player));
+        log_d("    %d ", player_getGold(player));
+        log_s("%s", player_getName(player));
+    }
+}
+
+
 // to delete everything in the game that was initialized before. Check game.h for more information. 
 void game_over(game_t* game){
 
@@ -202,10 +273,5 @@ void game_over(game_t* game){
     mem_free(game);
 }
 
-void static print_result(player_t* player){
-    if (player != NULL){
-        log_c("%c",player_getletter(player));
-        log_d("    %d ", player_getGold(player));
-        log_s("%s", player_getName(player));
-    }
-}
+
+

@@ -57,26 +57,6 @@ game_t* game_init(FILE* mapfile);
 void game_addPlayer(game_t* game, player_t* player);
 
 
-/************* game_addSpectator *************/
-/** Add a new spectator to the game
-
- * Caller provides: 
- *  @param game structure pointer, 
- *  @param address of spectator
- * 
- * We do:
- *  if there is already a spectator in the game, replace the new spectator 
- *  by the current one and send a quit message to current one and initialize the new spectator. 
- *  Otherwise, just accept the request and initialize the spectator.
- * 
- * We return:
- *  None
- * 
- * Notes:
-*/
-void game_addSpectator(game_t* game, addr_t* address);
-
-
 /************* game_removePlayer *************/
 /** Remove a player from the game
 
@@ -98,6 +78,27 @@ void game_addSpectator(game_t* game, addr_t* address);
  *  in the prayers array and we deny player's request.
 */
 void game_removePlayer(game_t* game, player_t* player);
+
+
+/************* game_addSpectator *************/
+/** Add a new spectator to the game
+
+ * Caller provides: 
+ *  @param game structure pointer, 
+ *  @param address of spectator
+ * 
+ * We do:
+ *  if there is already a spectator in the game, replace the new spectator 
+ *  by the current one and send a quit message to current one and initialize the new spectator. 
+ *  Otherwise, just accept the request and initialize the spectator.
+ * 
+ * We return:
+ *  None
+ * 
+ * Notes:
+*/
+void game_addSpectator(game_t* game, addr_t* address);
+
 
 
 /************* game_removeSpectator *************/
@@ -173,7 +174,55 @@ spectator_t* game_getSpectator(game_t* game);
  * Notes:
  *  The array can be null with zero player. The caller should take care of that. 
 */
-player_t* game_findPlayer(game_t* game, addr_t address);
+player_t* game_findPlayer(game_t* game, addr_t* address);
+
+
+/************* game_move *************/
+/** Update the position of the players in the game
+
+ * Caller provides: 
+ *  @param game structure pointer
+ *  @param addres of the player
+ *  @param x direction that player moves. It should be wither -1, 0 , +1.
+ *  @param y direction that player moves. It should be wither -1, 0 , +1.
+ * 
+ * We do: 
+ *  Update the coordinates of the player in the game according to dx and dy
+ *  Update the visible grid of the player based on its current move.
+ *  Use grid_movePlayer function of grid module to get the new visible grid
+ *  Update the gold claimed by the player if steped on a gold pile and send 
+ *  a message to player saying the amount of gold claimed, in purse and remaining
+ *  
+ * We return:
+ *  Null
+ * 
+ * Notes:
+*/
+void game_move(game_t* game, addr_t* address, int dx, int dy);
+
+
+
+/************* game_move *************/
+/** Update the position of the players in the game
+
+ * Caller provides: 
+ *  @param game structure pointer
+ *  @param addres of the player
+ *  @param x direction that player moves. It should be wither -1, 0 , +1.
+ *  @param y direction that player moves. It should be wither -1, 0 , +1.
+ * 
+ * We do: 
+ *  Move the player as long it does not hit a wall. 
+ *  Update the visible grid of the player and the amount of gold it has recieved 
+ *  based on its current move each time it moves. 
+ *  
+ *  
+ * We return:
+ *  Null
+ * 
+ * Notes:
+*/
+void game_longMove(game_t* game, addr_t* address, int dx, int dy);
 
 
 /************* game_over *************/

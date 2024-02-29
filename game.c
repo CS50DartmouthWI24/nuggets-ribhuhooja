@@ -126,7 +126,7 @@ void game_addPlayer(game_t* game, player_t* player){
 // to remove player from the game. Check game.h for more information.
 void game_removePlayer(game_t* game, player_t* player){
     if (game != NULL || player != NULL){
-        player_t* player = game_findPlayer(game,player->address);
+        player_t* player = game_findPlayer(game,player_getAddress(player));
         if(player == NULL){
             flogv(stderr, "Cannot remove a player that is not in players array.\n");
             return;

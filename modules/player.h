@@ -180,16 +180,16 @@ void player_setGold(player_t* player, int gold);
  */
 void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
 
-/************* player_setChar *************/
+/************* player_setInactive *************/
 /* 
- * Set the character of the player
+ * Set the isIactive of the player to false 
  *
  * Caller provides: 
  *  Pointer to the player and the character to set it to.
  * We do: 
- *  Set the character of the player to that character.
+ *  Mark the player as inactive.
  */
-void player_setChar(player_t* player, char* letter);
+void player_setInactive(player_t* player);
 
 /************* player_sendMessage *************/
 /* 

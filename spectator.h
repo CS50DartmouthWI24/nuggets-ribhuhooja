@@ -5,6 +5,7 @@
  * The struct keeps track of all information that defines a spectator 
  *
  * Paul Cherian, COSC 50, Febuary 2024
+ * Updated by Tayeb Mohammadi
  * 
  */
 
@@ -13,7 +14,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
-#include "../support/message.h"
+#include "message.h"
 #include "grid.h"
 
 /************* global types *************/

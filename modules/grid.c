@@ -421,7 +421,7 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   int gold = 0;
   if (moveSpot == mapchars_gold){
-    gold = grid_collectGold(grid, px, py);
+    gold = grid_collectGold(grid, x_new, y_new);
   }
 
   // update string visuals - TODO: doesn't do swapping yet
@@ -430,8 +430,12 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
   char* string = grid->string;
   char playerChar = string[oldIndex];
 
+  // if the new spot has gold, then get rid of the nugget character
+  // otherwise set the playerStanding on to whatever was there
+  char newStandingOn = moveSpot == mapchars_gold ? mapchars_roomSpot : moveSpot;
+
   string[oldIndex] = getPlayerStandingOn(grid, playerChar);
-  setPlayerStandingOn(grid, playerChar, string[newIndex]);
+  setPlayerStandingOn(grid, playerChar, newStandingOn);
   string[newIndex] = playerChar; 
 
   return gold;

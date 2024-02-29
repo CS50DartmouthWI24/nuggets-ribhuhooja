@@ -80,6 +80,21 @@ main()
   grid_debugGoldNumbersToMap(grid, stdout);
   printf("\n");
 
+  printf("Test: Have a player collect the gold\n\n");
+  printf("Gold at (6, 1): %d\n", grid_goldAt(grid, 6, 1));
+  grid_addPlayer(grid, 6, 2, '$');
+  grid_toMap(grid, stdout);
+  printf("\n");
+  int goldCollected = grid_movePlayer(grid, 6, 2, 0, -1);
+  grid_toMap(grid, stdout);
+  printf("\n");
+  printf("Gold collected: %d\n", goldCollected);
+  grid_movePlayer(grid, 6, 1, 0, 1);
+  grid_toMap(grid, stdout);
+  printf("\n");
+  grid_debugGoldNumbersToMap(grid, stdout);
+  printf("\n");
+
 
 
   // TODO: Check

@@ -225,7 +225,6 @@ bool grid_removePlayer(grid_t* grid, const char playerChar, const int px,
  *  valid pointer to grid and valid coordiantes inside grid
  * We do NOT:
  *  Update the amount of gold stored inside the player. That must be done by game.
- *  Update the grid character, because the player moved onto that character
  * We return:
  *  The amount of gold collected
  * Note:

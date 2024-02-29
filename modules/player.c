@@ -261,6 +261,63 @@ player_setInactive(player_t* player)
 
 }
 
+/****************** player_moveX ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+
+void
+player_moveX(player_t* player, int direction)
+{
+    if(player == NULL){
+        flog_v(stderr, "Cannot move a null player in x direction.\n");
+        return;
+    }
+
+    player->x += direction;
+
+}
+
+/****************** player_moveX ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+
+void
+player_moveY(player_t* player, int direction)
+{
+    if(player == NULL){
+        flog_v(stderr, "Cannot move a null player in y direction.\n");
+        return;
+    }
+
+    player->y += direction;
+
+}
+
+/****************** player_moveDiagonal ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+
+void
+player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)
+{
+    if(player == NULL){
+        flog_v(stderr, "Cannot move a null player in diagonally direction.\n");
+        return;
+    }
+
+    player->y += Xdirection;
+    player->y += Ydirection;
+
+}
+
+
+
 /****************** player_setVisibleGrid ****************************
  *
  * see player.h for description and usage

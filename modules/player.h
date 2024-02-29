@@ -170,6 +170,46 @@ void player_setY(player_t* player, int y);
  */
 void player_setGold(player_t* player, int gold);
 
+
+
+
+
+/****************** player_moveX ****************************
+/* 
+ * Move player in X direction
+ * Caller provides: 
+ *  A pointer to the player and an integer [-1, 0 , 1].
+ * We do: 
+ *  Change the position of the player accordingly
+ */
+
+void player_moveX(player_t* player, int direction);
+
+
+/****************** player_moveY ****************************
+/* 
+ * Move player in Y direction
+ * Caller provides: 
+ *  A pointer to the player and and an integer from [-1, 0 , 1].
+ * We do: 
+ *  Change the position of the player accordingly
+ */
+
+void player_moveX(player_t* player, int direction);
+
+/****************** player_moveDiagonal ****************************
+/* 
+ * Move player in both X and Y directions diagonally
+ * Caller provides: 
+ *  A pointer to the player and and two integers from [-1, 0 , 1].
+ * We do: 
+ *  Change the position of the player according to the directions given
+ */
+
+void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection);
+
+
+
 /************* player_setVisibleGrid *************/
 /* 
  * Set the visible grid for the player

@@ -27,7 +27,8 @@ typedef struct player {
   grid_t* visibleGrid;      // the grid that the player can see
   int gold;                 // the gold collected by the player
   char* name;               // the name of the player
-  char character;           // the character representation of the player on the map
+  bool isActive;            // whether the player is active
+  char letter;           // the character representation of the player on the map
   addr_t* address;          // the address of the player client, for sending messages
 } player_t;
 
@@ -37,24 +38,27 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t* address, int x, int y, char* name, char character )
+player_new (addr_t* address, int x, int y, char* name, char letter )
 {
   if (address == NULL || name == NULL){
     return NULL;
   }
 
-  player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocte memory for player");
+  player_t* player = mem_malloc_assert(sizeof(player_t), "Failed to allocate memory for player");
 
   int len = strlen(name);
 
-  player->name = mem_malloc_assert(len * sizeof(char), "Failed to alocate memory for name of the player");
+  player->name = mem_malloc_assert(len * sizeof(char), "Failed to allocate memory for name of the player");
   strncpy(player->name, name, len); // make a copy of the passed in string
 
-  player->character = character;
+  player->letter = letter;
   player->x = x;
   player->y = y;
+  player->isActive = true;
   player->address= address;
   player->gold = 0; // start off a new player with 0 gold
+
+  player->visibleGrid = NULL;
 
   return player;
 }
@@ -165,13 +169,13 @@ player_getName(const player_t* player)
  *
  */
 char
-player_getChar(const player_t* player)
+player_getLetter(const player_t* player)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot get letter of null player.\n");
         return '\0';
     }
-    return player->character;
+    return player->letter;
 }
 
 /****************** player_getAddress ****************************
@@ -231,7 +235,7 @@ void
 player_setGold(player_t* player, int gold)
 {
     if(player == NULL){
-        flog_v(stderr, "Cannot move null player.\n");
+        flog_v(stderr, "Cannot set gold for null player.\n");
         return;
     }
 

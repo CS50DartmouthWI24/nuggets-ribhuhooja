@@ -16,19 +16,19 @@
 #include "game.h"
 
 // Global Variables
-const MaxNameLength = 50;   // max number of chars in playerName
-const  MaxPlayers = 26;      // maximum number of players
-GoldTotal = 250;      // amount of gold in the game and it is not static because it changes later
-const GoldMinNumPiles = 10; // minimum number of gold piles
-const GoldMaxNumPiles = 30; // maximum number of gold piles
+const MaxNameLength = 50;        // max number of chars in playerName
+const  MaxPlayers = 26;          // maximum number of players
+GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
+const GoldMinNumPiles = 10;      // minimum number of gold piles
+const GoldMaxNumPiles = 30;      // maximum number of gold piles
 
 typedef struct game{
-    player_t** players; // array of players
-    grid_t* masterGrid; // the master grid(map) which covers the whole map
-    spectator_t* spectator; // the address of the spectator
-    int numPlayer; // number of players joined the game so far
-    int goldRemain; // the remaining gold in the game
-    int numPiles; // the random number of piles between max and min number given as global variables.
+    player_t** players;         // array of players
+    grid_t* masterGrid;         // the master grid(map) which covers the whole map
+    spectator_t* spectator;     // the address of the spectator
+    int numPlayer;              // number of players joined the game so far
+    int goldRemain;             // the remaining gold in the game
+    int numPiles;               // the random number of piles between max and min number given as global variables.
 } game_t;
 
 
@@ -132,7 +132,7 @@ void game_removePlayer(game_t* game, player_t* player){
             return;
         }
         player_sendMessage(player,"QUIT Thanks for playing!\n");
-        player->isActive = false;
+        player_setInactive(player);
     }
 
 }
@@ -154,7 +154,7 @@ void game_removeSpectator(game_t* game, addr_t* address){
 
         // to check if the spectator is already in the game
         spectator_t* spectator = game->spectator;
-        if (!(message_eqAddr(*spectator->address, *address))){
+        if (!(message_eqAddr(*spectator_getAddress(spectator), *address))){
             flogv(stderr,"cannot remove a spectator that is not in the game.\n");
             return;
         }
@@ -192,7 +192,7 @@ player_t* game_findPlayer(game_t* game, addr_t* address){
         player_t* player;
         for (int i = 0; i < game->numPlayer; i++){
             player = game->players[i];
-            if (message_eqAddr(*player->address, *address)){
+            if (message_eqAddr(*player_getAddress(player), *address)){
                 return player;
             }
         }
@@ -208,6 +208,7 @@ void game_over(game_t* game){
     /************* delete players ************/
     // to delete each player one by one
     for (int i = 0; i < game->numPlayer; i++){
+        print_result(game->players[game->numPlayer]);
         player_delete(game->players[game->numPlayer]);
     }
     // and then free the array of players too
@@ -219,4 +220,12 @@ void game_over(game_t* game){
     grid_delete(game->masterGrid);
     // free game structure
     mem_free(game);
+}
+
+void static print_result(player_t* player){
+    if (player != NULL){
+        log_c("%c",player_getletter(player));
+        log_d("    %d ", player_getGold(player));
+        log_s("%s", player_getName(player));
+    }
 }

@@ -125,7 +125,7 @@ char* player_getName(const player_t* player);
  *  A pointer to a string containing the letter of the player.
  *  the null character on failure
  */
-char player_getChar(const player_t* player);
+char player_getletter(const player_t* player);
 
 /************* player_getAddress *************/
 /* 

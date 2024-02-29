@@ -243,6 +243,24 @@ player_setGold(player_t* player, int gold)
 
 }
 
+/****************** player_setFalse ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+
+void
+player_setInactive(player_t* player)
+{
+    if(player == NULL){
+        flog_v(stderr, "Cannot mark inactive a null player.\n");
+        return;
+    }
+
+    player->isActive = false;
+
+}
+
 /****************** player_setVisibleGrid ****************************
  *
  * see player.h for description and usage

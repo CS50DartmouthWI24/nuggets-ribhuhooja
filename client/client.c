@@ -70,18 +70,19 @@ main(const int argc, char* argv[])
   addr_t server; 
 
 
-  char* grid = "GRID 16 9";
-  handleGRID(grid, &cData);
+  // char* grid = "GRID 16 9";
+  // handleGRID(grid, &cData);
 
-  char* display = "DISPLAY\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789";
-  handleDISPLAY(display, &cData);
+  // char* display = "DISPLAY\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789";
+  // handleDISPLAY(display, &cData);
 
 
-  char* gold =  "GOLD 0 5 3";
+  // char* gold =  "GOLD 0 5 3";
 
-  handleGOLD(gold, &cData);
+  // handleGOLD(gold, &cData);
 
   // create server address
+
   if (!message_setAddr(serverHost, serverPort, &server)) { 
     fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 4; // bad hostname/port
@@ -193,23 +194,26 @@ static bool handleInput(void* arg) {
 
 /**************** handleMessage() ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-  if(message == NULL) {
-      fprintf(stderr, "ERROR message is invalid \n");
-      return false;
-  }
 
-  if(strncmp(message, "GRID ", strlen("GRID ")) == 0) { 
+  if(message == NULL) {
+    fprintf(stderr, "ERROR message is invalid \n");
+    return false;
+  }
+  else if(strncmp(message, "GRID ", strlen("GRID ")) == 0) { 
     handleGRID(message, &cData);
   } 
-  if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
+  else if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     handleQUIT(message, &cData);
   } 
   else if(strncmp(message, "GOLD ", strlen("GOLD ")) == 0) { 
     handleGOLD(message, &cData);
   } 
-  else if(strncmp(message, "DISPLAY\n", strlen("DISPLAY\n")) == 0) {
+
+
+  else if(strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
     handleDISPLAY(message, &cData);
   } 
+
   else if(strncmp(message, "ERROR ", strlen("ERROR ")) == 0) {
     handleERROR(message);
   } 
@@ -218,6 +222,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
      mvprintw((&cData)->rows,0, "Error: passed in an erroneous message.\n");
 
   }
+  refresh();
   return false;
 }
 
@@ -319,7 +324,7 @@ static void handleERROR(const char* message){
 
 /**************** handleDISPLAY() ****************/
 static void handleDISPLAY(const char* message, void* arg){
-
+  
   clientData_t* cData = (clientData_t*) arg;
 
   // copy message to edit
@@ -337,7 +342,7 @@ static void handleDISPLAY(const char* message, void* arg){
 
 	// loop through the map
 	for (int i = 0; map[i] != '\0'; i++) {
-
+    
     // check if at the end of a line or at the end of screen
 		if (map[i] == '\n' || j >= cols) {
 
@@ -345,9 +350,10 @@ static void handleDISPLAY(const char* message, void* arg){
 			currY++;
 			currX = 0;
 			j = 0; // reset cols
+
 		} 
     else {
-
+      
 			// add char at the currX and currY and mv there
 			mvaddch(currY, currX, map[i]);
 			currX++;

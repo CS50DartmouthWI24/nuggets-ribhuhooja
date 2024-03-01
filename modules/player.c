@@ -355,3 +355,25 @@ player_sendMessage(player_t* player, char* message)
 
     message_send(*(player->address), message);
 }
+
+/****************** player_isActive ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+bool
+player_isActive(player_t* player)
+{
+    if(player == NULL || player->address == NULL){
+        flog_v(stderr, "Cannot send message for null player or address.\n");
+        return;
+    }
+    if (player->isActive){
+        return true;
+    }
+    else{
+        return false;
+    }
+
+    
+}

@@ -241,6 +241,18 @@ void player_setInactive(player_t* player);
  */
 void player_sendMessage(player_t* player, char* message);
 
+/****************** player_isActive ****************************
+/* 
+ * Send message to a player
+ * Caller provides: 
+ *  A pointer to the player
+ * We do: 
+ *  return true is player is active,
+ *  otherwise false
+ */
+
+bool player_isActive(player_t* player)
+
 #endif // __PLAYER_H
 
 

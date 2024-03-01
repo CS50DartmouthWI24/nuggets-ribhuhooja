@@ -123,7 +123,7 @@ void game_removeSpectator(game_t* game, addr_t address){
 // to get the players array. Check game.h for more information.
 player_t** game_getPlayers(game_t* game){
     if (game == NULL){
-        flogv(stderr, "Cannot get the players array of null game.\n");
+        flog_v(stderr, "Cannot get the players array of null game.\n");
     }
     return game->players;
 }
@@ -131,7 +131,7 @@ player_t** game_getPlayers(game_t* game){
 // to get the spectator. Check game.h for more information.
 spectator_t* game_getSpectator(game_t* game){
     if (game == NULL){
-        flogv(stderr, "Cannot get the spectator of null game.\n");
+        flog_v(stderr, "Cannot get the spectator of null game.\n");
     }
     return game->spectator;
 }
@@ -140,7 +140,7 @@ spectator_t* game_getSpectator(game_t* game){
 // to find a player by its address. Check game.h for more information.
 player_t* game_findPlayer(game_t* game, addr_t address){
     if (game == NULL){
-        flogv(stderr, "Cannot find player in null game");
+        flog_v(stderr, "Cannot find player in null game");
         return NULL;
     }
     else{
@@ -152,7 +152,7 @@ player_t* game_findPlayer(game_t* game, addr_t address){
             }
         }
         // after we come out of loop and could not find the player in players array
-        flogv(stderr, "There is no pplayers in array with the given address.\n");
+        flog_v(stderr, "There is no pplayers in array with the given address.\n");
         return NULL;
     }
 }

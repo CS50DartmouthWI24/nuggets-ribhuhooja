@@ -140,6 +140,18 @@ char player_getletter(const player_t* player);
  */
 addr_t player_getAddress(const player_t* player);
 
+/****************** player_isActive ***********************
+ *
+ * returns whether the player is active or not
+ *
+ * Caller provides:
+ *  valid pointer to player
+ * We return:
+ *  true if the player is active
+ *  false if the player is inactive or if there is an error
+ */
+bool player_isActive(player_t* player);
+
 /************* player_setX *************/
 /* 
  * Set the x-coordinate of the player
@@ -170,9 +182,16 @@ void player_setY(player_t* player, int y);
  */
 void player_setGold(player_t* player, int gold);
 
-
-
-
+/****************** player_addGold ************************
+ *
+ * Add the amount of gold to the player's purse
+ *
+ * Caller provides:
+ *  valid pointer to player and the amount of gold to add
+ * We do:
+ *  we add the amount of gold provided to the player's purse
+ */
+void player_addGold(player_t* player, int gold);
 
 /****************** player_moveX ****************************
  * Move player in X direction

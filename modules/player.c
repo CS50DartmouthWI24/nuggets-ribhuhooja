@@ -194,6 +194,21 @@ player_getAddress(const player_t* player)
     return player->address;
 }
 
+/****************** player_isActive ***********************
+ *
+ * see player.h for description and usage
+ *
+ */
+bool
+player_isActive(player_t* player)
+{
+  if (player == NULL){
+    return false;
+  }
+
+  return player->isActive;
+}
+
 /****************** player_setX ****************************
  *
  * see player.h for description and usage
@@ -243,7 +258,23 @@ player_setGold(player_t* player, int gold)
 
 }
 
-/****************** player_setFalse ****************************
+/****************** player_addGold ************************
+ *
+ * see player.h for description and usage
+ *
+ */
+void
+player_addGold(player_t* player, int gold)
+{
+  if (player == NULL){
+    flog_v(stderr, "Cannot add gold for null player.\n");
+    return;
+  }
+
+  player->gold += gold;
+}
+
+/****************** player_setInactive ****************************
  *
  * see player.h for description and usage
  *

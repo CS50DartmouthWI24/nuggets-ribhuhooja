@@ -10,11 +10,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "log.h"
+#include "mem.h"
 #include "spectator.h"
 #include "player.h"
 #include "grid.h" 
-#include "log.h"
-#include "mem.h"
 #include "game.h"
 #include "mapchars.h"
 
@@ -43,7 +43,6 @@ game_t* game_init(FILE* mapfile){
     // initialize grid
     game->masterGrid = grid_fromMap(mapfile);
     
-    game->numPiles = randomNumber(GoldMinNumPiles,GoldMaxNumPiles);// to find a random number for piles of gold
     // which is between max and min number of piles give as global variable.
     game->numPlayer = 0;// set num of player to zero
     game->goldRemain = GoldTotal;// set the gold remaining in the game to GoldTotal.
@@ -84,7 +83,7 @@ void game_removePlayer(game_t* game, player_t* playerA){
     if (game != NULL && playerA != NULL){
         player_t* playerB = game_findPlayer(game,player_getAddress(playerA)); 
         if(playerB == NULL){
-            flogv(stderr, "Cannot remove a player that is not in players array.\n");
+            flog_v(stderr, "Cannot remove a player that is not in players array.\n");
             return;
         }
         player_sendMessage(playerA,"QUIT Thanks for playing!\n");

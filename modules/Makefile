@@ -11,7 +11,7 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 LIBS = 
 LLIBS = ../support/support.a ../libcs50/libcs50-given.a
 
-all: grid.o player.o spectator.o
+all: grid.o player.o spectator.o game.o
 
 .PHONY: all clean gridtest
 
@@ -22,6 +22,7 @@ gridtest: gridtest.o grid.o $(LLIBS)
 grid.o: grid.h
 player.o: player.h grid.h
 spectator.o: spectator.h
+game.o: game.h spectator.h player.h grid.h mapchars.h
 
 gridtest.o: grid.h
 

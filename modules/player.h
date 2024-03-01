@@ -36,7 +36,7 @@ typedef struct player player_t;
  *  when done.
  *
 */
-player_t* player_new (addr_t* address, int x, int y, char* name, char letter );
+player_t* player_new (addr_t address, int x, int y, char* name, char letter );
 
 
 /************* player_delete *************/
@@ -138,7 +138,7 @@ char player_getletter(const player_t* player);
  *  The pointer to the address of the player.
  *  NULL on failure
  */
-addr_t* player_getAddress(const player_t* player);
+addr_t player_getAddress(const player_t* player);
 
 /************* player_setX *************/
 /* 

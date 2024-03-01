@@ -22,14 +22,14 @@
 
 /******************* types *******************************/
 typedef struct player {
-  int x;                    // x-coordinate of the player
-  int y;                    // y-coordinate of the player
-  grid_t* visibleGrid;      // the grid that the player can see
-  int gold;                 // the gold collected by the player
-  char* name;               // the name of the player
-  bool isActive;            // whether the player is active
+  int x;                 // x-coordinate of the player
+  int y;                 // y-coordinate of the player
+  grid_t* visibleGrid;   // the grid that the player can see
+  int gold;              // the gold collected by the player
+  char* name;            // the name of the player
+  bool isActive;         // whether the player is active
   char letter;           // the character representation of the player on the map
-  addr_t* address;          // the address of the player client, for sending messages
+  addr_t address;        // the address of the player client, for sending messages
 } player_t;
 
 /****************** player_new ****************************
@@ -38,7 +38,7 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t* address, int x, int y, char* name, char letter )
+player_new (addr_t address, int x, int y, char* name, char letter )
 {
   if (address == NULL || name == NULL){
     return NULL;
@@ -183,12 +183,12 @@ player_getLetter(const player_t* player)
  * see player.h for description and usage
  *
  */
-addr_t*
+addr_t
 player_getAddress(const player_t* player)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot get address of null player.\n");
-        return NULL; 
+        return message_noAddr(); 
     }
 
     return player->address;

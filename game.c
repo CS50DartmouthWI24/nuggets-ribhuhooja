@@ -203,7 +203,7 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
         int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= claimedGold;
         int remain = game->goldRemain;      // the amount of gold remaining in the game.
-        game_sendAllGoldMessages(game);
+        game_sendAllGoldMessages(game, player, claimedGold);
     }
 
     // update the visible grids for each player
@@ -295,9 +295,9 @@ void static game_updateAllVisibleGrids(game_t* game){
 // A helper funciton to for printing the last results.
 void static print_result(player_t* player){// how to manage the new line added by each log here?---------------------
     if (player != NULL){
-        flog_c(stderr, "%c",player_getletter(player));
-        flog_d(stderr, "    %d ", player_getGold(player));
-        flog_s(stderr,"%s", player_getName(player));
+        // flog_c(stderr, "%c",player_getletter(player));
+        // flog_d(stderr, "    %d ", player_getGold(player));
+        // flog_s(stderr,"%s", player_getName(player));
         char* result = ("%c    %d %s",player_getletter(player), player_getGold(player), player_getName(player));
         flog_v(stderr, result);
     }

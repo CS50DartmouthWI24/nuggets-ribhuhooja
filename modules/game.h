@@ -96,7 +96,7 @@ void game_removePlayer(game_t* game, player_t* player);
  * 
  * Notes:
 */
-void game_addSpectator(game_t* game, addr_t* address);
+void game_addSpectator(game_t* game, addr_t address);
 
 
 
@@ -117,7 +117,7 @@ void game_addSpectator(game_t* game, addr_t* address);
  * 
  * Notes:
 */
-void game_removeSpectator(game_t* game, addr_t* address);
+void game_removeSpectator(game_t* game, addr_t address);
 
 
 
@@ -173,7 +173,7 @@ spectator_t* game_getSpectator(game_t* game);
  * Notes:
  *  The array can be null with zero player. The caller should take care of that. 
 */
-player_t* game_findPlayer(game_t* game, addr_t* address);
+player_t* game_findPlayer(game_t* game, addr_t address);
 
 
 /************* game_move *************/
@@ -197,7 +197,7 @@ player_t* game_findPlayer(game_t* game, addr_t* address);
  * 
  * Notes:
 */
-void game_move(game_t* game, addr_t* address, int dx, int dy);
+void game_move(game_t* game, addr_t address, int dx, int dy);
 
 
 
@@ -221,7 +221,7 @@ void game_move(game_t* game, addr_t* address, int dx, int dy);
  * 
  * Notes:
 */
-void game_longMove(game_t* game, addr_t* address, int dx, int dy);
+void game_longMove(game_t* game, addr_t address, int dx, int dy);
 
 
 /************* game_over *************/

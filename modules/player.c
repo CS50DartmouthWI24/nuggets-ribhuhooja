@@ -40,7 +40,7 @@ typedef struct player {
 player_t*
 player_new (addr_t address, int x, int y, char* name, char letter )
 {
-  if (address == NULL || name == NULL){
+  if (name == NULL){
     return NULL;
   }
 
@@ -346,10 +346,10 @@ player_setVisibleGrid(player_t* player, grid_t* visibleGrid)
 void
 player_sendMessage(player_t* player, char* message)
 {
-    if(player == NULL || player->address == NULL){
+    if(player == NULL){
         flog_v(stderr, "Cannot send message for null player or address.\n");
         return;
     }
 
-    message_send(*(player->address), message);
+    message_send(player->address, message);
 }

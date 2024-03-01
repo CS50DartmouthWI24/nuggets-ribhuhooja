@@ -93,7 +93,7 @@ void game_removePlayer(game_t* game, player_t* playerA){
 
 // to add a spectator to the game.
 // Check game.h for more information.
-void game_addSpectator(game_t* game, addr_t* address){
+void game_addSpectator(game_t* game, addr_t address){
     if (game != NULL){
         if (game->spectator != NULL){ 
             spectator_sendMessage(game->spectator, "QUIT You have been replaced by a new spectator.\n");
@@ -104,13 +104,13 @@ void game_addSpectator(game_t* game, addr_t* address){
 }
 
 // to remove spectator from the game. Check game.h for more information.
-void game_removeSpectator(game_t* game, addr_t* address){
-    if (game != NULL && address != NULL){
+void game_removeSpectator(game_t* game, addr_t address){
+    if (game != NULL){
 
         // to check if the spectator is already in the game
         spectator_t* spectator = game->spectator;
-        if (!(message_eqAddr(*spectator_getAddress(spectator), *address))){
-            flogv(stderr,"cannot remove a spectator that is not in the game.\n");
+        if (!(message_eqAddr(spectator_getAddress(spectator), address))){
+            flog_v(stderr,"cannot remove a spectator that is not in the game.\n");
             return;
         }
         spectator_sendMessage(spectator,"QUIT Thanks for watching!\n");
@@ -138,7 +138,7 @@ spectator_t* game_getSpectator(game_t* game){
 
 
 // to find a player by its address. Check game.h for more information.
-player_t* game_findPlayer(game_t* game, addr_t* address){
+player_t* game_findPlayer(game_t* game, addr_t address){
     if (game == NULL){
         flogv(stderr, "Cannot find player in null game");
         return NULL;
@@ -147,7 +147,7 @@ player_t* game_findPlayer(game_t* game, addr_t* address){
         player_t* player;
         for (int i = 0; i < game->numPlayer; i++){
             player = game->players[i];
-            if (message_eqAddr(*player_getAddress(player), *address)){
+            if (message_eqAddr(player_getAddress(player), address)){
                 return player;
             }
         }
@@ -160,12 +160,12 @@ player_t* game_findPlayer(game_t* game, addr_t* address){
 
 
 // to change the coordinates and visble grid of player once it moves. 
-void game_move(game_t* game, addr_t* address, int dx, int dy){
+void game_move(game_t* game, addr_t address, int dx, int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to move the player is not with [-1, +1].\n");
         return;
     }
-    if (game == NULL || address == NULL){
+    if (game == NULL){
         flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
         return;
     }
@@ -203,12 +203,12 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
 
 
 // this functin is to move the player a long as it can move only to one direction, either diagonally, vertically or horizontally.
-void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
+void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to long move the player is not with [-1, +1].\n");
         return;
     }
-    if (game == NULL || address == NULL){
+    if (game == NULL){
         flog_v(stderr, "Cannot long move player. Either Null player or Null game c.\n");
         return;
     }

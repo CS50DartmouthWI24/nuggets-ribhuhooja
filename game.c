@@ -29,37 +29,10 @@ typedef struct game{
     spectator_t* spectator;     // the address of the spectator
     int numPlayer;              // number of players joined the game so far
     int goldRemain;             // the remaining gold in the game
-    int numPiles;               // the random number of piles between max and min number given as global variables.
+//    int numPiles;               // the random number of piles between max and min number given as global variables.
 } game_t;
 
 
-// to get a random number between max and min numbers
-static int randomNumber(int min, int max){
-    if (max <= min){
-        flogv(stderr,"Failed to generate a random variable for invalid max and min.\n");
-        return -1;
-    }
-    int num = rand();
-    num = min + num % (max - min + 1);
-    return num;
-
-}
-
-// to get a random number between max and min numbers for gold. 
-static int random_goldNumber(grid_t* grid, int numPiles, int count, int remaining){
-    if (grid == NULL || numPiles <=0){
-        flogv(stderr,"Failed to generate a random gold pile.\n");
-        return -1;
-    }
-    if ((numPiles - count) == 1){ // to allocate all the remaing gold to the last pile on map
-        return remaining;
-    }
-    // if not the last pile of gold, devide the remaining gold by numPiles - count
-    int gold = remaining / (numPiles - count); 
-    // and then return a random value between 1 and that number
-    return randomNumber(1, gold);
-
-}
 // this function initializes the whole game by initializing each small other small part of it.
 game_t* game_init(FILE* mapfile){
 
@@ -68,7 +41,6 @@ game_t* game_init(FILE* mapfile){
     // initialize grid
     game->masterGrid = grid_fromMap(mapfile);
     
-    game->numPiles = randomNumber(GoldMinNumPiles,GoldMaxNumPiles);// to find a random number for piles of gold
     // which is between max and min number of piles give as global variable.
     game->numPlayer = 0;// set num of player to zer0
     game->goldRemain = GoldTotal;// set the gold remaining in the game to GoldTotal.
@@ -97,6 +69,13 @@ void game_addPlayer(game_t* game, player_t* player){
         if (game->numPlayer < MaxPlayers){
             game->players[game->numPlayer] = player;
             game->numPlayer++;
+
+            char letter = player_getletter(player);
+
+            grid_addPlayer(game->masterGrid, player_getX(player), player_getY(player), letter);
+            
+            // make and send message
+            // player_sendMessage(player, "OK \n");
         }
         else{
             player_sendMessage(player, "QUIT Game is full: no more players can join.\n");
@@ -114,6 +93,8 @@ void game_removePlayer(game_t* game, player_t* playerA){
         }
         player_sendMessage(playerA,"QUIT Thanks for playing!\n");
         player_setInactive(playerA);
+
+        grid_removePlayer(game->masterGrid, player_getletter(playerA), player_getX(playerA), player_getY(playerA));
     }
 }
 
@@ -195,14 +176,19 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
         return;
     }
     player_t* player = game_findPlayer(game, address);
+
+    if (player == NULL || !player_isActive(player)){
+        flog_v(stderr, "Player not in  game\n");
+        return;
+    }
     
     // to get the current x and y position of the player
     int px = player_getX(player);
     int py = player_getY(player);
-    int res = grid_movePlayer(game->masterGrid, px, py, dx, dy);
+    int claimedGold = grid_movePlayer(game->masterGrid, px, py, dx, dy);
     
     // to update the coordinates
-    if (res != -1) {
+    if (claimedGold != -1) {
         player_moveDiagonal(player, dx, dy);
     }
 
@@ -211,7 +197,6 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
     py = player_getY(player);
     
     // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
-    int claimedGold = res;
     if (claimedGold > 0){
         player_addGold(player, claimedGold);
 
@@ -241,6 +226,11 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
 
     player_t* player = game_findPlayer(game, address);
 
+    if (player == NULL || !player_isActive(player)){
+        flog_v(stderr, "Player not in  game\n");
+        return;
+    }
+
     int returnVal; // return value from move; is -1 if move failed
     int goldCollected = 0;
     while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
@@ -255,7 +245,7 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
         game->goldRemain -= goldCollected;
         int remain = game->goldRemain;      // the amount of gold remaining in the game.
 
-        game_sendAllGoldMessages(game);
+        game_sendAllGoldMessages(game,player,goldCollected);
 //      char message[100];
 //      snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
 //      player_sendMessage(player, message);
@@ -268,8 +258,30 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
     game_displayAllPlayers(game);
 
 }
+// this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
+static void game_sendAllGoldMessages(game_t* game, player_t* player, int playerGold){
 
-void game_updateAllVisibleGrids(game_t* game){
+    for (int i = 0; i < game->numPlayer; ++i){
+        if (Player_iActive(game->players[i])){
+
+            int goldCollected = 0;
+            int purse = player_getGold(game->players[i]);
+            int remain = game->goldRemain;
+
+            if (game_findPlayer(game, player_getAddress(player)) !=NULL){ // to make sure the current players claimed gold is not zero
+                int goldCollected = playerGold;
+            }
+            
+            char message[100];
+            snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
+            player_sendMessage(game->players[i], message);
+
+        }
+    }
+}
+
+// to update the visible grid of each player 
+void static game_updateAllVisibleGrids(game_t* game){
     for (int i = 0; i < game->numPlayer; ++i){
         player_t* curr = game->players[i];
         if (!player_isActive(curr)){
@@ -312,5 +324,8 @@ void game_over(game_t* game){
     mem_free(game);
 }
 
-
+// TODO
+// player_isActive ++++++
+// game_sendAllGoldMessages +++++++
+// game_displayAllPlayers(game); 
 

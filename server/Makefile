@@ -1,15 +1,18 @@
-# Makefile for 'server' module
+# Makefile for 'client' module
 #
-# Sam Starrs, Febuary 2024
+# Paul Cherian, Febuary 2024
 #
 # structure adapted from David Kotz 'Bag' Makefile April 2021
 
 # objects
-L = ./support
-# C = 
+L = ../support
+M = ../modules
+C= ../libcs50
+LLIBS = ../libcs50/libcs50-given.a ../support/support.a
+MODULES = ../modules/grid.o ../modules/player.o
 
 # specify c compiler type and cflag lib
-CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$L
+CFLAGS = -Wall -pedantic -std=c11 -ggdb -I$M -I$L -I$C
 CC = gcc
 MAKE = make
 
@@ -19,31 +22,16 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 # mark non-file targets as phony
 .PHONY: all test valgrind clean
 
-all: server
+all: server 
 
-# message server miniserver miniclient
+../modules/player.o: ../modules/player.h
+	$(MAKE) -C ../modules
 
-miniclient.o: ./support/miniclient.c
-	$(CC) $(CFLAGS) -c $< -o $@
+server: server.o $(MODULES) $(LLIBS)
+	$(CC) $(CFLAGS) $^ -o $@
 
-miniserver.o: ./support/miniserver.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-message.o: ./support/message.c
-	$(CC) $(CFLAGS) -c $< -o $@ 
-
-message: message.o
-	$(CC) -o $@ $^ $(CFLAGS) -L$L -l:support.a
-
-miniclient: miniclient.o
-	$(CC) -o $@ $^ $(CFLAGS) -L$L -l:support.a
-
-miniserver: miniserver.o
-	$(CC) -o $@ $^ $(CFLAGS) -L$L -l:support.a
-
-server: server.o
-	$(CC) -o $@ $^ $(CFLAGS) -L$L -l:support.a
-
+../modules/grid.o: ../modules/grid.h
+	$(MAKE) -C ../modules
 
 # Add a rule to run your testing.sh script
 test: client testing.sh

@@ -16,7 +16,8 @@
 #include "player.h"
 #include "spectator.h"
 
-
+#ifndef GAME_H
+#define GAME_H
 /************* game structure *************/
 typedef struct game game_t;
 
@@ -241,3 +242,4 @@ void game_longMove(game_t* game, addr_t* address, int dx, int dy);
  * Notes:
 */
 void game_over(game_t* game);
+#endif // GAME_H

@@ -19,7 +19,7 @@
 // Global Variables
 static const MaxNameLength = 50;        // max number of chars in playerName
 static const  MaxPlayers = 26;          // maximum number of players
-static GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
+static int GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
 static const GoldMinNumPiles = 10;      // minimum number of gold piles
 static const GoldMaxNumPiles = 30;      // maximum number of gold piles
 
@@ -41,7 +41,7 @@ static int randomNumber(int min, int max){
     }
     int num = rand();
     num = min + num % (max - min + 1);
-    return min;
+    return num;
 
 }
 
@@ -81,7 +81,7 @@ game_t* game_init(FILE* mapfile){
     
 
     // initialize player 
-    game->players = mem_calloc_assert(26, sizeof(player_t*), "Failed to allocate memory for Player.\n"); // is it a pointer to player or the player itself?------------------
+    game->players = mem_calloc_assert(MaxPlayers, sizeof(player_t*), "Failed to allocate memory for Player.\n"); 
 
     // initialize spectator
     game->spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocate memory for Player.\n");
@@ -93,8 +93,8 @@ game_t* game_init(FILE* mapfile){
 
 // to add a player to the game.Check game.h for more information.
 void game_addPlayer(game_t* game, player_t* player){
-    if (game != NULL || player != NULL){
-        if (game->numPlayer < 26){
+    if (game != NULL && player != NULL){
+        if (game->numPlayer < MaxPlayers){
             game->players[game->numPlayer] = player;
             game->numPlayer++;
         }
@@ -105,17 +105,16 @@ void game_addPlayer(game_t* game, player_t* player){
 }
 
 // to remove player from the game. Check game.h for more information.
-void game_removePlayer(game_t* game, player_t* player){
-    if (game != NULL || player != NULL){
-        player_t* player = game_findPlayer(game,player_getAddress(player));
-        if(player == NULL){
+void game_removePlayer(game_t* game, player_t* playerA){
+    if (game != NULL && playerA != NULL){
+        player_t* playerB = game_findPlayer(game,player_getAddress(playerA)); 
+        if(playerB == NULL){
             flogv(stderr, "Cannot remove a player that is not in players array.\n");
             return;
         }
-        player_sendMessage(player,"QUIT Thanks for playing!\n");
-        player_setInactive(player);
+        player_sendMessage(playerA,"QUIT Thanks for playing!\n");
+        player_setInactive(playerA);
     }
-
 }
 
 // to add a spectator to the game. Check game.h for more information.
@@ -131,7 +130,7 @@ void game_addSpectator(game_t* game, addr_t* address){
 
 // to remove spectator from the game. Check game.h for more information.
 void game_removeSpectator(game_t* game, addr_t* address){
-    if (game != NULL || address != NULL){
+    if (game != NULL && address != NULL){
 
         // to check if the spectator is already in the game
         spectator_t* spectator = game->spectator;
@@ -165,7 +164,7 @@ spectator_t* game_getSpectator(game_t* game){
 
 // to find a player by its address. Check game.h for more information.
 player_t* game_findPlayer(game_t* game, addr_t* address){
-    if (game = NULL){
+    if (game == NULL){
         flogv(stderr, "Cannot find player in null game");
         return NULL;
     }
@@ -195,32 +194,37 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
         flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
         return;
     }
-    // to update the coordinates
     player_t* player = game_findPlayer(game, address);
-    player_moveDiagonal(player, dx, dy);
-
+    
     // to get the current x and y position of the player
     int px = player_getX(player);
     int py = player_getY(player);
-
-    // to update the visible grid 
-    grid_t* visibleGrid = player_getVisibleGrid(player);
-    grid_movePlayer(visibleGrid, px, py, dx, dy); // will it change the player's visible grid directly-------------- is it the master gird here?
+    int res = grid_movePlayer(game->masterGrid, px, py, dx, dy);
+    
+    // to update the coordinates
+    if (res != -1) {
+        player_moveDiagonal(player, dx, dy);
+    }
 
     // to get the updated x and y position of the player 
-    int px = player_getX(player);
-    int py = player_getY(player);
+    px = player_getX(player);
+    py = player_getY(player);
     
     // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
-    int claimedGold = grid_collectGold(game->masterGrid, px, py);
-    if (claimedGold > 0){ //is it the master gird here?
-        player_setGold(player, claimedGold);
+    int claimedGold = res;
+    if (claimedGold > 0){
+        player_addGold(player, claimedGold);
 
         int purse = player_getGold(player); // the amount of gold player has in its purse.
+        game->goldRemain -= claimedGold;
         int remain = game->goldRemain;      // the amount of gold remaining in the game.
-        char* message = ("GOLD %d %d %d", claimedGold, purse, remain); // do i need to allocate memory for this?--------------
-        player_sendMessage(player, message);
+        game_sendAllGoldMessages(game);
     }
+
+    // update the visible grids for each player
+    game_updateAllVisibleGrids(game);
+    game_displayAllPlayers(game);
+
 }
 
 
@@ -237,10 +241,43 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
 
     player_t* player = game_findPlayer(game, address);
 
-    char moveSpot = grid_charAt(game->masterGrid, dx, dy);// thr grid is master grid here ?------------------------
-    while (moveSpot == mapchars_roomSpot || moveSpot == mapchars_passageSpot || moveSpot == mapchars_gold){
-        game_move(game, address, dx, dy);
-  }
+    int returnVal; // return value from move; is -1 if move failed
+    int goldCollected = 0;
+    while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
+        player_moveDiagonal(player, dx, dy);
+        goldCollected += returnVal;
+    }
+
+    if (goldCollected > 0){
+        player_addGold(player, goldCollected);
+
+        int purse = player_getGold(player); // the amount of gold player has in its purse.
+        game->goldRemain -= goldCollected;
+        int remain = game->goldRemain;      // the amount of gold remaining in the game.
+
+        game_sendAllGoldMessages(game);
+//      char message[100];
+//      snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
+//      player_sendMessage(player, message);
+    }
+
+
+
+    // update the visible grids for each player
+    game_updateAllVisibleGrids(game);
+    game_displayAllPlayers(game);
+
+}
+
+void game_updateAllVisibleGrids(game_t* game){
+    for (int i = 0; i < game->numPlayer; ++i){
+        player_t* curr = game->players[i];
+        if (!player_isActive(curr)){
+            continue;
+        }
+        player_setVisibleGrid(curr, grid_generateVisibleGrid(game->masterGrid, player_getVisibleGrid(curr), player_getX(curr), player_getY(curr)));
+    }
+
 }
 
 // A helper funciton to for printing the last results.
@@ -261,8 +298,8 @@ void game_over(game_t* game){
     /************* delete players ************/
     // to delete each player one by one
     for (int i = 0; i < game->numPlayer; i++){
-        print_result(game->players[game->numPlayer]);
-        player_delete(game->players[game->numPlayer]);
+        print_result(game->players[i]);
+        player_delete(game->players[i]);
     }
     // and then free the array of players too
     mem_free(game->players);

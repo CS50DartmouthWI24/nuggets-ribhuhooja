@@ -10,11 +10,11 @@
 
 #include "message.h"
 #include "spectator.h"
+#include "mem.h" 
 
-
-// to make a new soectator. Check spectator.h for more information 
+// to make a new spectator. Check spectator.h for more information 
 spectator_t* spectator_new(addr_t* address){
-    spectator_t* spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocte memory for spectator.\n");
+    spectator_t* spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocate memory for spectator.\n");
     spectator->address = address;
     return spectator;
 }
@@ -24,7 +24,7 @@ addr_t* spectator_getAddress(spectator_t* spectator){
     if (spectator != NULL){
         return spectator->address;
     }
-    flogv(stderr, "cannot get the address of null spectator.\n");
+    flog_v(stderr, "cannot get the address of null spectator.\n");
     return NULL;
 }
 
@@ -32,12 +32,13 @@ addr_t* spectator_getAddress(spectator_t* spectator){
 void spectator_delete(spectator_t* spectator){
     if(spectator != NULL){
         mem_free(spectator);
+        return;
     }
-    flogv(stderr, "cannot get the delete of null spectator.\n");
+    flog_v(stderr, "cannot delete null spectator.\n");
 }
 
 // to send message to a spectator. Check spectator.h for more information 
-void player_sendMessage(spectator_t* spectator, char* message){
+void spectator_sendMessage(spectator_t* spectator, char* message){
     if(spectator == NULL){
         flog_v(stderr, "Cannot send message for null spectator.\n");
         return;

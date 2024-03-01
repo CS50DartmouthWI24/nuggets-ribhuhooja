@@ -9,9 +9,9 @@
  * 
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
+#ifndef SPECTATOR_H
+#define SPECTATOR_H
+
 #include <string.h>
 #include <stdbool.h>
 #include "message.h"
@@ -53,10 +53,13 @@ void spectator_delete(spectator_t* spectator);
 
 /************* spectator_sendMessage *************/
 /* 
- * Send message to a player
+ * Send message to a spectator
  * Caller provides: 
- *  A pointer to the player and a pointer to message string
+ *  A pointer to the spectator and a pointer to message string
  * We do: 
- *  Send the message to player
+ *  Send the message to spectator
  */
 void spectator_sendMessage(spectator_t* spectator, char* message);
+
+
+#endif // SPECTATOR_H

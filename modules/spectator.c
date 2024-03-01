@@ -5,22 +5,29 @@
  * The struct keeps track of all information that defines a spectator. 
  *
  * Author: Tayeb Mohammadi. COSC 50, Winter, 2024
+ * Modified: Ribhu Hooja, March 2024
  * 
  */
 
 #include "message.h"
 #include "spectator.h"
 
+/****************** the spectator type *******************/
+
+typedef struct spectator {
+  addr_t address;
+}
+
 
 // to make a new soectator. Check spectator.h for more information 
-spectator_t* spectator_new(addr_t* address){
+spectator_t* spectator_new(addr_t address){
     spectator_t* spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocte memory for spectator.\n");
     spectator->address = address;
     return spectator;
 }
 
 // to get the address of the spectator. Check spectator.h for more information 
-addr_t* spectator_getAddress(spectator_t* spectator){
+addr_t* spectator_getAddress(spectator_t spectator){
     if (spectator != NULL){
         return spectator->address;
     }
@@ -29,7 +36,7 @@ addr_t* spectator_getAddress(spectator_t* spectator){
 }
 
 //  to delete the the spectaor. Check spectator.h for more information 
-void spectator_delete(spectator_t* spectator){
+void spectator_delete(spectator_t spectator){
     if(spectator != NULL){
         mem_free(spectator);
     }
@@ -37,10 +44,10 @@ void spectator_delete(spectator_t* spectator){
 }
 
 // to send message to a spectator. Check spectator.h for more information 
-void player_sendMessage(spectator_t* spectator, char* message){
+void player_sendMessage(spectator_t spectator, char* message){
     if(spectator == NULL){
         flog_v(stderr, "Cannot send message for null spectator.\n");
         return;
     }
-    message_send(*spectator->address, message);
+    message_send(spectator->address, message);
 }

@@ -18,9 +18,7 @@
 #include "grid.h"
 
 /************* global types *************/
-typedef struct spectator {
-    addr_t* address;
-} spectator_t;
+typedef struct spectator spectator_t;
 
 /**** spectator_new ****/
 /* Create a new spectator struct to observe nuggets games

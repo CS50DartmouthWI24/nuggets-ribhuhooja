@@ -21,6 +21,7 @@ gridtest: gridtest.o grid.o $(LLIBS)
 
 grid.o: grid.h
 player.o: player.h grid.h
+spectator.o: spectator.h
 
 gridtest.o: grid.h
 

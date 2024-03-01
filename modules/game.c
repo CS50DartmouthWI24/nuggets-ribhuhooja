@@ -2,6 +2,8 @@
  * Team torpedos Winter, 2024
  * 
  * Author:Tayeb Mohammadi
+ *
+ * Modified: Ribhu Hooja, March 2024
  * 
 */
 
@@ -16,12 +18,12 @@
 #include "game.h"
 #include "mapchars.h"
 
-// Global Variables
-static const MaxNameLength = 50;        // max number of chars in playerName
-static const  MaxPlayers = 26;          // maximum number of players
-static int GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
-static const GoldMinNumPiles = 10;      // minimum number of gold piles
-static const GoldMaxNumPiles = 30;      // maximum number of gold piles
+// Global Constants
+static const int MaxNameLength = 50;        // max number of chars in playerName
+static const int MaxPlayers = 26;           // maximum number of players
+static const int GoldTotal = 250;           // amount of gold in the game
+static const int GoldMinNumPiles = 10;      // minimum number of gold piles
+static const int GoldMaxNumPiles = 30;      // maximum number of gold piles
 
 typedef struct game{
     player_t** players;         // array of players
@@ -29,38 +31,11 @@ typedef struct game{
     spectator_t* spectator;     // the address of the spectator
     int numPlayer;              // number of players joined the game so far
     int goldRemain;             // the remaining gold in the game
-    int numPiles;               // the random number of piles between max and min number given as global variables.
 } game_t;
 
 
-// to get a random number between max and min numbers
-static int randomNumber(int min, int max){
-    if (max <= min){
-        flogv(stderr,"Failed to generate a random variable for invalid max and min.\n");
-        return -1;
-    }
-    int num = rand();
-    num = min + num % (max - min + 1);
-    return num;
-
-}
-
-// to get a random number between max and min numbers for gold. 
-static int random_goldNumber(grid_t* grid, int numPiles, int count, int remaining){
-    if (grid == NULL || numPiles <=0){
-        flogv(stderr,"Failed to generate a random gold pile.\n");
-        return -1;
-    }
-    if ((numPiles - count) == 1){ // to allocate all the remaing gold to the last pile on map
-        return remaining;
-    }
-    // if not the last pile of gold, devide the remaining gold by numPiles - count
-    int gold = remaining / (numPiles - count); 
-    // and then return a random value between 1 and that number
-    return randomNumber(1, gold);
-
-}
-// this function initializes the whole game by initializing each small other small part of it.
+// this function initializes the whole game by initializing 
+// each small part of it.
 game_t* game_init(FILE* mapfile){
 
     game_t* game = mem_malloc_assert(sizeof(game_t), "Failed to allocate memory for game.\n");
@@ -70,7 +45,7 @@ game_t* game_init(FILE* mapfile){
     
     game->numPiles = randomNumber(GoldMinNumPiles,GoldMaxNumPiles);// to find a random number for piles of gold
     // which is between max and min number of piles give as global variable.
-    game->numPlayer = 0;// set num of player to zer0
+    game->numPlayer = 0;// set num of player to zero
     game->goldRemain = GoldTotal;// set the gold remaining in the game to GoldTotal.
 
 
@@ -84,14 +59,13 @@ game_t* game_init(FILE* mapfile){
     game->players = mem_calloc_assert(MaxPlayers, sizeof(player_t*), "Failed to allocate memory for Player.\n"); 
 
     // initialize spectator
-    game->spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocate memory for Player.\n");
-
-
+    game->spectator = NULL;
     return game;
 }
 
 
-// to add a player to the game.Check game.h for more information.
+// to add a player to the game.
+// Check game.h for more information.
 void game_addPlayer(game_t* game, player_t* player){
     if (game != NULL && player != NULL){
         if (game->numPlayer < MaxPlayers){
@@ -104,7 +78,8 @@ void game_addPlayer(game_t* game, player_t* player){
     }
 }
 
-// to remove player from the game. Check game.h for more information.
+// to remove player from the game.
+// Check game.h for more information.
 void game_removePlayer(game_t* game, player_t* playerA){
     if (game != NULL && playerA != NULL){
         player_t* playerB = game_findPlayer(game,player_getAddress(playerA)); 
@@ -117,10 +92,11 @@ void game_removePlayer(game_t* game, player_t* playerA){
     }
 }
 
-// to add a spectator to the game. Check game.h for more information.
+// to add a spectator to the game.
+// Check game.h for more information.
 void game_addSpectator(game_t* game, addr_t* address){
     if (game != NULL){
-        if (game->spectator != NULL){ // it means that there is already a spepctator in the game
+        if (game->spectator != NULL){ 
             spectator_sendMessage(game->spectator, "QUIT You have been replaced by a new spectator.\n");
             spectator_delete(game->spectator);
         }
@@ -224,7 +200,6 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
     // update the visible grids for each player
     game_updateAllVisibleGrids(game);
     game_displayAllPlayers(game);
-
 }
 
 

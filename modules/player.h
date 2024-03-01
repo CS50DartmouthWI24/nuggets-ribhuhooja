@@ -175,7 +175,6 @@ void player_setGold(player_t* player, int gold);
 
 
 /****************** player_moveX ****************************
-/* 
  * Move player in X direction
  * Caller provides: 
  *  A pointer to the player and an integer [-1, 0 , 1].
@@ -187,7 +186,6 @@ void player_moveX(player_t* player, int direction);
 
 
 /****************** player_moveY ****************************
-/* 
  * Move player in Y direction
  * Caller provides: 
  *  A pointer to the player and and an integer from [-1, 0 , 1].
@@ -198,7 +196,6 @@ void player_moveX(player_t* player, int direction);
 void player_moveX(player_t* player, int direction);
 
 /****************** player_moveDiagonal ****************************
-/* 
  * Move player in both X and Y directions diagonally
  * Caller provides: 
  *  A pointer to the player and and two integers from [-1, 0 , 1].

@@ -11,7 +11,7 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 LIBS = 
 LLIBS = ../support/support.a ../libcs50/libcs50-given.a
 
-all: grid.o player.o
+all: grid.o player.o spectator.o
 
 .PHONY: all clean gridtest
 

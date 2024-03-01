@@ -15,7 +15,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include "message.h"
-#include "grid.h"
 
 /************* global types *************/
 typedef struct spectator spectator_t;
@@ -26,7 +25,7 @@ typedef struct spectator spectator_t;
  *  Returns a spectator_t* object with the given address
  *  Returns NULL if any errors
  */
-spectator_t* spectator_new(addr_t* address);
+spectator_t* spectator_new(addr_t address);
 
 /****** spectator_getAddress ******/
 /* gets the address of a given spectator
@@ -35,7 +34,7 @@ spectator_t* spectator_new(addr_t* address);
  * We do: 
  *  Return the spectator struct address. Return NULL on any error
  */
-addr_t* spectator_getAddress(spectator_t* spectator);
+addr_t spectator_getAddress(spectator_t* spectator);
 
 /****** spectator_delete ****/
 /* 

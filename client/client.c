@@ -9,17 +9,15 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include "client.h"
 #include "../support/log.h"
 #include "../support/message.h"
 #include <ncurses.h>
 #include <unistd.h>
 
-/**************** local types ****************/
-/*
- * currClient will hold all the relevant info for what we need to use or display to the user
- * ie. their ID, their, currentGold, their port, rows, cols, and spectator
-*/
+
+/************ struct clientData **************/
+/* wraps all the neccesary data that a client should 
+ * be able to access in one struct */
 typedef struct clientData {
   // player's characteristics
   char id;
@@ -32,9 +30,10 @@ typedef struct clientData {
   int cols;
   bool spectator;
   
-
 } clientData_t;
 
+
+// function prototypes 
 static bool handleInput(void* arg);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static int parseArgs(const int argc, char* argv[], clientData_t* cData);
@@ -46,21 +45,41 @@ static void handleERROR(const char* message);
 static void handleDISPLAY(const char* message, void* arg);
 static void handleOK(const char* message, void* arg);
 
-// global client data since can't pass through
+
+// global client data since can't pass specify arg to pass in messages
 clientData_t cData; // set up client data
 
+
+
+/***************** main() *****************/ 
+/* 
+ * Caller provides: 
+ *  keystrokes from keyboard
+ * We do: 
+ *  run the main logic of the game
+ * We return:
+ *  return 0 or 1 depending on success of exectution
+ */
 int
 main(const int argc, char* argv[])
 {
+
+  // initialize the message and extract the port 
   int ourPort = message_init(stderr);
-  if (ourPort == 0) { // check if we can initialize the message
+
+  // check if that was successful
+  if (ourPort == 0) {
+
+    // print to stderr log if not
     fprintf(stderr, "Error: could not initialize message log");
-    return 1; 
+    return 1;  // return failure
   }
 
+  // initialize the start of the log
   log_v("START OF LOG\n");
  
-  int errorParseArgs = parseArgs(argc, argv, &cData); // parse arguments
+  // parse arguments and check if successful
+  int errorParseArgs = parseArgs(argc, argv, &cData); 
   if (errorParseArgs != 0){
     return errorParseArgs;
   }
@@ -73,20 +92,7 @@ main(const int argc, char* argv[])
   (&cData)->port = atoi(argv[2]);
   addr_t server; 
 
-
-  // char* grid = "GRID 16 9";
-  // handleGRID(grid, &cData);
-
-  // char* display = "DISPLAY\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789\n123456789";
-  // handleDISPLAY(display, &cData);
-
-
-  // char* gold =  "GOLD 0 5 3";
-
-  // handleGOLD(gold, &cData);
-
-  // create server address
-
+  // populate the server addr_t by using the host and portname
   if (!message_setAddr(serverHost, serverPort, &server)) { 
     // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 4; // bad hostname/port
@@ -99,17 +105,25 @@ main(const int argc, char* argv[])
   // shut down the message module
   message_done();
 
-  
   return ok? 0 : 1; // status code depends on result of message_loop
 
 }
 
-/**************** parseArgs ****************/
+/***************** parseArgs() *****************/ 
+/* 
+ * Caller provides: 
+ *  command line arguments and client data object to read into
+ * We do: 
+ *  parse the arguments and store data into the client data object
+ * We return:
+ *  0 on valid parameters, anything else means invalid parameters
+ */
 static int parseArgs(const int argc, char* argv[], clientData_t* cData){
 
   // check numArgs passed
+
   if (argc != 3 && argc != 4) {
-    // fprintf(stderr, "Error: improper number of arguments specified\n");
+    fprintf(stderr, "Error: improper number of arguments specified\n");
     return 2;
   }
 
@@ -120,7 +134,6 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
   // set up an addr_t for the server
   addr_t server; // address of the server
   if (!message_setAddr(serverHost, serverPort, &server)) {
-    // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 3; // bad hostname/port
   }
   
@@ -147,13 +160,22 @@ static int parseArgs(const int argc, char* argv[], clientData_t* cData){
     
   }
 
-
   return 0; // return success
 
 }
 
-/**************** handleInput ****************/
+/***************** handleInput() *****************/ 
+/* 
+ * Caller provides: 
+ *  the server as an arg parameter
+ * We do: 
+ *  read in keystrokes from stdin and send them to server
+ * We return:
+ *  bool to indicate whether or not to keep handlingInput
+ *  true- stop, false- continue
+ */
 static bool handleInput(void* arg) {
+
   // parse the server address
   addr_t* server = arg;
 
@@ -162,67 +184,113 @@ static bool handleInput(void* arg) {
     return true;
   }
 
-  // initialze char
+  // initialze char and set buffersize of 12
   char key;
-
   const int messageSize = 12;
 
+  // read a key from stdin, if not q
   if ((key = getch()) != 'q') { 
 
+    // create a static char array to print into
     char message[messageSize];
-    if (key == 'q') {
-      snprintf(message, sizeof(message), "QUIT");
-    } 
-    else {
-      snprintf(message, sizeof(message), "KEY %c", key);
-    } 
+   
+    // print into the array
+    snprintf(message, sizeof(message), "KEY %c", key);
 
-  message_send(*server, message);
-  return false;
+    // send the message to the server
+    message_send(*server, message);
+
+    // return false to indicate keep on looping
+    return false;
 
   } 
   else {
+
+    // close the ncurses
     endwin();
+    
+    // return true to keep looping
     return true;
   }
 }
 
-/**************** handleMessage() ****************/
+/***************** handleMessage() *****************/ 
+/* 
+ * Caller provides: 
+ *  addr_t of where where the message has been sent 
+ *  from and the message that has been sent to the 
+ *  client
+ * 
+ * We do: 
+ *  handle the message accordlingly and update
+ *  the client data depending on what it says
+ * 
+ * We return:
+ *  a bool depending on if message loop should continue or not (always should)
+ */
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
 
+  // check if message exists
   if(message == NULL) {
-    fprintf(stderr, "ERROR message is invalid \n");
-    return false;
+    fprintf(stderr, "ERROR message is invalid \n"); // print to log if not
+    return false; // keep listening
   }
+
+  // handle GRID message
   else if(strncmp(message, "GRID ", strlen("GRID ")) == 0) { 
     handleGRID(message, &cData);
   } 
+
+  // handle QUIT message
   else if (strncmp(message, "QUIT ", strlen("QUIT ")) == 0) {
     handleQUIT(message, &cData);
   } 
+
+  // handle GOLD message
   else if(strncmp(message, "GOLD ", strlen("GOLD ")) == 0) { 
     handleGOLD(message, &cData);
   } 
+
+  // handle DISPLAY message
   else if(strncmp(message, "DISPLAY", strlen("DISPLAY")) == 0) {
     handleDISPLAY(message, &cData);
   } 
 
+  // handle ERROR message
   else if(strncmp(message, "ERROR ", strlen("ERROR ")) == 0) {
     handleERROR(message);
   } 
+
+  // handle OKAY message
   else if(strncmp(message, "OK ", strlen("OK ")) == 0) {
     handleOK(message, &cData);
   } 
   else {
+
+    // refresh the screen to show changes
     refresh();
-     mvprintw((&cData)->rows,0, "Error: message is invalid.\n");
+    
+    // print invalid message if incoming message does not adhere to 
+    // any of the above conditions, print at bottom row
+    mvprintw((&cData)->rows,0, "Error: message is invalid.\n");
 
   }
-  refresh();
-  return false;
+
+  refresh(); // refresh the screen to show changes
+  return false; // keep listening
 }
 
-/**************** initializeTerminal() ****************/
+/***************** initializeTerminal() *****************/ 
+/* 
+ * Caller provides: 
+ *  nothing
+ * 
+ * We do: 
+ *  initialize ncurses with specifications
+ * 
+ * We return:
+ * void
+ */
 static void initializeTerminal(void){
   // initialize the screen, no waiting for newline, no echoing, yes keypad navigation
   initscr(); 
@@ -231,7 +299,17 @@ static void initializeTerminal(void){
   refresh(); 
 }
 
-/**************** handleGRID() ****************/
+/***************** handleGRID() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server and cData as arg
+ * 
+ * We do: 
+ *  update the cData struct with row and cols needed for grid in message
+ * 
+ * We return:
+ *  void
+ */
 static void handleGRID(const char* message, void* arg){
 
   // cast the client data to an argument
@@ -254,11 +332,15 @@ static void handleGRID(const char* message, void* arg){
   cData->rows = rows;
   cData->cols = cols;
 
-  // 
+  // while the size of the terminal is not larger than 
+  // the size of the grid + 1 (so we can display messages in bottom row)
   while (nrows < rows+1 || ncols < cols+1){
+
+    // prompt user to increase size
     printw("Window size requirements: %d rows by %d cols \n", rows+1, cols+1);
     printw("Please resize your window and press 1 when completed \n");
 
+    // re-get the size if they press 1
     if (getch() == '1') {
       getmaxyx(stdscr, nrows, ncols);
     }
@@ -268,10 +350,21 @@ static void handleGRID(const char* message, void* arg){
     refresh();
   }
   
-  refresh();
+  refresh(); // refresh screen to show changes
 }
 
-/**************** handleGOLD() ****************/
+/***************** handleGOLD() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server and cData as arg
+ * 
+ * We do: 
+ *  update the gold tracking data in the cData struct according
+ *  to the message from the server
+ * 
+ * We return:
+ *  void
+ */
 static void handleGOLD(const char* message, void* arg){
 
   clientData_t* cData = (clientData_t*) arg; // cast client from arg
@@ -288,25 +381,40 @@ static void handleGOLD(const char* message, void* arg){
 
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
+    // print spectator message about unclaimed nuggets in last row
     mvprintw((cData)->rows,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
     refresh();  
 
   }
-
+  // if player did not pick up any nuggets on this message
   else if (cData->nuggets == 0) {  
     move(0,0);
+    // print player message about current nuggets, and remaining nuggets 
     mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
     refresh();  
   }
+
+  // player did pick up nuggets so we have to display to them as well
   else {
     move(0,0);
+    // print player message about current nuggets, and remaining nuggets and the GOLD nuggets they recieved
     mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }
 
 
-/**************** handleQUIT() ****************/
+/***************** handleQUIT() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server and cData as arg
+ * 
+ * We do: 
+ *  end the game by shuttingdown ncurses
+ * 
+ * We return:
+ *  void (but exit success if handleQUIT called)
+ */
 static void handleQUIT(const char* message, void *arg){
   // end the game
   nocbreak();
@@ -314,29 +422,52 @@ static void handleQUIT(const char* message, void *arg){
   exit(0);
 }
 
-/**************** handleERROR() ****************/
+/***************** handleERROR() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server 
+ * 
+ * We do: 
+ *  nothing (logging is taken care of by the message module)
+ * 
+ * We return:
+ *  void 
+ */
 static void handleERROR(const char* message){
-  
+
 }
 
 
-/**************** handleDISPLAY() ****************/
+/***************** handleDISPLAY() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server and cData as arg
+ * 
+ * We do: 
+ *  print the grid in the messsage recieved from the server 
+ *  to the display using ncurses
+ * 
+ * We return:
+ *  void 
+ */
 static void handleDISPLAY(const char* message, void* arg){
   
+  // cast the arg to cData
   clientData_t* cData = (clientData_t*) arg;
 
   // copy message to edit
   char* messageCopy = malloc(strlen(message) + 1); 
   strcpy(messageCopy, message);
 
-  // get the map by incrementing  the pointer
+  // get the map by incrementing the pointer to the message
+  // and skipping the prefix
   char* map = messageCopy + strlen("DISPLAY\n");  
 
   // varaiables for looping
-  int cols = cData->cols;
+  int cols = cData->cols; // cols needed for the  grid
   int currY = 0; 
 	int currX = 0; 
-	int j = 0; 
+	int j = 0;  // counter of what column we are at
 
 	// loop through the map
 	for (int i = 0; map[i] != '\0'; i++) {
@@ -354,6 +485,8 @@ static void handleDISPLAY(const char* message, void* arg){
       
 			// add char at the currX and currY and mv there
 			mvaddch(currY, currX, map[i]);
+
+      // increment the currentX and the column we are on
 			currX++;
 			j++;
 
@@ -371,12 +504,20 @@ static void handleDISPLAY(const char* message, void* arg){
   // free messageCopy
   free(messageCopy);
 
-  // free map
-  // free(map);
 
 }
 
-/**************** handleDISPLAY() ****************/
+/***************** handleOK() *****************/ 
+/* 
+ * Caller provides: 
+ *  message from the server and cData as arg 
+ * 
+ * We do: 
+ *  stores a correctly formatted ID into the cData struct
+ * 
+ * We return:
+ *  void 
+ */
 static void handleOK(const char* message, void* arg){
 
   // cast the client data to an argument
@@ -391,24 +532,3 @@ static void handleOK(const char* message, void* arg){
 
 }
 
-// static logStderr(char* message){
-
-//   // prefix to start the log
-//   const char* prefix = ""; 
-
-//   // size_t for size of new message
-//   int newSize = strlen(prefix) + strlen(message) + 1; 
-
-//   // allocate memory for message to log
-//   char* newMessage = (char*)malloc(newSize);
- 
-//   // print into message
-//   sprintf(newMessage, "%s%s", prefix, message);
-
-//   // print message to stderr
-//   fprintf(stderr, "%s\n", newMessage);
-
-//   // Free the allocated memory
-//   free(newMessage);
-
-// }

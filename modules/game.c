@@ -33,6 +33,10 @@ typedef struct game{
     int goldRemain;             // the remaining gold in the game
 } game_t;
 
+/****************** local functions **********************/
+static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected,                                                              const int purse,
+                                                            const int goldRemaining);
+
 
 // this function initializes the whole game by initializing 
 // each small part of it.
@@ -269,15 +273,32 @@ static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPl
             int goldCollected = 0;
             int purse = player_getGold(player);
 
-            if (message_eqAddr(address, player_getAddress(player)));
-            
-            char message[100];
-            snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
-            player_sendMessage(player, message);
+            if (message_eqAddr(address, player_getAddress(player))){
+              goldCollected = goldJustCollectedPlayer;
 
+            }
+
+            sendGoldMessage(game, player, goldCollected, player_getGold(player),
+                                                         remaining);
         }
     }
 }
+
+/****************** sendGoldMessage ***********************
+ *
+ * sends a "GOLD n p r" message to the player
+ *
+ */
+static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, 
+                                                            const int purse,
+                                                            const int remaining)
+{
+  char message[100];
+  snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
+  player_sendMessage(player, message);
+}
+
+
 
 // to update the visible grid of each player 
 void static game_updateAllVisibleGrids(game_t* game){

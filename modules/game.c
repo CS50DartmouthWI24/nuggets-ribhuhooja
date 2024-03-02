@@ -428,6 +428,19 @@ static void displayAllPlayers(game_t* game){
         mem_free(gridString);
         free(message);
     }
+
+    if (game->spectator != NULL){
+        char* gridString = grid_getDisplay(game->masterGrid);
+        int gridLen = strlen(gridString);
+        int length = displayLen + gridLen;
+
+        char* message = mem_calloc_assert(length + 1, sizeof(char), "Could not allocate memory for display grid of each player.\n");
+        snprintf(message, length, "DISPLAY\n%s", gridString);
+        spectator_sendMessage(game->spectator, message);
+
+        mem_free(gridString);
+        free(message);
+    }
 }
 
 // A helper function that returns the result string

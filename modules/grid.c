@@ -14,7 +14,6 @@
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
-#include "grid.h"
 #include "mapchars.h"
 
 /****************** types ********************************/

@@ -80,7 +80,7 @@ void game_addPlayer(game_t* game, player_t* player){
             game->players[game->numPlayer] = player;
             game->numPlayer++;
 
-            char letter = player_getletter(player);
+            char letter = player_getLetter(player);
 
             grid_addPlayer(game->masterGrid, player_getX(player), player_getY(player), letter);
             
@@ -105,7 +105,7 @@ void game_removePlayer(game_t* game, player_t* playerA){
         player_sendMessage(playerA,"QUIT Thanks for playing!\n");
         player_setInactive(playerA);
 
-        grid_removePlayer(game->masterGrid, player_getletter(playerA), player_getX(playerA), player_getY(playerA));
+        grid_removePlayer(game->masterGrid, player_getLetter(playerA), player_getX(playerA), player_getY(playerA));
     }
 }
 
@@ -378,7 +378,7 @@ static char* get_result(game_t* game){
         player_t* player = game->players[i];
         char* result = mem_calloc_assert(length + 1, sizeof(char), "Out of memory, could not allocate memory for result string\n");
 
-        snprintf(result, length, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
+        snprintf(result, length, "%c %10d %s",player_getLetter(player), player_getGold(player), player_getName(player));
         strncat(gameOverMessage, result, length);
 
         free(result);

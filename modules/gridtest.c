@@ -91,6 +91,12 @@ main()
   grid_toMap(grid, stdout);
   printf("\n");
 
+  printf("Test: Add player in random location\n");
+  int px, py;
+  grid_findRandomSpawnPosition(grid, &px, &py);
+  grid_addPlayer(grid, px, py, '%');
+  grid_toMap(grid, stdout);
+
   grid_delete(grid);
 
   return 0;

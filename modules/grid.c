@@ -32,7 +32,11 @@ typedef struct grid {
 /****************** file-local global constants **********/
 // the initial string size allocated when reading a grid from a file
 static const int initGridStringSize = 2000; 
+// number of slots in the playerStandingOn hashtable
 static const int numSlotsPlayerHt = 26;
+// number of times we attempt to find a spot to spawn a player before switching
+// algorithms
+static const int numAttemptsSpawning = 100;
 
 /****************** global constants *********************/
 /* the map characters are defined as global constants here;
@@ -51,6 +55,8 @@ const char mapchars_gold = '*';
 
 /****************** local function prototypes ************/
 static inline int indexOf(const int x, const int y, const int numcols);
+static void getCoordsFromIndex(const int index, const int numcols, int* pX,
+                                                                          int* pY);
 static inline bool isValidCoordinate(const int x, const int y, const int numrows,
                                                                const int numcols);
 static bool isVisible(grid_t* grid, const int px, const int py, const int x, 
@@ -402,15 +408,67 @@ grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int p
       } else if (currString[index] != mapchars_solidRock) {
         // if a point hasn't been seeen before, it is solid rock
         currString[index] = grid_baseCharAt(grid, x, y);
-      } else {
-        // currString[index] = mapchars_solidRock;
-      }
+      } // else the point hasn't been seen before, so let it remain solid rock
+        // no action required
     }
   }
 
   currentlyVisibleGrid->string[indexOf(px, py, numcols)] = mapchars_player;
 
   return currentlyVisibleGrid;
+}
+
+/****************** grid_findRandomSpawnPosition **********
+ *
+ * see grid.h for usage and description
+ *
+ */
+bool
+grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)
+{
+  if (grid == NULL || pX == NULL || pY == NULL){
+    return false;
+  }
+
+  int numrows = grid->numrows;
+  int numcols = grid->numcols;
+
+  // to avoid an infinite loop we only repeat a certain number of times
+  for (int i = 0; i < numAttemptsSpawning; ++i){
+    int x = rand() % numcols;
+    int y = rand() % numrows;
+
+    if (grid_charAt(grid, x, y) == mapchars_roomSpot){
+      *pX = x;
+      *pY = y;
+      return true;
+    }
+  }
+
+  // if we are here then spawning didn't work
+  // we switch algorithms, listing all room spots and choosing one at random
+  // this is guaranteed to work unless no room spots are available
+
+  int numRoomSpots = 0;
+  int len = (numcols + 1) * numrows;
+  int roomIndices[len]; // at most len room spots
+
+  char* string = grid->string;
+  for (int i = 0; i < len; ++i){
+    if (string[i] == mapchars_roomSpot){
+      roomIndices[numRoomSpots] = i;
+      ++numRoomSpots;
+    }
+  }
+
+  if (numRoomSpots == 0){
+    return false;
+  }
+
+  // get an index between 0 and numRoomSpots
+  int chosenIndex = roomIndices[rand() % numRoomSpots];
+  getCoordsFromIndex(chosenIndex, numcols, pX, pY);
+  return true;
 }
 
 /****************** grid_addPlayer ************************
@@ -604,6 +662,27 @@ indexOf(const int x, const int y, const int numcols)
   // (x,y) has index (numcols + 1) * y + x
   
   return (numcols + 1) * y + x;
+}
+
+/****************** getCoordsFromIndex ********************
+ *
+ * gets the coordinates of a point from its index
+ *
+ */
+static void
+getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY)
+{
+  if (pX == NULL || pY == NULL){
+    return;
+  }
+
+  // index = (numcols + 1) * y + x
+  // therefore, x = index % (numcols + 1)
+  // and        y = index / (numcols + 1) 
+  // (integer division truncates towards floor)
+
+  *pX = index % (numcols + 1);
+  *pY = index / (numcols + 1);
 }
 
 /****************** isValidCoordinate *********************

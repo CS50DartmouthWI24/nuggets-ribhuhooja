@@ -466,12 +466,9 @@ grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)
   }
 
   // get an index between 0 and numRoomSpots
-  int chosenIndex = rand() % numRoomSpots;
-
+  int chosenIndex = roomIndices[rand() % numRoomSpots];
   getCoordsFromIndex(chosenIndex, numcols, pX, pY);
   return true;
-}
-  
 }
 
 /****************** grid_addPlayer ************************
@@ -675,7 +672,7 @@ indexOf(const int x, const int y, const int numcols)
 static void
 getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY)
 {
-  if (px == NULL || pY == NULL){
+  if (pX == NULL || pY == NULL){
     return;
   }
 

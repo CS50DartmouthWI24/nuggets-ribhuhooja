@@ -188,7 +188,7 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,
  *  Find a random empty room spot 
  *  put the coordinates of the spot at the addresses given as parameters
  */
-void grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
+bool  grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
 
 /****************** grid_addPlayer ************************
  *

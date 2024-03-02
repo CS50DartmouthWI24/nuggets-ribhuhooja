@@ -7,13 +7,13 @@
 #ifndef __MAPCHARS_H
 #define __MAPCHARS_H
 
-const char mapchars_player= '@';
-const char mapchars_solidRock = ' ';
-const char mapchars_horizontalBoundary = '-';
-const char mapchars_verticalBuondary = '|';
-const char mapchars_cornerBoundary = '+';
-const char mapchars_roomSpot = '.';
-const char mapchars_passageSpot = '#';
-const char mapchars_gold = '*';
+extern const char mapchars_player;
+extern const char mapchars_solidRock;
+extern const char mapchars_horizontalBoundary;
+extern const char mapchars_verticalBoundary;
+extern const char mapchars_cornerBoundary;
+extern const char mapchars_roomSpot;
+extern const char mapchars_passageSpot;
+extern const char mapchars_gold;
 
 #endif // __MAPCHARS_H

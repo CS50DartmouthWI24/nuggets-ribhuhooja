@@ -33,3 +33,4 @@ gridtest.o: grid.h
 clean:
 	rm -f *.o
 	rm -f gridtest
+	rm -f visibilitytest

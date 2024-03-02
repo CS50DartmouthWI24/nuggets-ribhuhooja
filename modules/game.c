@@ -225,14 +225,8 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (goldCollected > 0){
         player_addGold(player, goldCollected);
 
-        int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= goldCollected;
-        int remain = game->goldRemain;      // the amount of gold remaining in the game.
-
-        game_sendAllGoldMessages(game);
-//      char message[100];
-//      snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
-//      player_sendMessage(player, message);
+        game_sendAllGoldMessages(game, goldCollected, player);
     }
 
 

@@ -259,22 +259,26 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
 
 }
 // this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
-static void game_sendAllGoldMessages(game_t* game, player_t* player, int playerGold){
+static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int playerGold){
 
+    if (game == NULL || goldJustCollectedPlayer == NULL){
+        return;
+    }
+
+    int remain = game->goldRemain;
+    addr_t address = player_getAddress(goldJustCollectedPlayer);
     for (int i = 0; i < game->numPlayer; ++i){
-        if (Player_iActive(game->players[i])){
+        player_t* player = game->players[i];
+        if (Player_isActive(player)){
 
             int goldCollected = 0;
-            int purse = player_getGold(game->players[i]);
-            int remain = game->goldRemain;
+            int purse = player_getGold(player);
 
-            if (game_findPlayer(game, player_getAddress(player)) !=NULL){ // to make sure the current players claimed gold is not zero
-                int goldCollected = playerGold;
-            }
+            if (message_eqAddr(address, player_getAddress(player)));
             
             char message[100];
             snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
-            player_sendMessage(game->players[i], message);
+            player_sendMessage(player, message);
 
         }
     }

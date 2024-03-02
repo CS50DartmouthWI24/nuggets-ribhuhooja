@@ -390,24 +390,26 @@ static void handleGOLD(const char* message, void* arg){
 
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
-    // print spectator message about unclaimed nuggets in last row
+    // print spectator message about unclaimed nuggets in first row
     mvprintw(0,0, "Spectator: %d nuggets unclaimed", remaining);
     refresh();  
 
   }
-  // if player did not pick up any nuggets on this message
+  // if player did not pick up any nuggets on this message, print 
+  // status with unclaimed on first row
   else if (cData->nuggets == 0) {  
     move(0,0);
     // print player message about current nuggets, and remaining nuggets 
-    mvprintw(cData->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed)", cData->id, purse, remaining);
+    mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed)", cData->id, purse, remaining);
     refresh();  
   }
 
-  // player did pick up nuggets so we have to display to them as well
+  // player did pick up nuggets so we have to display to them as well so 
+  // print status with unclaimed on first row
   else {
     move(0,0);
     // print player message about current nuggets, and remaining nuggets and the GOLD nuggets they recieved
-    mvprintw(cData->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", cData->id, purse, remaining, nuggets);
+    mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }
@@ -489,7 +491,7 @@ static void handleDISPLAY(const char* message, void* arg){
 
   // varaiables for looping
   int cols = cData->cols; // cols needed for the  grid
-  int currY = 0; 
+  int currY = 1;  // starts out as 1 because 0th row is reserved for status
 	int currX = 0; 
 	int j = 0;  // counter of what column we are at
 

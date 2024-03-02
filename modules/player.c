@@ -39,7 +39,7 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t address, int x, int y, char* name, char letter )
+player_new (addr_t address, int x, int y, const char* name, char letter )
 {
   if (name == NULL){
     return NULL;
@@ -50,7 +50,7 @@ player_new (addr_t address, int x, int y, char* name, char letter )
   int len = strlen(name);
 
   player->name = mem_malloc_assert((len + 1) * sizeof(char), "Failed to allocate memory for name of the player");
-  strncpy(player->name, name, len); // make a copy of the passed in string
+  strncpy(player->name, name, len + 1); // make a copy of the passed in string
 
   player->letter = letter;
   player->x = x;
@@ -350,24 +350,23 @@ player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)
 
 
 
-/****************** player_setVisibleGrid ****************************
+/****************** player_updateVisibleGrid ****************************
  *
  * see player.h for description and usage
  *
  */
 void
-player_setVisibleGrid(player_t* player, grid_t* visibleGrid)
+player_updateVisibleGrid(player_t* player, grid_t* masterGrid)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot set grid for null player.\n");
         return;
     }
 
-    if (player->visibleGrid != NULL){
-      grid_delete(player->visibleGrid);
-    }
-
-    player->visibleGrid = visibleGrid;
+    player->visibleGrid = grid_generateVisibleGrid(masterGrid, 
+                                                   player->visibleGrid,
+                                                   player->x,
+                                                   player->y);
 }
 
 /****************** player_sendMessage ****************************
@@ -384,26 +383,4 @@ player_sendMessage(player_t* player, char* message)
     }
 
     message_send(player->address, message);
-}
-
-/****************** player_isActive ****************************
- *
- * see player.h for description and usage
- *
- */
-bool
-player_isActive(player_t* player)
-{
-    if(player == NULL || player->address == NULL){
-        flog_v(stderr, "Cannot send message for null player or address.\n");
-        return;
-    }
-    if (player->isActive){
-        return true;
-    }
-    else{
-        return false;
-    }
-
-    
 }

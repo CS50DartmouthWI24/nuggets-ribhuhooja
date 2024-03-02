@@ -36,9 +36,10 @@ typedef struct game{
 
 /****************** local functions **********************/
 static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining);
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
-void static game_updateAllVisibleGrids(game_t* game);
-void static print_result(player_t* player);
+static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
+static void displayAllPlayers(game_t* game);
+static void updateAllVisibleGrids(game_t* game);
+static char* get_result(game_t* game);
 
 
 
@@ -57,7 +58,7 @@ game_t* game_init(FILE* mapfile){
 
 
     // initialize gold and set it randomly on the map. 
-    if (grid_nuggetsPopulate(game->masterGrid, GoldMinNumPiles, GoldMaxNumPiles,game->goldRemain)){
+    if (!grid_nuggetsPopulate(game->masterGrid, GoldMinNumPiles, GoldMaxNumPiles,game->goldRemain)){
         flog_v(stderr, "Could not initialie the gold in random spots.\n");
     }
     
@@ -160,7 +161,7 @@ int
 game_numPlayers(game_t* game)
 {
   if (game == NULL){
-    return NULL;
+    return 0;
   }
 
   return game->numPlayer;
@@ -216,26 +217,28 @@ player_t* game_findPlayer(game_t* game, addr_t address){
 
 
 // to change the coordinates and visble grid of player once it moves. 
-void game_move(game_t* game, addr_t address, int dx, int dy){
+bool game_move(game_t* game, addr_t address, int dx, int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to move the player is not with [-1, +1].\n");
-        return;
+        return false;
     }
+
     if (game == NULL){
         flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
-        return;
+        return false;
     }
     player_t* player = game_findPlayer(game, address);
 
     if (player == NULL || !player_isActive(player)){
         flog_v(stderr, "Player not in  game\n");
-        return;
+        return false;
     }
     
     // to get the current x and y position of the player
     int px = player_getX(player);
     int py = player_getY(player);
     int claimedGold = grid_movePlayer(game->masterGrid, px, py, dx, dy);
+
     
     // to update the coordinates
     if (claimedGold != -1) {
@@ -253,31 +256,39 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
         //int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= claimedGold;
         // int remain = game->goldRemain;      // the amount of gold remaining in the game.
-        game_sendAllGoldMessages(game, player, claimedGold);
+        sendAllGoldMessages(game, player, claimedGold);
     }
 
     // update the visible grids for each player
-    game_updateAllVisibleGrids(game);
-    game_displayAllPlayers(game);
+
+    updateAllVisibleGrids(game);
+    displayAllPlayers(game);
+    
+    if (game->goldRemain == 0){
+       game_over(game);
+       return true;
+    }
+
+    return false;
 }
 
 
 // this functin is to move the player a long as it can move only to one direction, either diagonally, vertically or horizontally.
-void game_longMove(game_t* game,addr_t address, int dx ,int dy){
+bool game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to long move the player is not with [-1, +1].\n");
-        return;
+        return false;
     }
     if (game == NULL){
         flog_v(stderr, "Cannot long move player. Either Null player or Null game c.\n");
-        return;
+        return false;
     }
 
     player_t* player = game_findPlayer(game, address);
 
     if (player == NULL || !player_isActive(player)){
         flog_v(stderr, "Player not in  game\n");
-        return;
+        return false;
     }
 
     int returnVal; // return value from move; is -1 if move failed
@@ -285,23 +296,32 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
         player_moveDiagonal(player, dx, dy);
         goldCollected += returnVal;
+
+        player_updateVisibleGrid(player, game->masterGrid);
     }
 
     if (goldCollected > 0){
         player_addGold(player, goldCollected);
         game->goldRemain -= goldCollected;
-        game_sendAllGoldMessages(game, player, goldCollected);
+        sendAllGoldMessages(game, player, goldCollected);
     }
 
 
 
     // update the visible grids for each player
-    game_updateAllVisibleGrids(game);
-    game_displayAllPlayers(game);
+    updateAllVisibleGrids(game);
+    displayAllPlayers(game);
 
+    if (game->goldRemain == 0){
+       game_over(game);
+       return true;
+    }
+
+    return false;
 }
+
 // this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
+static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
 
     if (game == NULL || goldJustCollectedPlayer == NULL){
         return;
@@ -344,14 +364,18 @@ static void sendGoldMessage(game_t* game, player_t* player, const int goldCollec
 
 
 // to update the visible grid of each player 
-static void game_updateAllVisibleGrids(game_t* game){
-    for (int i = 0; i < game->numPlayer; ++i){
-        player_t* curr = game->players[i];
-        if (!player_isActive(curr)){
-            continue;
-        }
-        player_setVisibleGrid(curr, grid_generateVisibleGrid(game->masterGrid, player_getVisibleGrid(curr), player_getX(curr), player_getY(curr)));
-    }
+static void updateAllVisibleGrids(game_t* game){
+  if (game == NULL){
+    return;
+  }
+
+  for (int i = 0; i < game->numPlayer; ++i){
+      player_t* curr = game->players[i];
+      if (!player_isActive(curr)){
+          continue;
+      }
+      player_updateVisibleGrid(curr, game->masterGrid);
+  }
 
 }
 
@@ -377,36 +401,33 @@ static void displayAllPlayers(game_t* game){
         snprintf(message, length, "DISPLAY\n%s", gridString);
         player_sendMessage(player, message);
 
+        mem_free(gridString);
         free(message);
     }
 }
 
-// A helper funciton that returns the result string
+// A helper function that returns the result string
 static char* get_result(game_t* game){
     if (game == NULL){
         return NULL;
     }
 
+    int lineLength = MaxNameLength + 20;
 
-    // create a string result aggregate, mallocing enough space to add all the individual results
-    int length = (MaxNameLength + 20) * MaxPlayers;
-    char* gameOverMessage = mem_malloc_assert(length, "Could not allocate memory for game over message.\n");
+    // need to malloc to return from function
+    char* gameOverMessage = mem_calloc_assert(message_MaxBytes, sizeof(char), "out of memory\n");
+    sprintf(gameOverMessage, "QUIT GAME OVER:\n");
 
     for(int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        char* result = mem_calloc_assert((20 + MaxNameLength), sizeof(char), "Out of memory, could not allocate memory for result string\n");
+        char line[lineLength];
 
-        snprintf(result, length, "%c %10d %s",player_getLetter(player), player_getGold(player), player_getName(player));
-        strncat(gameOverMessage, result, length);
-
-        free(result);
-
+        snprintf(line, lineLength, "%c %10d %s\n", player_getLetter(player), player_getGold(player), player_getName(player));
+        strncat(gameOverMessage, line, lineLength);
     }
+
     return gameOverMessage;
-
-    // either in this function, but preferably in another, send the result string to each player
 }
-
 
 // to delete everything in the game that was initialized before. Check game.h for more information. 
 void game_over(game_t* game){
@@ -430,13 +451,12 @@ void game_over(game_t* game){
     mem_free(game->players);
 
     // delete spectator
-    spectator_delete(game->spectator);
+    if (game->spectator != NULL){
+      spectator_delete(game->spectator);
+    }
     // delete grid
     grid_delete(game->masterGrid);
     // free game structure
     mem_free(game);
 }
-
-// TODO
-// game_displayAllPlayers(game); 
 

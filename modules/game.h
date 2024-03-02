@@ -236,15 +236,15 @@ player_t* game_findPlayer(game_t* game, addr_t address);
  *  a message to player saying the amount of gold claimed, in purse and remaining
  *  
  * We return:
- *  Null
+ *  true if this move caused a game over
+ *  false otherwise
  * 
- * Notes:
 */
-void game_move(game_t* game, addr_t address, int dx, int dy);
+bool game_move(game_t* game, addr_t address, int dx, int dy);
 
 
 
-/************* game_move *************/
+/************* game_longMove *************/
 /** Update the position of the players in the game
 
  * Caller provides: 
@@ -260,11 +260,10 @@ void game_move(game_t* game, addr_t address, int dx, int dy);
  *  
  *  
  * We return:
- *  Null
- * 
- * Notes:
+ *  true if this move caused a game over
+ *  false otherwise
 */
-void game_longMove(game_t* game, addr_t address, int dx, int dy);
+bool game_longMove(game_t* game, addr_t address, int dx, int dy);
 
 
 /************* game_over *************/

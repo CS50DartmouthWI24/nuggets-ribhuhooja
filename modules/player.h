@@ -36,7 +36,7 @@ typedef struct player player_t;
  *  when done.
  *
 */
-player_t* player_new (addr_t address, int x, int y, char* name, char letter );
+player_t* player_new (addr_t address, int x, int y, const char* name, char letter );
 
 
 /************* player_delete *************/
@@ -226,15 +226,15 @@ void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection);
 
 
 
-/************* player_setVisibleGrid *************/
+/************* player_updateVisibleGrid *************/
 /* 
- * Set the visible grid for the player
+ * Update the visible grid of the player
  * Caller provides: 
- *  A pointer to the player and a pointer to the new grid.
+ *  A pointer to the player and a pointer to the master grid
  * We do: 
- *  Set the visible grid of the player to the grid.
+ *  We calculate the new visible grid, and update the player's grid to that
  */
-void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
+void player_updateVisibleGrid(player_t* player, grid_t* masterGrid);
 
 /************* player_setInactive *************/
 /* 
@@ -257,7 +257,7 @@ void player_setInactive(player_t* player);
  */
 void player_sendMessage(player_t* player, char* message);
 
-/****************** player_isActive ****************************
+/****************** player_isActive ****************************/
 /* 
  * Send message to a player
  * Caller provides: 
@@ -267,7 +267,7 @@ void player_sendMessage(player_t* player, char* message);
  *  otherwise false
  */
 
-bool player_isActive(player_t* player)
+bool player_isActive(player_t* player);
 
 #endif // __PLAYER_H
 

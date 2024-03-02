@@ -257,7 +257,7 @@ void player_setInactive(player_t* player);
  */
 void player_sendMessage(player_t* player, char* message);
 
-/****************** player_isActive ****************************
+/****************** player_isActive ****************************/
 /* 
  * Send message to a player
  * Caller provides: 

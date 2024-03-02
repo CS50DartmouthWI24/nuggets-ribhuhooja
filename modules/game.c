@@ -40,6 +40,7 @@ static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer,
 static void displayAllPlayers(game_t* game);
 static void updateAllVisibleGrids(game_t* game);
 static char* get_result(game_t* game);
+static player_t* findPlayerByCoords(game_t* game, const int x, const int y);
 
 
 
@@ -237,12 +238,21 @@ bool game_move(game_t* game, addr_t address, int dx, int dy){
     // to get the current x and y position of the player
     int px = player_getX(player);
     int py = player_getY(player);
-    int claimedGold = grid_movePlayer(game->masterGrid, px, py, dx, dy);
+    int returnVal = grid_movePlayer(game->masterGrid, px, py, dx, dy);
 
     
-    // to update the coordinates
-    if (claimedGold != -1) {
-        player_moveDiagonal(player, dx, dy);
+    if (returnVal == -1){   // no move
+      return false;
+    } else if (returnVal == -2) {   // player there; swap!
+      grid_swapPlayers(game->masterGrid, px, py, px + dx, py + dy);
+      player_moveDiagonal(player, dx, dy);
+      player_t* other = findPlayerByCoords(game, px + dx, py + dy);
+      if (other != NULL){
+        player_setX(other, px);
+        player_setY(other, py);
+      }
+    } else {
+      player_moveDiagonal(player, dx, dy);
     }
 
     // to get the updated x and y position of the player 
@@ -250,7 +260,8 @@ bool game_move(game_t* game, addr_t address, int dx, int dy){
     py = player_getY(player);
     
     // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
-    if (claimedGold > 0){
+    if (returnVal > 0){
+        int claimedGold = returnVal;
         player_addGold(player, claimedGold);
 
         //int purse = player_getGold(player); // the amount of gold player has in its purse.
@@ -294,6 +305,19 @@ bool game_longMove(game_t* game,addr_t address, int dx ,int dy){
     int returnVal; // return value from move; is -1 if move failed
     int goldCollected = 0;
     while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
+        if (returnVal == -2){
+            int px = player_getX(player);
+            int py = player_getY(player);
+
+            grid_swapPlayers(game->masterGrid, px, py, px + dx, py + dy);
+            player_t* other = findPlayerByCoords(game, px + dx, py + dy);
+
+            if (other != NULL){
+                player_setX(other, px);
+                player_setY(other, py);
+            }
+        }
+
         player_moveDiagonal(player, dx, dy);
         goldCollected += returnVal;
 
@@ -458,5 +482,33 @@ void game_over(game_t* game){
     grid_delete(game->masterGrid);
     // free game structure
     mem_free(game);
+}
+
+/****************** findPlayerByCoords ********************
+ *
+ * returns the player at the given coordinates
+ *
+ */
+static player_t*
+findPlayerByCoords(game_t* game, const int x, const int y)
+{
+  if (game == NULL){
+    return NULL;
+  }
+
+  char letter = grid_charAt(game->masterGrid, x, y);
+  if (letter == '\0'){
+    return NULL;
+  }
+
+  player_t** players = game->players;
+  for (int i = 0; i < game->numPlayer; ++i) {
+    player_t* player = players[i];
+    if (player_getLetter(player) == letter && player_isActive(player)){
+      return player;
+    }
+  }
+
+  return NULL;
 }
 

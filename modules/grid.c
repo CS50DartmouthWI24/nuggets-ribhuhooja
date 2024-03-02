@@ -527,22 +527,29 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   // player can only move to a room spot or a passage spot, or a gold spot
   // or there can be another player there, in which case we swap them
-  // TODO: Currently does not support another player standing there
   char moveSpot = grid_charAt(grid, x_new, y_new);
-  if (!(moveSpot == mapchars_roomSpot 
-        || moveSpot == mapchars_passageSpot
-        || moveSpot == mapchars_gold)){
+  if (moveSpot == mapchars_solidRock 
+   || moveSpot == mapchars_horizontalBoundary
+   || moveSpot == mapchars_verticalBoundary
+   || moveSpot == mapchars_cornerBoundary){
     return -1;
   }
 
-  //TODO: add swap code
+  // if it is not blocked, but the char is not a movable char
+  // then another player is there
+  if (!(moveSpot == mapchars_roomSpot
+     || moveSpot == mapchars_gold
+     || moveSpot == mapchars_passageSpot)){
+    return -2;
+  }
+
+
 
   int gold = 0;
   if (moveSpot == mapchars_gold){
     gold = grid_collectGold(grid, x_new, y_new);
   }
 
-  // update string visuals - TODO: doesn't do swapping yet
   int oldIndex = indexOf(px, py, numcols);
   int newIndex = indexOf(x_new, y_new, numcols);
   char* string = grid->string;
@@ -557,6 +564,49 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
   string[newIndex] = playerChar; 
 
   return gold;
+}
+
+/****************** grid_swapPlayers **********************
+ *
+ * see grid.h for usage and description
+ *
+ */
+void
+grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2)
+{
+  if (grid == NULL){
+    return;
+  }
+
+  const int numrows = grid->numrows;
+  const int numcols = grid->numcols; 
+  if (!(isValidCoordinate(x1, y1, numrows, numcols)
+     && isValidCoordinate(x2, y2, numrows, numcols))){
+    return;
+  }
+
+  char playerOneChar = grid_charAt(grid, x1, y1);
+  char playerTwoChar = grid_charAt(grid, x2, y2);
+
+  if (playerOneChar == '\0' || playerTwoChar == '\0'){
+    return;
+  }
+
+  int indexOne = indexOf(x1, y1, numcols);
+  int indexTwo = indexOf(x2, y2, numcols);
+
+  // update visuals
+  char* string = grid->string;
+  string[indexOne] = playerTwoChar;
+  string[indexTwo] = playerOneChar;
+  
+  // update standing on
+  char playerOneStandingOn = getPlayerStandingOn(grid, playerOneChar);
+  char playerTwoStandingOn = getPlayerStandingOn(grid, playerTwoChar);
+
+  setPlayerStandingOn(grid, playerOneChar, playerTwoStandingOn);
+  setPlayerStandingOn(grid, playerTwoChar, playerOneStandingOn);
+
 }
 
 /****************** grid_removePlayer *********************

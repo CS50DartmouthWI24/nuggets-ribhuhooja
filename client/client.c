@@ -91,8 +91,6 @@ main(const int argc, char* argv[])
   (&cData)->port = atoi(argv[2]);
   addr_t server; 
 
-
-
   // populate the server addr_t by using the host and portname
   if (!message_setAddr(serverHost, serverPort, &server)) { 
     // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);

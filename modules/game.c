@@ -35,7 +35,7 @@ typedef struct game{
 
 /****************** local functions **********************/
 static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining);
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int playerGold);
+static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
 void static game_updateAllVisibleGrids(game_t* game);
 void static print_result(player_t* player);
 
@@ -220,9 +220,9 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
     if (claimedGold > 0){
         player_addGold(player, claimedGold);
 
-        int purse = player_getGold(player); // the amount of gold player has in its purse.
+        //int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= claimedGold;
-        int remain = game->goldRemain;      // the amount of gold remaining in the game.
+        // int remain = game->goldRemain;      // the amount of gold remaining in the game.
         game_sendAllGoldMessages(game, player, claimedGold);
     }
 
@@ -260,7 +260,7 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (goldCollected > 0){
         player_addGold(player, goldCollected);
         game->goldRemain -= goldCollected;
-        game_sendAllGoldMessages(game, goldCollected, player);
+        game_sendAllGoldMessages(game, player, goldCollected);
     }
 
 
@@ -271,7 +271,7 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
 
 }
 // this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int playerGold){
+static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
 
     if (game == NULL || goldJustCollectedPlayer == NULL){
         return;
@@ -281,18 +281,18 @@ static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPl
     addr_t address = player_getAddress(goldJustCollectedPlayer);
     for (int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        if (Player_isActive(player)){
+        if (player_isActive(player)){
 
             int goldCollected = 0;
             int purse = player_getGold(player);
 
             if (message_eqAddr(address, player_getAddress(player))){
-              goldCollected = goldJustCollectedPlayer;
+              goldCollected = goldJustCollected;
 
             }
 
-            sendGoldMessage(game, player, goldCollected, player_getGold(player),
-                                                         remaining);
+            sendGoldMessage(game, player, goldCollected, purse,
+                                                         remain);
         }
     }
 }
@@ -307,7 +307,7 @@ static void sendGoldMessage(game_t* game, player_t* player, const int goldCollec
                                                             const int remaining)
 {
   char message[100];
-  snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
+  snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remaining);
   player_sendMessage(player, message);
 }
 
@@ -325,27 +325,42 @@ void static game_updateAllVisibleGrids(game_t* game){
 
 }
 
-// A helper funciton to for printing the last results.
-void static print_result(player_t* player){// how to manage the new line added by each log here?---------------------
-    if (player != NULL){
-        // flog_c(stderr, "%c",player_getletter(player));
-        // flog_d(stderr, "    %d ", player_getGold(player));
-        // flog_s(stderr,"%s", player_getName(player));
-        char* result = ("%c    %d %s",player_getletter(player), player_getGold(player), player_getName(player));
-        flog_v(stderr, result);
+// A helper funciton that returns the result string
+static char* get_result(game_t* game){
+    if (game == NULL){
+        return NULL;
     }
+
+    // create a string result aggregate, mallocing enough space to add all the individual results
+    for(int i = 0; i < game->numPlayer; ++i){
+        player_t* player = game->players[i];
+        char* result = mem_calloc_assert(20 + MaxNameLength, sizeof(char), "Out of memory, could not allocate result string\n");
+        
+        snprintf(result, MaxNameLength + 20, "QUIT GAME OVER:\n");
+        snprintf(result, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
+        // strncat result to resultAggregate
+    }
+
+    // either in this function, but preferably in another, send the result string to each player
 }
 
 
 // to delete everything in the game that was initialized before. Check game.h for more information. 
 void game_over(game_t* game){
 
+    // get the result of the game
+    char* result = get_result(game);
+
     /************* delete players ************/
     // to delete each player one by one
+    // sending each one the result before deleting
+
     for (int i = 0; i < game->numPlayer; i++){
-        print_result(game->players[i]);
+        player_sendMessage(game->players[i], result);
         player_delete(game->players[i]);
     }
+
+
     // and then free the array of players too
     mem_free(game->players);
 

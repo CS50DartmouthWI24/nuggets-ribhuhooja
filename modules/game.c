@@ -288,6 +288,8 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
         player_moveDiagonal(player, dx, dy);
         goldCollected += returnVal;
+
+        player_updateVisibleGrid(player, game->masterGrid);
     }
 
     if (goldCollected > 0){

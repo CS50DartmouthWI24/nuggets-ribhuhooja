@@ -98,17 +98,9 @@ main(const int argc, char* argv[])
     // fprintf(stderr, "can't form address from %s %s\n", serverHost, serverPort);
     return 4; // bad hostname/port
   }
-  handleGRID("GRID 7 12", &cData);
-  handleOK("OK A", &cData);
-  char* map = "DISPLAY\n+----------+\n|..........|\n|..........|\n|..........|\n|..........|\n|..........|\n+----------+";
-  handleGOLD("GOLD 5 12 8", &cData);
-  
-  handleDISPLAY(map, &cData);
-
 
   // listen for and send messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
-
 
   // shut down the message module
   message_done();

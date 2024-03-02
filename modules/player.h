@@ -267,7 +267,7 @@ void player_sendMessage(player_t* player, char* message);
  *  otherwise false
  */
 
-bool player_isActive(player_t* player)
+bool player_isActive(player_t* player);
 
 #endif // __PLAYER_H
 

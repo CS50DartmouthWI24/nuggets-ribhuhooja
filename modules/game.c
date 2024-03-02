@@ -36,9 +36,10 @@ typedef struct game{
 
 /****************** local functions **********************/
 static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining);
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
-void static game_updateAllVisibleGrids(game_t* game);
-void static print_result(player_t* player);
+static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
+static void displayAllPlayers(game_t* game);
+static void updateAllVisibleGrids(game_t* game);
+static char* get_result(game_t* game);
 
 
 
@@ -160,7 +161,7 @@ int
 game_numPlayers(game_t* game)
 {
   if (game == NULL){
-    return NULL;
+    return 0;
   }
 
   return game->numPlayer;
@@ -253,12 +254,12 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
         //int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= claimedGold;
         // int remain = game->goldRemain;      // the amount of gold remaining in the game.
-        game_sendAllGoldMessages(game, player, claimedGold);
+        sendAllGoldMessages(game, player, claimedGold);
     }
 
     // update the visible grids for each player
-    game_updateAllVisibleGrids(game);
-    game_displayAllPlayers(game);
+    updateAllVisibleGrids(game);
+    displayAllPlayers(game);
 }
 
 
@@ -290,18 +291,18 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (goldCollected > 0){
         player_addGold(player, goldCollected);
         game->goldRemain -= goldCollected;
-        game_sendAllGoldMessages(game, player, goldCollected);
+        sendAllGoldMessages(game, player, goldCollected);
     }
 
 
 
     // update the visible grids for each player
-    game_updateAllVisibleGrids(game);
-    game_displayAllPlayers(game);
+    updateAllVisibleGrids(game);
+    displayAllPlayers(game);
 
 }
 // this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
-static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
+static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
 
     if (game == NULL || goldJustCollectedPlayer == NULL){
         return;
@@ -344,7 +345,7 @@ static void sendGoldMessage(game_t* game, player_t* player, const int goldCollec
 
 
 // to update the visible grid of each player 
-static void game_updateAllVisibleGrids(game_t* game){
+static void updateAllVisibleGrids(game_t* game){
     for (int i = 0; i < game->numPlayer; ++i){
         player_t* curr = game->players[i];
         if (!player_isActive(curr)){
@@ -403,10 +404,7 @@ static char* get_result(game_t* game){
 
     }
     return gameOverMessage;
-
-    // either in this function, but preferably in another, send the result string to each player
 }
-
 
 // to delete everything in the game that was initialized before. Check game.h for more information. 
 void game_over(game_t* game){

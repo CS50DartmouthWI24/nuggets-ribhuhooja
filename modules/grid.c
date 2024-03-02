@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "grid.h"
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"

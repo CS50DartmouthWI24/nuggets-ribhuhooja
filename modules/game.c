@@ -25,6 +25,7 @@ static const int GoldTotal = 250;           // amount of gold in the game
 static const int GoldMinNumPiles = 10;      // minimum number of gold piles
 static const int GoldMaxNumPiles = 30;      // maximum number of gold piles
 
+/****************** the game type ************************/
 typedef struct game{
     player_t** players;         // array of players
     grid_t* masterGrid;         // the master grid(map) which covers the whole map
@@ -78,7 +79,7 @@ void game_addPlayer(game_t* game, player_t* player){
             game->players[game->numPlayer] = player;
             game->numPlayer++;
 
-            char letter = player_getletter(player);
+            char letter = player_getLetter(player);
 
             grid_addPlayer(game->masterGrid, player_getX(player), player_getY(player), letter);
             
@@ -103,7 +104,7 @@ void game_removePlayer(game_t* game, player_t* playerA){
         player_sendMessage(playerA,"QUIT Thanks for playing!\n");
         player_setInactive(playerA);
 
-        grid_removePlayer(game->masterGrid, player_getletter(playerA), player_getX(playerA), player_getY(playerA));
+        grid_removePlayer(game->masterGrid, player_getLetter(playerA), player_getX(playerA), player_getY(playerA));
     }
 }
 
@@ -135,6 +136,35 @@ void game_removeSpectator(game_t* game, addr_t address){
     }
 }
 
+/****************** game_masterGrid ***********************
+ * 
+ * see game.h for description and usage
+ *
+ */
+grid_t*
+game_masterGrid(game_t* game)
+{
+  if (game == NULL){
+    return NULL;
+  }
+  
+  return game->masterGrid;
+}
+
+/****************** game_numPlayers ***********************
+ *
+ * see game.h for description and usage
+ *
+ */
+int
+game_numPlayers(game_t* game)
+{
+  if (game == NULL){
+    return NULL;
+  }
+
+  return game->numPlayer;
+}
 
 // to get the players array. Check game.h for more information.
 player_t** game_getPlayers(game_t* game){
@@ -366,10 +396,11 @@ static char* get_result(game_t* game){
         player_t* player = game->players[i];
         char* result = mem_calloc_assert((20 + MaxNameLength), sizeof(char), "Out of memory, could not allocate memory for result string\n");
 
-        snprintf(result, MaxNameLength + 20, "QUIT GAME OVER:\n");
-        snprintf(result, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
-        strncat(gameOverMessage, result,length);
-        // strncat result to resultAggregate
+        snprintf(result, length, "%c %10d %s",player_getLetter(player), player_getGold(player), player_getName(player));
+        strncat(gameOverMessage, result, length);
+
+        free(result);
+
     }
     return gameOverMessage;
 

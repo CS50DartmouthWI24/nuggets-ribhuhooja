@@ -119,6 +119,32 @@ void game_addSpectator(game_t* game, addr_t address);
 */
 void game_removeSpectator(game_t* game, addr_t address);
 
+/****************** game_masterGrid ***********************
+ *
+ * Returns a pointer to the master grid of the game
+ *
+ * Caller provides:
+ *  Valid pointer to game
+ * We return:
+ *  A pointer to the master grid of the game
+ *  NULL on error
+ * Caller is responsible for:
+ *  NOT deleting the returned grid; deleting is handled by game_delete
+ */
+grid_t* game_masterGrid(game_t* game);
+
+/****************** game_numPlayers ********************
+ *
+ * Returns the number of players that have joined the game
+ * This includes both active and inactive players
+ *
+ * Caller provides:
+ *  Valid pointer to game
+ * We return:
+ *  the number of players to have joined the game
+ *  0 on error
+ */
+int game_numPlayers(game_t* game);
 
 
 /************* game_getPlayers *************/
@@ -139,7 +165,6 @@ void game_removeSpectator(game_t* game, addr_t address);
  *  The array can be null with zero player. The caller should take care of that. 
 */
 player_t** game_getPlayers(game_t* game);
-
 
 /************* game_getGold *************/
 /** Return the amount of players

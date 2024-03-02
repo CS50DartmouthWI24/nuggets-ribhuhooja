@@ -8,6 +8,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "grid.h"
 
 /****************** main *********************************/
@@ -54,13 +55,47 @@ main()
   grid_movePlayer(grid, 4, 2, 0, 1); 
   grid_movePlayer(grid, 4, 3, 0, 1); 
   grid_toMap(grid, stdout);
+  printf("\n");
+  grid_movePlayer(grid, 4, 4, 1, 0); // should fail
+  grid_toMap(grid, stdout);
+  printf("\n");
+  grid_movePlayer(grid, 4, 4, 0, 1); 
+  grid_movePlayer(grid, 4, 5, 0, 1); 
+  grid_movePlayer(grid, 4, 6, 0, 1); 
+  grid_movePlayer(grid, 4, 7, 0, 1); 
+  grid_toMap(grid, stdout);
+  printf("\n");
 
-  // TODO: Check
-  // addPlayer, movePlayer, removePlayer
-  // nuggetsPopulate, goldAt, collectGold
-  // visibility - probably needs to be checked separately 
+  printf("Test: removing players\n");
+  grid_removePlayer(grid, '@', 4, 8);
+  grid_toMap(grid, stdout);
+  printf("\n");
 
+  printf("Test: Gold nuggets. Using preset seed to have consistent test behavior\n\n");
 
+  srand(42);
+  grid_nuggetsPopulate(grid, 5, 10, 30);
+  grid_toMap(grid, stdout);
+  printf("\n");
+
+  printf("Test: Have a player collect the gold\n\n");
+  printf("Gold at (6, 1): %d\n", grid_goldAt(grid, 6, 1));
+  grid_addPlayer(grid, 6, 2, '$');
+  grid_toMap(grid, stdout);
+  printf("\n");
+  int goldCollected = grid_movePlayer(grid, 6, 2, 0, -1);
+  grid_toMap(grid, stdout);
+  printf("\n");
+  printf("Gold collected: %d\n", goldCollected);
+  grid_movePlayer(grid, 6, 1, 0, 1);
+  grid_toMap(grid, stdout);
+  printf("\n");
+
+  printf("Test: Add player in random location\n");
+  int px, py;
+  grid_findRandomSpawnPosition(grid, &px, &py);
+  grid_addPlayer(grid, px, py, '%');
+  grid_toMap(grid, stdout);
 
   grid_delete(grid);
 

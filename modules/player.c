@@ -11,13 +11,14 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include "grid.h"
 #include "message.h"
 #include "player.h"
 #include "log.h"
-#include "grid.h"
-#include "mem.h"    
+#include "mem.h"
 
 
 /******************* types *******************************/
@@ -48,7 +49,7 @@ player_new (addr_t address, int x, int y, char* name, char letter )
 
   int len = strlen(name);
 
-  player->name = mem_malloc_assert(len * sizeof(char), "Failed to allocate memory for name of the player");
+  player->name = mem_malloc_assert((len + 1) * sizeof(char), "Failed to allocate memory for name of the player");
   strncpy(player->name, name, len); // make a copy of the passed in string
 
   player->letter = letter;
@@ -163,7 +164,7 @@ player_getName(const player_t* player)
     return player->name;
 }
 
-/****************** player_getChar ****************************
+/****************** player_getLetter ****************************
  *
  * see player.h for description and usage
  *
@@ -338,11 +339,11 @@ void
 player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)
 {
     if(player == NULL){
-        flog_v(stderr, "Cannot move a null player in diagonally direction.\n");
+        flog_v(stderr, "Cannot move a null player diagonally.\n");
         return;
     }
 
-    player->y += Xdirection;
+    player->x += Xdirection;
     player->y += Ydirection;
 
 }
@@ -383,4 +384,26 @@ player_sendMessage(player_t* player, char* message)
     }
 
     message_send(player->address, message);
+}
+
+/****************** player_isActive ****************************
+ *
+ * see player.h for description and usage
+ *
+ */
+bool
+player_isActive(player_t* player)
+{
+    if(player == NULL || player->address == NULL){
+        flog_v(stderr, "Cannot send message for null player or address.\n");
+        return;
+    }
+    if (player->isActive){
+        return true;
+    }
+    else{
+        return false;
+    }
+
+    
 }

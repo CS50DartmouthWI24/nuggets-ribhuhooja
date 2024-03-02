@@ -1,0 +1,51 @@
+START OF LOG
+message_init: ready at port '51739'
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+PLAY paulC
+message_loop: input ready on stdin
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+KEY a
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 0 lines:
+
+message_loop: input ready on stdin
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+KEY a
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 0 lines:
+
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 0 lines:
+
+message_loop: input ready on stdin
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+KEY a
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 1 lines:
+a
+message_loop: input ready on stdin
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+KEY a
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 0 lines:
+
+message_loop: input ready on stdin
+message_send: TO 127.0.0.1:60731
+message_send: 1 lines:
+KEY a
+message_loop: message ready on socket
+message_loop: FROM 127.0.0.1:60731
+message_loop: 0 lines:
+
+message_loop: input ready on stdin
+message_done: message module closing down.

@@ -69,7 +69,6 @@ main(const int argc, char* argv[])
 
   // check if that was successful
   if (ourPort == 0) {
-
     // print to stderr log if not
     fprintf(stderr, "Error: could not initialize message log");
     return 1;  // return failure
@@ -100,7 +99,6 @@ main(const int argc, char* argv[])
 
   // listen for and send messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
-
 
   // shut down the message module
   message_done();
@@ -179,8 +177,15 @@ static bool handleInput(void* arg) {
   // parse the server address
   addr_t* server = arg;
 
-  // check if valid
+  // check if server is not null
   if (server == NULL) {
+    fprintf(stderr, "Error: server argument is NULL\n");
+    return true;
+  }
+
+  // check if server looks like an address
+  if (!message_isAddr(*server)) {
+    fprintf(stderr, "Error: server passed in is not a valid address\n");
     return true;
   }
 
@@ -189,7 +194,8 @@ static bool handleInput(void* arg) {
   const int messageSize = 12;
 
   // read a key from stdin, if not q
-  if ((key = getch()) != 'q') { 
+  key = getch();
+  if (key != 'Q' && key != EOF) { 
 
     // create a static char array to print into
     char message[messageSize];
@@ -205,7 +211,10 @@ static bool handleInput(void* arg) {
 
   } 
   else {
-
+    
+    // send q key to the server if client quit
+    message_send(*server, "KEY Q");
+    
     // close the ncurses
     endwin();
     
@@ -232,7 +241,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
 
   // check if message exists
   if(message == NULL) {
-    fprintf(stderr, "ERROR message is invalid \n"); // print to log if not
+    fprintf(stderr, "Error: message is NULL\n"); // print to log if not
     return false; // keep listening
   }
 
@@ -272,7 +281,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     
     // print invalid message if incoming message does not adhere to 
     // any of the above conditions, print at bottom row
-    mvprintw((&cData)->rows,0, "Error: message is invalid.\n");
+    mvprintw((&cData)->rows,0, "Error: message does not have known formatting\n");
 
   }
 
@@ -292,7 +301,8 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
  * void
  */
 static void initializeTerminal(void){
-  // initialize the screen, no waiting for newline, no echoing, yes keypad navigation
+  // initialize the screen, no waiting for newline, 
+  // no echoing, yes keypad navigation
   initscr(); 
   cbreak(); 
   noecho(); 
@@ -334,16 +344,15 @@ static void handleGRID(const char* message, void* arg){
 
   // while the size of the terminal is not larger than 
   // the size of the grid + 1 (so we can display messages in bottom row)
-  while (nrows < rows+1 || ncols < cols+1){
+  while (nrows < rows + 1 || ncols < cols + 1){
 
     // prompt user to increase size
-    printw("Window size requirements: %d rows by %d cols \n", rows+1, cols+1);
-    printw("Please resize your window and press 1 when completed \n");
+    printw("Window size requirements: %d rows by %d cols\n", rows+1, cols+1);
+    printw("Please resize your window and press any key to continue\n");
 
-    // re-get the size if they press 1
-    if (getch() == '1') {
-      getmaxyx(stdscr, nrows, ncols);
-    }
+    // re-get the after the user enters a key
+    getch();
+    getmaxyx(stdscr, nrows, ncols);
     
     // refresh screen
     clear();
@@ -382,7 +391,7 @@ static void handleGOLD(const char* message, void* arg){
   if (cData->spectator) { // if client is spectator, only print remaining nuggets
     move(0,0);
     // print spectator message about unclaimed nuggets in last row
-    mvprintw((cData)->rows,0, "Spectator: %d nuggets unclaimed. Play at plank %d\n", remaining, cData->port);
+    mvprintw(0,0, "Spectator: %d nuggets unclaimed", remaining);
     refresh();  
 
   }
@@ -390,7 +399,7 @@ static void handleGOLD(const char* message, void* arg){
   else if (cData->nuggets == 0) {  
     move(0,0);
     // print player message about current nuggets, and remaining nuggets 
-    mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed).\n", cData->id, purse, remaining);
+    mvprintw(cData->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed)", cData->id, purse, remaining);
     refresh();  
   }
 
@@ -398,7 +407,7 @@ static void handleGOLD(const char* message, void* arg){
   else {
     move(0,0);
     // print player message about current nuggets, and remaining nuggets and the GOLD nuggets they recieved
-    mvprintw((cData)->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d\n", cData->id, purse, remaining, nuggets);
+    mvprintw(cData->rows,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }
@@ -410,16 +419,29 @@ static void handleGOLD(const char* message, void* arg){
  *  message from the server and cData as arg
  * 
  * We do: 
- *  end the game by shuttingdown ncurses
+ *  end the game by shutting down ncurses, then printing
+ *  the message to stdout
  * 
  * We return:
- *  void (but exit success if handleQUIT called)
+ *  void (but we exit success if handleQUIT called)
  */
 static void handleQUIT(const char* message, void *arg){
+
+  // copy message to edit
+  char* messageCopy = malloc(strlen(message) + 1); 
+  strcpy(messageCopy, message);
+
+  // get the map by incrementing the pointer to the message
+  // and skipping the prefix
+  char* quitMessage = messageCopy + strlen("QUIT ");  
+
   // end the game
-  nocbreak();
-  endwin();
-  exit(0);
+  clear(); // clear the screen
+  nocbreak(); // get rid of continuous input
+  endwin(); // end the ncurses window
+  printf("%s", quitMessage); // print the QUIT message
+  free(messageCopy);
+  exit(0); // exit successfully
 }
 
 /***************** handleERROR() *****************/ 
@@ -429,12 +451,14 @@ static void handleQUIT(const char* message, void *arg){
  * 
  * We do: 
  *  nothing (logging is taken care of by the message module)
+ *  existence of function is for encapsulation and clarity of 
+ *  logic
  * 
  * We return:
  *  void 
  */
 static void handleERROR(const char* message){
-
+  // print to last rows
 }
 
 

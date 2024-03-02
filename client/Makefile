@@ -21,9 +21,10 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 # mark non-file targets as phony
 .PHONY: all test valgrind clean
 
-# all: querier indextest
+# all: 
 all: client miniserver miniclient
 
+# compile all the files related to testing and running the client
 miniclient.o: ../support/miniclient.c
 	$(CC) $(CFLAGS) -c $< -o $@
 

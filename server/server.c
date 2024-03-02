@@ -163,7 +163,8 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             mem_free(goldMessage);
 
             // Send DISPLAY message
-            char* string = grid_getDisplay(game_masterGrid(game));
+            player_updateVisibleGrid(player, game_masterGrid(game));
+            char* string = grid_getDisplay(player_getVisibleGrid(player));
             char* displayMessage = mem_malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(string))) + 1);
             sprintf(displayMessage, "DISPLAY\n%s", string);
             message_send(from, displayMessage);

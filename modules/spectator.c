@@ -14,6 +14,7 @@
 #include "message.h"
 #include "log.h"
 #include "spectator.h"
+#include "mem.h" 
 
 /****************** the spectator type *******************/
 
@@ -42,8 +43,9 @@ addr_t spectator_getAddress(spectator_t* spectator){
 void spectator_delete(spectator_t* spectator){
     if(spectator != NULL){
         mem_free(spectator);
+        return;
     }
-    flog_v(stderr, "cannot get the delete of null spectator.\n");
+    flog_v(stderr, "cannot delete null spectator.\n");
 }
 
 // to send message to a spectator. Check spectator.h for more information 

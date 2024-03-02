@@ -25,6 +25,7 @@ static const int GoldTotal = 250;           // amount of gold in the game
 static const int GoldMinNumPiles = 10;      // minimum number of gold piles
 static const int GoldMaxNumPiles = 30;      // maximum number of gold piles
 
+/****************** the game type ************************/
 typedef struct game{
     player_t** players;         // array of players
     grid_t* masterGrid;         // the master grid(map) which covers the whole map
@@ -136,6 +137,35 @@ void game_removeSpectator(game_t* game, addr_t address){
     }
 }
 
+/****************** game_masterGrid ***********************
+ * 
+ * see game.h for description and usage
+ *
+ */
+grid_t*
+game_masterGrid(game_t* game)
+{
+  if (game == NULL){
+    return NULL;
+  }
+  
+  return game->masterGrid;
+}
+
+/****************** game_numPlayers ***********************
+ *
+ * see game.h for description and usage
+ *
+ */
+int
+game_numPlayers(game_t* game)
+{
+  if (game == NULL){
+    return NULL;
+  }
+
+  return game->numPlayer;
+}
 
 // to get the players array. Check game.h for more information.
 player_t** game_getPlayers(game_t* game){

@@ -42,3 +42,6 @@ temp
 
 ###########################################################################
 # custom additions below here; see also .gitignore files in subdirectories.
+
+# logs
+tmp.log

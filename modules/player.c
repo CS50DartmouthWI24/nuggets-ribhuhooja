@@ -39,7 +39,7 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t address, int x, int y, char* name, char letter )
+player_new (addr_t address, int x, int y, const char* name, char letter )
 {
   if (name == NULL){
     return NULL;

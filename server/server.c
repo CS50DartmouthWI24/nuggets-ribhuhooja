@@ -136,7 +136,7 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             int y;
             grid_findRandomSpawnPosition(game_masterGrid(game), &x, &y);
             char playerLetter = 'A' + game_numPlayers(game);
-            char* name = content;
+            const char* name = content;
             player_t* player = player_new(from, x, y, name, playerLetter);
             game_addPlayer(game, player);
 
@@ -261,7 +261,7 @@ static void keyQ(const addr_t from) { // QUIT
 
 static void errorMessage(const addr_t from, const char* content) {
 
-    char* errorMsg = malloc((sizeof(char) * (strlen("ERROR - key '' not recognized")) + strlen(content)) + 1);
+    char* errorMsg = malloc((sizeof(char) * (strlen("ERROR - key ' ' not recognized")) + strlen(content)) + 1);
     sprintf(errorMsg, "ERROR - key '%s' not recognized", content);
     message_send(from, errorMsg);
 

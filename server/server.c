@@ -15,7 +15,7 @@ static void parseArgs(const int argc, char* argv[],
                       FILE** map, int* seed);
 static bool handleMessage(void* arg, const addr_t from, const char* buf);
 static void handlePlay(void* arg, const addr_t from, const char* content);
-static void handleKey(void* arg, const addr_t from, const char* content);
+static bool  handleKey(void* arg, const addr_t from, const char* content);
 static void handleSpectate(void* arg, const addr_t from, const char* content);
 static void keyQ(const addr_t from);
 static void errorMessage(const addr_t from, const char* content);
@@ -105,21 +105,21 @@ static void parseArgs(const int argc, char* argv[],
 
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
 
-    // char* message = buf;
+
+    bool gameOver = false;
 
     if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) { // PLAY
         const char* content = message + strlen("PLAY ");
         handlePlay(arg, from, content);
     } else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) { // KEY
         const char* content = message + strlen("KEY ");
-        handleKey(arg, from, content);
+        gameOver = handleKey(arg, from, content);
     } else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
         const char* content = message + strlen("SPECTATE");
         handleSpectate(arg, from, content);
     } 
 
-    return false;
-
+    return gameOver;
 }
 
 static void handlePlay(void* arg, const addr_t from, const char* content) {
@@ -180,9 +180,11 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
 
 }
 
-static void handleKey(void* arg, const addr_t from, const char* content) {
+static bool handleKey(void* arg, const addr_t from, const char* content) {
 
     // SYNTAX: KEY k
+
+  bool gameOver = false;
 
     if(content != NULL) {
         char letter = content[0];
@@ -190,26 +192,27 @@ static void handleKey(void* arg, const addr_t from, const char* content) {
         switch (letter) {
             case 'Q': keyQ(from); break; // quit
             case 'q': keyQ(from); break; // quit
-            case 'h': game_move(game, from, -1, 0); break; // left
-            case 'l': game_move(game, from, 1, 0); break; // right
-            case 'j': game_move(game, from, 0, 1); break; // down
-            case 'k': game_move(game, from, 0, -1); break; // up
-            case 'y': game_move(game, from, -1, -1); break; // up and left
-            case 'u': game_move(game, from, 1, -1); break; // up and right
-            case 'b': game_move(game, from, -1, 1); break; // down and left
-            case 'n': game_move(game, from, 1, 1); break; // down and right
-            case 'H': game_longMove(game, from, -1, 0); break; // LONG left
-            case 'L': game_longMove(game, from, 1, 0); break; // LONG right
-            case 'J': game_longMove(game, from, 0, 1); break; // LONG down
-            case 'K': game_longMove(game, from, 0, -1); break; // LONG up
-            case 'Y': game_longMove(game, from, -1, -1); break; // LONG up and left
-            case 'U': game_longMove(game, from, 1, -1); break; // LONG up and right
-            case 'B': game_longMove(game, from, -1, 1); break; // LONG down and left
-            case 'N': game_longMove(game, from, 1, 1); break; // LONG down and right
+            case 'h': gameOver = game_move(game, from, -1, 0); break; // left
+            case 'l': gameOver = game_move(game, from, 1, 0); break; // right
+            case 'j': gameOver = game_move(game, from, 0, 1); break; // down
+            case 'k': gameOver = game_move(game, from, 0, -1); break; // up
+            case 'y': gameOver = game_move(game, from, -1, -1); break; // up and left
+            case 'u': gameOver = game_move(game, from, 1, -1); break; // up and right
+            case 'b': gameOver = game_move(game, from, -1, 1); break; // down and left
+            case 'n': gameOver = game_move(game, from, 1, 1); break; // down and right
+            case 'H': gameOver = game_longMove(game, from, -1, 0); break; // LONG left
+            case 'L': gameOver = game_longMove(game, from, 1, 0); break; // LONG right
+            case 'J': gameOver = game_longMove(game, from, 0, 1); break; // LONG down
+            case 'K': gameOver = game_longMove(game, from, 0, -1); break; // LONG up
+            case 'Y': gameOver = game_longMove(game, from, -1, -1); break; // LONG up and left
+            case 'U': gameOver = game_longMove(game, from, 1, -1); break; // LONG up and right
+            case 'B': gameOver = game_longMove(game, from, -1, 1); break; // LONG down and left
+            case 'N': gameOver = game_longMove(game, from, 1, 1); break; // LONG down and right
             default: errorMessage(from, content);
         }
-
     }
+
+    return gameOver;
 
 }
 

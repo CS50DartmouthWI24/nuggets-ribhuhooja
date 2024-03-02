@@ -217,20 +217,21 @@ player_t* game_findPlayer(game_t* game, addr_t address){
 
 
 // to change the coordinates and visble grid of player once it moves. 
-void game_move(game_t* game, addr_t address, int dx, int dy){
+bool game_move(game_t* game, addr_t address, int dx, int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to move the player is not with [-1, +1].\n");
-        return;
+        return false;
     }
+
     if (game == NULL){
         flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
-        return;
+        return false;
     }
     player_t* player = game_findPlayer(game, address);
 
     if (player == NULL || !player_isActive(player)){
         flog_v(stderr, "Player not in  game\n");
-        return;
+        return false;
     }
     
     // to get the current x and y position of the player
@@ -262,25 +263,32 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
 
     updateAllVisibleGrids(game);
     displayAllPlayers(game);
+    
+    if (game->goldRemain == 0){
+       game_over(game);
+       return true;
+    }
+
+    return false;
 }
 
 
 // this functin is to move the player a long as it can move only to one direction, either diagonally, vertically or horizontally.
-void game_longMove(game_t* game,addr_t address, int dx ,int dy){
+bool game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to long move the player is not with [-1, +1].\n");
-        return;
+        return false;
     }
     if (game == NULL){
         flog_v(stderr, "Cannot long move player. Either Null player or Null game c.\n");
-        return;
+        return false;
     }
 
     player_t* player = game_findPlayer(game, address);
 
     if (player == NULL || !player_isActive(player)){
         flog_v(stderr, "Player not in  game\n");
-        return;
+        return false;
     }
 
     int returnVal; // return value from move; is -1 if move failed
@@ -304,7 +312,14 @@ void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     updateAllVisibleGrids(game);
     displayAllPlayers(game);
 
+    if (game->goldRemain == 0){
+       game_over(game);
+       return true;
+    }
+
+    return false;
 }
+
 // this is to send the amount of gold the player got, the remaing gold in the game, in thier purse
 static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected){
 
@@ -391,28 +406,32 @@ static void displayAllPlayers(game_t* game){
     }
 }
 
-// A helper funciton that returns the result string
+// A helper function that returns the result string
 static char* get_result(game_t* game){
     if (game == NULL){
         return NULL;
     }
 
-
-    // create a string result aggregate, mallocing enough space to add all the individual results
     int length = (MaxNameLength + 20) * MaxPlayers;
-    char* gameOverMessage = mem_malloc_assert(length, "Could not allocate memory for game over message.\n");
+    char gameOverMessage[message_MaxBytes];
+
+    sprintf(gameOverMessage, "QUIT GAME OVER:\n");
 
     for(int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        char* result = mem_calloc_assert((20 + MaxNameLength), sizeof(char), "Out of memory, could not allocate memory for result string\n");
+        char result[20 + MaxNameLength];
 
-        snprintf(result, length, "%c %10d %s",player_getLetter(player), player_getGold(player), player_getName(player));
+        sprintf(result,"%c %10d %s\n", player_getLetter(player), player_getGold(player), player_getName(player));
         strncat(gameOverMessage, result, length);
-
-        free(result);
-
     }
-    return gameOverMessage;
+    
+    // need to malloc to return
+    char* result = mem_calloc_assert(strlen(gameOverMessage), sizeof(char), "out of memory, could not allocate result string\n");
+    // can strcpy because strncat null terminates
+    strcpy(result, gameOverMessage);
+
+
+    return result;
 }
 
 // to delete everything in the game that was initialized before. Check game.h for more information. 
@@ -437,13 +456,12 @@ void game_over(game_t* game){
     mem_free(game->players);
 
     // delete spectator
-    spectator_delete(game->spectator);
+    if (game->spectator != NULL){
+      spectator_delete(game->spectator);
+    }
     // delete grid
     grid_delete(game->masterGrid);
     // free game structure
     mem_free(game);
 }
-
-// TODO
-// game_displayAllPlayers(game); 
 

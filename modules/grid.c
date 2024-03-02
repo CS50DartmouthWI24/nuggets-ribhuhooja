@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
@@ -31,10 +32,31 @@ typedef struct grid {
 /****************** file-local global constants **********/
 // the initial string size allocated when reading a grid from a file
 static const int initGridStringSize = 2000; 
+// number of slots in the playerStandingOn hashtable
 static const int numSlotsPlayerHt = 26;
+// number of times we attempt to find a spot to spawn a player before switching
+// algorithms
+static const int numAttemptsSpawning = 100;
+
+/****************** global constants *********************/
+/* the map characters are defined as global constants here;
+ * they are declared in mapchars.h, which is included by
+ * all files that need to uses them
+ */
+const char mapchars_player= '@';
+const char mapchars_solidRock = ' ';
+const char mapchars_horizontalBoundary = '-';
+const char mapchars_verticalBoundary = '|';
+const char mapchars_cornerBoundary = '+';
+const char mapchars_roomSpot = '.';
+const char mapchars_passageSpot = '#';
+const char mapchars_gold = '*';
+
 
 /****************** local function prototypes ************/
 static inline int indexOf(const int x, const int y, const int numcols);
+static void getCoordsFromIndex(const int index, const int numcols, int* pX,
+                                                                          int* pY);
 static inline bool isValidCoordinate(const int x, const int y, const int numrows,
                                                                const int numcols);
 static bool isVisible(grid_t* grid, const int px, const int py, const int x, 
@@ -42,6 +64,11 @@ static bool isVisible(grid_t* grid, const int px, const int py, const int x,
 static char getPlayerStandingOn(grid_t* grid, const char playerChar);
 static void setPlayerStandingOn(grid_t* grid, const char playerChar,
                                               const char newChar);
+static bool isBlockedHorizontally(grid_t* grid, const int px, const int py,
+                                                const int x,  const int y);
+static bool isBlockedVertically(grid_t* grid, const int px, const int py,
+                                              const int x,  const int y);
+static bool isBlocking(grid_t* grid, const int x, const int y);
 static void freeCharItemdelete(void* pChar);
 
 /****************** global function prototypes ***********/
@@ -218,6 +245,39 @@ grid_charAt(grid_t* grid, const int x, const int y)
   return grid->string[indexOf(x, y, numcols)];
 }
 
+/****************** grid_baseCharAt ***************************
+ *
+ * see grid.h for usage and description
+ *
+ */
+char
+grid_baseCharAt(grid_t* grid, const int x, const int y)
+{
+  if (grid == NULL){
+    return '\0';
+  }
+
+  char toCheck = grid_charAt(grid, x, y);
+
+  if (toCheck == '\0' || toCheck == mapchars_solidRock
+                      || toCheck == mapchars_roomSpot
+                      || toCheck == mapchars_passageSpot
+                      || toCheck == mapchars_horizontalBoundary
+                      || toCheck == mapchars_verticalBoundary
+                      || toCheck == mapchars_cornerBoundary){
+    return toCheck;
+  }
+
+  if (toCheck == mapchars_gold){
+    return mapchars_roomSpot;
+  }
+
+  // We cannot have mapchars_player, because that only appears in
+  // player visible grids, not the master grid. 
+  // Thus the only possibility left is a player letter
+  return getPlayerStandingOn(grid, toCheck); // always returns valid char
+}
+
 /****************** grid_goldAt ***************************
  *
  * see grid.h for usage and description
@@ -316,40 +376,99 @@ grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int p
 
   // this means that the visibility check has never been performed before
   // start off the player with all map spots blank i.e. solid rock
-  // if (player->grid == NULL){
-  //   grid_t* new = malloc(sizeof(grid_t));
-  //   mem_assert(new, "out of memory; could not make new grid for visibility\n");
+  if (currentlyVisibleGrid == NULL){
+    grid_t* new = malloc(sizeof(grid_t));
+    mem_assert(new, "out of memory; could not make new grid for visibility\n");
  
-  //   new->numrows = numrows;
-  //   new->numcols = numcols;
-  //   new->nuggets = NULL;   // NUGGETS INFO MUST NOT BE ACCESSED FROM PLAYER GRIDS
+    new->numrows = numrows;
+    new->numcols = numcols;
+    new->nuggets = NULL;   // NUGGETS INFO MUST NOT BE ACCESSED FROM PLAYER GRIDS
+    new->playersStandingOn = NULL; // ALSO SHOULD NOT BE ACCESSED FROM PLAYER GRIDS
  
-  //   int len = numrows * (numcols + 1);
-  //   char* newString = calloc(len, sizeof(char));
-  //   for (int i = 0; i < len; ++i){
-  //     if (i % numcols == 0){
-  //       newString[i] = '\n';
-  //     } else {
-  //       newString[i] = mapchars_solidRock;
-  //     }
-  //   }
-  //   new->string = newString;
-  // }
+    int len = numrows * (numcols + 1);
+    char* newString = calloc(len + 1, sizeof(char)); // plus one for nullchar
+    for (int i = 0; i < len; ++i){
+      if (i % (numcols + 1) == numcols){
+        newString[i] = '\n';
+      } else {
+        newString[i] = mapchars_solidRock;
+      }
+    }
+    newString[len] = '\0';
+    new->string = newString;
+    currentlyVisibleGrid = new;
+  }
 
+  char* currString = currentlyVisibleGrid->string;
   for (int x = 0; x < numcols; ++x){
     for (int y = 0; y < numrows; ++y){
-      //TODO: add history checking
+      int index = indexOf(x, y, numcols);
       if (isVisible(grid, px, py, x, y)){
-        currentlyVisibleGrid->string[indexOf(x, y, numcols)] = grid_charAt(grid, x, y);
-      } else {
-        currentlyVisibleGrid->string[indexOf(x, y, numcols)] = mapchars_solidRock;
-      }
+        currString[index] = grid_charAt(grid, x, y);
+      } else if (currString[index] != mapchars_solidRock) {
+        // if a point hasn't been seeen before, it is solid rock
+        currString[index] = grid_baseCharAt(grid, x, y);
+      } // else the point hasn't been seen before, so let it remain solid rock
+        // no action required
     }
   }
 
   currentlyVisibleGrid->string[indexOf(px, py, numcols)] = mapchars_player;
 
   return currentlyVisibleGrid;
+}
+
+/****************** grid_findRandomSpawnPosition **********
+ *
+ * see grid.h for usage and description
+ *
+ */
+bool
+grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)
+{
+  if (grid == NULL || pX == NULL || pY == NULL){
+    return false;
+  }
+
+  int numrows = grid->numrows;
+  int numcols = grid->numcols;
+
+  // to avoid an infinite loop we only repeat a certain number of times
+  for (int i = 0; i < numAttemptsSpawning; ++i){
+    int x = rand() % numcols;
+    int y = rand() % numrows;
+
+    if (grid_charAt(grid, x, y) == mapchars_roomSpot){
+      *pX = x;
+      *pY = y;
+      return true;
+    }
+  }
+
+  // if we are here then spawning didn't work
+  // we switch algorithms, listing all room spots and choosing one at random
+  // this is guaranteed to work unless no room spots are available
+
+  int numRoomSpots = 0;
+  int len = (numcols + 1) * numrows;
+  int roomIndices[len]; // at most len room spots
+
+  char* string = grid->string;
+  for (int i = 0; i < len; ++i){
+    if (string[i] == mapchars_roomSpot){
+      roomIndices[numRoomSpots] = i;
+      ++numRoomSpots;
+    }
+  }
+
+  if (numRoomSpots == 0){
+    return false;
+  }
+
+  // get an index between 0 and numRoomSpots
+  int chosenIndex = roomIndices[rand() % numRoomSpots];
+  getCoordsFromIndex(chosenIndex, numcols, pX, pY);
+  return true;
 }
 
 /****************** grid_addPlayer ************************
@@ -420,7 +539,7 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   int gold = 0;
   if (moveSpot == mapchars_gold){
-    gold = grid_collectGold(grid, px, py);
+    gold = grid_collectGold(grid, x_new, y_new);
   }
 
   // update string visuals - TODO: doesn't do swapping yet
@@ -429,8 +548,12 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
   char* string = grid->string;
   char playerChar = string[oldIndex];
 
+  // if the new spot has gold, then get rid of the nugget character
+  // otherwise set the playerStanding on to whatever was there
+  char newStandingOn = moveSpot == mapchars_gold ? mapchars_roomSpot : moveSpot;
+
   string[oldIndex] = getPlayerStandingOn(grid, playerChar);
-  setPlayerStandingOn(grid, playerChar, string[newIndex]);
+  setPlayerStandingOn(grid, playerChar, newStandingOn);
   string[newIndex] = playerChar; 
 
   return gold;
@@ -493,7 +616,11 @@ grid_getDisplay(grid_t* grid)
     return NULL;
   }
 
-  return grid->string;
+  int length = (grid->numcols + 1) * grid->numrows;
+  char* string = calloc(length + 1, sizeof(char));
+  strncpy(string, grid->string, length + 1);
+
+  return string;
 }
 
 /****************** grid_toMap ****************************
@@ -514,6 +641,7 @@ grid_toMap(grid_t* grid, FILE* fp)
   }
 
   fputs(toPrint, fp);
+  free(toPrint);
 }
 
 
@@ -536,6 +664,27 @@ indexOf(const int x, const int y, const int numcols)
   return (numcols + 1) * y + x;
 }
 
+/****************** getCoordsFromIndex ********************
+ *
+ * gets the coordinates of a point from its index
+ *
+ */
+static void
+getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY)
+{
+  if (pX == NULL || pY == NULL){
+    return;
+  }
+
+  // index = (numcols + 1) * y + x
+  // therefore, x = index % (numcols + 1)
+  // and        y = index / (numcols + 1) 
+  // (integer division truncates towards floor)
+
+  *pX = index % (numcols + 1);
+  *pY = index / (numcols + 1);
+}
+
 /****************** isValidCoordinate *********************
  *
  * returns whether this coordinate is valid
@@ -553,13 +702,124 @@ isValidCoordinate(const int x, const int y, const int numrows, const int numcols
  *
  * returns whether the point (x,y) is visible from the point (px, py)
  *
- * TODO - fix this
  */
 static bool
 isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
 {
+  if (isBlockedHorizontally(grid, px, py, x, y)){
+    return false;
+  }
+
+  if (isBlockedVertically(grid, px, py, x, y)){
+    return false;
+  }
+
   return true;
 }
+
+/****************** isBlockedHorizontally *****************
+ *
+ * Does the visibility check for all the x-values between
+ * px and x (both exclusive)
+ *
+ * Finds the intersection points of the line joining (px, py) and (x,y),
+ * (avoiding floating point math), and checks 
+ * whether they are blocked
+ */
+static bool
+isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,
+                                                                const int y)
+{
+  if (px == x){
+    return false;
+  }
+
+  int sign = px < x ? 1 : -1;
+  int slopeNumerator = py - y;
+  int slopeDenominator = px - x;
+
+  for (int xi = px; xi != x; xi += sign){
+    int delta = xi - px;
+    int numerator = slopeNumerator * delta;
+    bool isGridpoint = numerator % slopeDenominator == 0;
+    int yi = numerator / slopeDenominator + py;
+    if (isGridpoint){
+      if (isBlocking(grid, xi, yi)){
+        return true;
+      }
+    } else {
+      // if not gridpoint, then integer division will return the 
+      // floor of the actual value
+      if (isBlocking(grid, xi, yi) && isBlocking(grid, xi, yi + 1)){
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/****************** isBlockedVertically *******************
+ *
+ * Does the visibility check for all the y-values between
+ * py and y (both exclusive)
+ *
+ * Finds the intersection points of the line joining (px, py) and (x,y),
+ * (avoiding floating point math), and checks 
+ * whether they are blocked
+ */
+static bool
+isBlockedVertically(grid_t* grid, const int px, const int py, const int x,
+                                                              const int y)
+{
+  if (py == y){
+    return false;
+  }
+
+  int sign = py < y ? 1 : -1;
+  int slopeNumerator = px - x;
+  int slopeDenominator = py - y;
+
+  for (int yi = py; yi != y; yi += sign){
+    int delta = yi - py;
+    int numerator = slopeNumerator * delta;
+    bool isGridpoint = numerator % slopeDenominator == 0;
+    int xi = numerator / slopeDenominator + px;
+    if (isGridpoint){
+      if (isBlocking(grid, xi, yi)){
+        return true;
+      }
+    } else {
+      // if not gridpoint, then integer division will return the 
+      // floor of the actual value
+      if (isBlocking(grid, xi, yi) && isBlocking(grid, xi + 1, yi)){
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/****************** isBlocking ****************************
+ *
+ * returns whether the character at a given location blocks
+ * line-of-sight
+ *
+ */
+static bool
+isBlocking(grid_t* grid, const int x, const int y)
+{
+  char toCheck = grid_charAt(grid, x, y);
+  
+  // players and gold do not block vision
+  return toCheck == mapchars_solidRock
+      || toCheck == mapchars_horizontalBoundary
+      || toCheck == mapchars_verticalBoundary
+      || toCheck == mapchars_cornerBoundary
+      || toCheck == mapchars_passageSpot;
+}
+
 
 /****************** getPlayerStandingOn *******************
  *
@@ -618,8 +878,6 @@ setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar)
   } 
 
   *pChar = newChar;
-  
-
   free(charString); // the key got copied
 }
 

@@ -11,18 +11,25 @@ VALGRIND = valgrind --leak-check=full --show-leak-kinds=all
 LIBS = 
 LLIBS = ../support/support.a ../libcs50/libcs50-given.a
 
-all: grid.o player.o
+all: grid.o player.o spectator.o game.o
 
-.PHONY: all clean gridtest
+.PHONY: all clean
+
+visibilitytest: visibilitytest.o grid.o $(LLIBS)
+	$(CC) $(CFLAGS) $^ -o $@
+	$(VALGRIND) ./$@
 
 gridtest: gridtest.o grid.o $(LLIBS)
 	$(CC) $(CFLAGS) $^ -o $@
 	$(VALGRIND) ./$@
 
-grid.o: grid.h
+grid.o: grid.h mapchars.h
 player.o: player.h grid.h
+spectator.o: spectator.h
+game.o: game.h spectator.h player.h grid.h mapchars.h
 
 gridtest.o: grid.h
+visibilitytest.o: grid.h
 
 
 ../support/support.a:
@@ -31,3 +38,4 @@ gridtest.o: grid.h
 clean:
 	rm -f *.o
 	rm -f gridtest
+	rm -f visibilitytest

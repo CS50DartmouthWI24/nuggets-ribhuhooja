@@ -36,7 +36,7 @@ typedef struct player player_t;
  *  when done.
  *
 */
-player_t* player_new (addr_t* address, int x, int y, char* name, char letter );
+player_t* player_new (addr_t address, int x, int y, char* name, char letter );
 
 
 /************* player_delete *************/
@@ -138,7 +138,19 @@ char player_getletter(const player_t* player);
  *  The pointer to the address of the player.
  *  NULL on failure
  */
-addr_t* player_getAddress(const player_t* player);
+addr_t player_getAddress(const player_t* player);
+
+/****************** player_isActive ***********************
+ *
+ * returns whether the player is active or not
+ *
+ * Caller provides:
+ *  valid pointer to player
+ * We return:
+ *  true if the player is active
+ *  false if the player is inactive or if there is an error
+ */
+bool player_isActive(player_t* player);
 
 /************* player_setX *************/
 /* 
@@ -170,12 +182,18 @@ void player_setY(player_t* player, int y);
  */
 void player_setGold(player_t* player, int gold);
 
-
-
-
+/****************** player_addGold ************************
+ *
+ * Add the amount of gold to the player's purse
+ *
+ * Caller provides:
+ *  valid pointer to player and the amount of gold to add
+ * We do:
+ *  we add the amount of gold provided to the player's purse
+ */
+void player_addGold(player_t* player, int gold);
 
 /****************** player_moveX ****************************
-/* 
  * Move player in X direction
  * Caller provides: 
  *  A pointer to the player and an integer [-1, 0 , 1].
@@ -187,7 +205,6 @@ void player_moveX(player_t* player, int direction);
 
 
 /****************** player_moveY ****************************
-/* 
  * Move player in Y direction
  * Caller provides: 
  *  A pointer to the player and and an integer from [-1, 0 , 1].
@@ -198,7 +215,6 @@ void player_moveX(player_t* player, int direction);
 void player_moveY(player_t* player, int direction);
 
 /****************** player_moveDiagonal ****************************
-/* 
  * Move player in both X and Y directions diagonally
  * Caller provides: 
  *  A pointer to the player and and two integers from [-1, 0 , 1].

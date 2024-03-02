@@ -77,10 +77,30 @@ int grid_numcols(grid_t* grid);
  *  the character at that (x,y) coordinate
  * Notes:   
  *  The character for a player coordinate will depend on which grid
- *  is querier. The base grid will return the player letter, and the
+ *  is queried. The base grid will return the player letter, and the
  *  player's own map will return an @.
  */
 char grid_charAt(grid_t* grid, const int x, const int y);
+
+/****************** grid_baseCharAt ***************************
+ *
+ * Returns the BASE character at the given (x,y) coordinate
+ * i.e. the character in the base map, before nuggets and players
+ * were added
+ *
+ * Caller provides:
+ *  valid grid pointer
+ *  x coordinate in [0, ncols - 1]
+ *  y coordinate in [0, nrows - 1]
+ * We return:
+ *  null character '\0' if error
+ *  the base character at that (x,y) coordinate
+ * Notes:   
+ *  The character for a player coordinate will depend on which grid
+ *  is queried. The base grid will return the player letter, and the
+ *  player's own map will return an @.
+ */
+char grid_baseCharAt(grid_t* grid, const int x, const int y);
 
 /****************** grid_goldAt ***************************
  *
@@ -150,11 +170,25 @@ bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumP
  *  - getDisplay
  *  - toMap
  *  - charAt
+ * 
  *
  */
 grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,
                                                const int px,
                                                const int py);
+
+/****************** grid_findRandomSpawnPosition **********
+ *
+ * finds a random spot where a player can be added
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ *  valid pointers to the x and y coordinates
+ * We do:
+ *  Find a random empty room spot 
+ *  put the coordinates of the spot at the addresses given as parameters
+ */
+bool  grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
 
 /****************** grid_addPlayer ************************
  *
@@ -225,7 +259,6 @@ bool grid_removePlayer(grid_t* grid, const char playerChar, const int px,
  *  valid pointer to grid and valid coordiantes inside grid
  * We do NOT:
  *  Update the amount of gold stored inside the player. That must be done by game.
- *  Update the grid character, because the player moved onto that character
  * We return:
  *  The amount of gold collected
  * Note:
@@ -241,10 +274,9 @@ int grid_collectGold(grid_t* grid, const int px, const int py);
  * Caller provdes:
  *  valid pointer to a grid
  * We return:
- *  the grid string within the grid
+ *  a copy of the grid string within the grid
  * Caller is responsible for:
- *  NOT freeing the returned string. The string is freed when grid_delete is
- *  called.
+ *  freeing the returned string.
  */
 char* grid_getDisplay(grid_t* grid);
 
@@ -259,5 +291,6 @@ char* grid_getDisplay(grid_t* grid);
  *  print the grid to that file in string format
  */
 void grid_toMap(grid_t* grid, FILE* fp);
+
 
 #endif    // __GRID_H

@@ -15,12 +15,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "message.h"
-#include "grid.h"
 
 /************* global types *************/
-typedef struct spectator {
-    addr_t* address;
-} spectator_t;
+typedef struct spectator spectator_t;
 
 /**** spectator_new ****/
 /* Create a new spectator struct to observe nuggets games
@@ -28,7 +25,7 @@ typedef struct spectator {
  *  Returns a spectator_t* object with the given address
  *  Returns NULL if any errors
  */
-spectator_t* spectator_new(addr_t* address);
+spectator_t* spectator_new(addr_t address);
 
 /****** spectator_getAddress ******/
 /* gets the address of a given spectator
@@ -37,7 +34,7 @@ spectator_t* spectator_new(addr_t* address);
  * We do: 
  *  Return the spectator struct address. Return NULL on any error
  */
-addr_t* spectator_getAddress(spectator_t* spectator);
+addr_t spectator_getAddress(spectator_t* spectator);
 
 /****** spectator_delete ****/
 /* 
@@ -60,6 +57,5 @@ void spectator_delete(spectator_t* spectator);
  *  Send the message to spectator
  */
 void spectator_sendMessage(spectator_t* spectator, char* message);
-
 
 #endif // SPECTATOR_H

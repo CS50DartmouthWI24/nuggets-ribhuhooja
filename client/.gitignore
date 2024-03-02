@@ -37,8 +37,8 @@ Icon?
 .Spotlight-V*
 .Trashes
 
-# test files
-temp
-
 ###########################################################################
 # custom additions below here; see also .gitignore files in subdirectories.
+client
+miniserver
+minclient

@@ -36,8 +36,9 @@ typedef struct game{
 /****************** local functions **********************/
 static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining);
 static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected);
-void static game_updateAllVisibleGrids(game_t* game);
-void static print_result(player_t* player);
+static void game_updateAllVisibleGrids(game_t* game);
+static char* get_result(game_t* game);
+static void game_displayAllPlayers(game_t* game);
 
 
 
@@ -325,28 +326,35 @@ void static game_updateAllVisibleGrids(game_t* game){
 
 }
 
-// A helper funciton that returns the result string
+// A helper function that returns the result string
 static char* get_result(game_t* game){
     if (game == NULL){
         return NULL;
     }
 
 
-    // create a string result aggregate, mallocing enough space to add all the individual results
-    int length = (MaxNameLength + 20) * MaxPlayers;
-    char* gmaeOverMessage = mem_malloc_assert(length, "Could not allocate memory for game over message.\n");
+    char* gameOverHeader = "QUIT: GAME OVER\n";
+    int gameOverHeaderLen = strlen(gameOverHeader);
+
+    // create a string result aggregate, mallocing enough space
+    // to add all the individual results
+    int length =  MaxNameLength + 20; // 20 chars for %c %10d, the maxnamelength chars for the name, with some space extra
+    int totalLength = length * MaxPlayers + gameOverHeaderLen;
+    char* gameOverMessage = mem_malloc_assert(totalLength, "Could not allocate memory for game over message.\n");
+
+    strncat(gameOverMessage, gameOverHeader, gameOverHeaderLen);
 
     for(int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        char* result = mem_calloc_assert((20 + MaxNameLength), sizeof(char), "Out of memory, could not allocate memory for result string\n");
+        char* result = mem_calloc_assert(length + 1, sizeof(char), "Out of memory, could not allocate memory for result string\n");
 
-        snprintf(result, MaxNameLength + 20, "QUIT GAME OVER:\n");
-        snprintf(result, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
-        strncat(gmaeOverMessage, result,length);
-        // strncat result to resultAggregate
+        snprintf(result, length, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
+        strncat(gameOverMessage, result, length);
+
+        free(result);
     }
 
-    // either in this function, but preferably in another, send the result string to each player
+    return gameOverMessage;
 }
 
 

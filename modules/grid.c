@@ -10,10 +10,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "grid.h"
 #include "mem.h"
 #include "counters.h"
 #include "hashtable.h"
-#include "grid.h"
 #include "mapchars.h"
 
 /****************** types ********************************/

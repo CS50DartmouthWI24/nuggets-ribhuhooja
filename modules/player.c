@@ -13,10 +13,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "grid.h"
 #include "message.h"
 #include "player.h"
 #include "log.h"
-#include "grid.h"
 #include "mem.h"    
 
 

@@ -28,10 +28,6 @@ static char* fixName(const char* entry);
 /****** global variables *******/
 const int MAXNAMELENGTH = 50;   // max number of chars in playerName
 const int MAXPLAYERS = 26;      // maximum number of players
-const int GOLDTOTAL = 250;      // amount of gold in the game
-const int GoldMinNumPiles = 10; // minimum number of gold piles
-const int GoldMaxNumPiles = 30; // maximum number of gold piles
-const int TIMEOUT = 15;
 
 game_t* game;
 

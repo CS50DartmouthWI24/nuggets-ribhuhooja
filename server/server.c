@@ -25,9 +25,6 @@ const int GoldMinNumPiles = 10; // minimum number of gold piles
 const int GoldMaxNumPiles = 30; // maximum number of gold piles
 const int TIMEOUT = 15;
 
-const int ncols;
-const int nrows;
-
 game_t* game;
 
 /**************** main() ****************/
@@ -39,8 +36,8 @@ int main(const int argc, char* argv[]) {
     parseArgs(argc, argv, &map, &seed);
     game = game_init(map);
 
-    ncols = grid_numcols(game->masterGrid);
-    nrows = grid_numrows(game->masterGrid);
+    // const int ncols = grid_numcols(game_masterGrid(game));
+    // const int nrows = grid_numrows(game_masterGrid(game));
 
     int port = message_init(stderr);
     if (port == 0) {
@@ -130,13 +127,13 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
     // SYNTAX: PLAY real name
     
     if(content != NULL) {
-        if (game->numPlayer != MAXPLAYERS) {
+        if (game_numPlayers(game) != MAXPLAYERS) {
 
             // Intialize and add player
             int x;
             int y;
-            grid_findRandomSpawnPosition(game->masterGrid, &x, &y);
-            char playerLetter = 'A' + game->numPlayer;
+            grid_findRandomSpawnPosition(game_masterGrid(game), &x, &y);
+            char playerLetter = 'A' + game_numPlayers(game);
             char* name = content;
             player_t* player = player_new(from, 0, 0, name, playerLetter);
             game_addPlayer(game, player);
@@ -148,6 +145,8 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
 
             // Send GRID message
             char* gridMessage = malloc((sizeof(char) * strlen("GRID 1 1")) + 1);
+            int nrows = grid_numrows(game_masterGrid(game));
+            int ncols = grid_numcols(game_masterGrid(game));
             sprintf(gridMessage, "GRID %d %d", nrows, ncols);
             message_send(from, gridMessage);
 
@@ -158,8 +157,8 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             message_send(from, goldMessage);
 
             // Send DISPLAY message
-            char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game->masterGrid)))) + 1);
-            char* string = grid_getDisplay(game->masterGrid);
+            char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game_masterGrid(game))))) + 1);
+            char* string = grid_getDisplay(game_masterGrid(game));
             sprintf(displayMessage, "DISPLAY\n%s", string);
             message_send(from, displayMessage);
 
@@ -207,10 +206,12 @@ static void handleKey(void* arg, const addr_t from, const char* content) {
 static void handleSpectate(void* arg, const addr_t from, const char* content) {
 
     // Add spectator to game
-    game_addSpectator(from, content);
+    game_addSpectator(game, from);
 
     // Send grid message
     char* gridMessage = malloc((sizeof(char) * strlen("GRID 1 1")) + 1);
+    int nrows = grid_numrows(game_masterGrid(game));
+    int ncols = grid_numcols(game_masterGrid(game));
     sprintf(gridMessage, "GRID %d %d", nrows, ncols);
     message_send(from, gridMessage);
 
@@ -221,8 +222,8 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
     message_send(from, goldMessage);
 
     // Send full map
-    char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game->masterGrid)))) + 1);
-    char* string = grid_getDisplay(game->masterGrid);
+    char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game_masterGrid(game))))) + 1);
+    char* string = grid_getDisplay(game_masterGrid(game));
     sprintf(displayMessage, "DISPLAY\n%s", string);
     message_send(from, displayMessage);
 

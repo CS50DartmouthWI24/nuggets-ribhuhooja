@@ -47,7 +47,7 @@ void spectator_delete(spectator_t* spectator){
 }
 
 // to send message to a spectator. Check spectator.h for more information 
-void player_sendMessage(spectator_t* spectator, char* message){
+void spectator_sendMessage(spectator_t* spectator, char* message){
     if(spectator == NULL){
         flog_v(stderr, "Cannot send message for null spectator.\n");
         return;

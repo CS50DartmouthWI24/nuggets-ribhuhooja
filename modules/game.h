@@ -133,7 +133,7 @@ void game_removeSpectator(game_t* game, addr_t address);
  */
 grid_t* game_masterGrid(game_t* game);
 
-/****************** game_NumPlayers ********************
+/****************** game_numPlayers ********************
  *
  * Returns the number of players that have joined the game
  * This includes both active and inactive players
@@ -144,7 +144,7 @@ grid_t* game_masterGrid(game_t* game);
  *  the number of players to have joined the game
  *  0 on error
  */
-int game_NumPlayers(game_t* game);
+int game_numPlayers(game_t* game);
 
 
 /************* game_getPlayers *************/

@@ -114,7 +114,7 @@ int player_getGold(const player_t* player);
  */
 char* player_getName(const player_t* player);
 
-/************* player_getChar *************/
+/************* player_getLetter *************/
 /* 
  * Get the character of the player
  * Caller provides: 
@@ -125,7 +125,7 @@ char* player_getName(const player_t* player);
  *  A pointer to a string containing the letter of the player.
  *  the null character on failure
  */
-char player_getletter(const player_t* player);
+char player_getLetter(const player_t* player);
 
 /************* player_getAddress *************/
 /* 

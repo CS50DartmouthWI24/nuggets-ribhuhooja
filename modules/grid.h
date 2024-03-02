@@ -150,6 +150,7 @@ bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumP
  *  - getDisplay
  *  - toMap
  *  - charAt
+ * 
  *
  */
 grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,

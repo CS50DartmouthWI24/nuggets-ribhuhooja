@@ -4,13 +4,14 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "game.h"
 #include "player.h"
 #include "message.h"
 #include "set.h"
 #include "grid.h"
 
 static void parseArgs(const int argc, char* argv[],
-                      char** map, int* seed);
+                      FILE** map, int* seed);
 static bool handleMessage(void* arg, const addr_t from, const char* buf);
 static void handlePlay(void* arg, const addr_t from, const char* content);
 static void handleKey(void* arg, const addr_t from, const char* content);
@@ -27,19 +28,19 @@ const int TIMEOUT = 15;
 const int ncols;
 const int nrows;
 
-// game_t game;
+game_t* game;
 
 /**************** main() ****************/
 int main(const int argc, char* argv[]) {
 
-    char* map = NULL;
-    int seed = NULL;
+    FILE* map = NULL;
+    int seed;
 
     parseArgs(argc, argv, &map, &seed);
     game = game_init(map);
 
-    ncols = grid_numcols(game.masterGrid);
-    nrows = grid_numrows(game.masterGrid);
+    ncols = grid_numcols(game->masterGrid);
+    nrows = grid_numrows(game->masterGrid);
 
     int port = message_init(stderr);
     if (port == 0) {
@@ -64,15 +65,14 @@ int main(const int argc, char* argv[]) {
  * Adapted from parseArgs.c on CS50 Github
  */
 static void parseArgs(const int argc, char* argv[],
-                      char** map, int* seed) {
+                      FILE** map, int* seed) {
 
     if (argc == 2 || argc == 3){
 
-        *map = argv[1];
-        FILE* fp;
+        char* mapString = argv[1];
 
-        if ((fp = fopen(*map, "r")) == NULL) {
-            fprintf(stderr, "ERROR: Couldn't read file at '%s'\n", *map);
+        if ((*map = fopen(mapString, "r")) == NULL) {
+            fprintf(stderr, "ERROR: Couldn't read file at '%s'\n", mapString);
             exit(2);
         }
 
@@ -97,7 +97,7 @@ static void parseArgs(const int argc, char* argv[],
             srand(getpid());
         }
 
-        fclose(fp); 
+        // fclose(fp); 
 
     } else { // Not enough arguments or too many arguments
         fprintf(stderr, "USAGE: server map.txt [seed]\n");
@@ -130,15 +130,15 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
     // SYNTAX: PLAY real name
     
     if(content != NULL) {
-        if (game.numPlayer != MAXPLAYERS) {
+        if (game->numPlayer != MAXPLAYERS) {
 
             // Intialize and add player
             int x;
             int y;
-            grid_findRandomSpawnPosition(game.masterGrid, &x, &y);
-            char playerLetter = 'A' + game.numPlayer;
+            grid_findRandomSpawnPosition(game->masterGrid, &x, &y);
+            char playerLetter = 'A' + game->numPlayer;
             char* name = content;
-            player_t* player = player_new(&from, 0, 0, name, playerLetter);
+            player_t* player = player_new(from, 0, 0, name, playerLetter);
             game_addPlayer(game, player);
 
             // Send OK message
@@ -156,6 +156,12 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             int r = game_getGold(game);
             sprintf(goldMessage, "GOLD 0 0 %d", r);
             message_send(from, goldMessage);
+
+            // Send DISPLAY message
+            char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game->masterGrid)))) + 1);
+            char* string = grid_getDisplay(game->masterGrid);
+            sprintf(displayMessage, "DISPLAY\n%s", string);
+            message_send(from, displayMessage);
 
         } else {
             message_send(from, "QUIT Game is full: no more players can join.");
@@ -191,7 +197,7 @@ static void handleKey(void* arg, const addr_t from, const char* content) {
             case 'U': game_longMove(game, from, 1, -1); break; // LONG up and right
             case 'B': game_longMove(game, from, -1, 1); break; // LONG down and left
             case 'N': game_longMove(game, from, 1, 1); break; // LONG down and right
-            default: message_send(from, "ERROR - key not recognized.")
+            default: message_send(from, "ERROR - key not recognized.");
         }
 
     }
@@ -215,8 +221,8 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
     message_send(from, goldMessage);
 
     // Send full map
-    char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game.grid)))) + 1);
-    char* string = grid_getDisplay(game.grid);
+    char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game->masterGrid)))) + 1);
+    char* string = grid_getDisplay(game->masterGrid);
     sprintf(displayMessage, "DISPLAY\n%s", string);
     message_send(from, displayMessage);
 

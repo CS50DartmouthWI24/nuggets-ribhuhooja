@@ -2,12 +2,10 @@
  * Team torpedos Winter, 2024
  * 
  * Author:Tayeb Mohammadi
+ *
+ * Modified: Ribhu Hooja, March 2024
  * 
 */
-
-
-// 1. should I have another array for inactive players
-// 2. when returning the array of players, what to do with inactive players.
 
 
 #include <stdio.h>
@@ -75,8 +73,8 @@ void game_addPlayer(game_t* game, player_t* player);
  * 
  * Notes:
  *  we do not remove the player from players array. we just mark it as isActive to 
- *  be false. This is helpful when the player want to join again, but it is already
- *  in the prayers array and we deny player's request.
+ *  be false. This is because that spot is still "occupied" as a player
+ *  who has left cannot be replaced.
 */
 void game_removePlayer(game_t* game, player_t* player);
 
@@ -98,7 +96,7 @@ void game_removePlayer(game_t* game, player_t* player);
  * 
  * Notes:
 */
-void game_addSpectator(game_t* game, addr_t* address);
+void game_addSpectator(game_t* game, addr_t address);
 
 
 
@@ -119,7 +117,7 @@ void game_addSpectator(game_t* game, addr_t* address);
  * 
  * Notes:
 */
-void game_removeSpectator(game_t* game, addr_t* address);
+void game_removeSpectator(game_t* game, addr_t address);
 
 
 
@@ -175,7 +173,7 @@ spectator_t* game_getSpectator(game_t* game);
  * Notes:
  *  The array can be null with zero player. The caller should take care of that. 
 */
-player_t* game_findPlayer(game_t* game, addr_t* address);
+player_t* game_findPlayer(game_t* game, addr_t address);
 
 
 /************* game_move *************/
@@ -199,7 +197,7 @@ player_t* game_findPlayer(game_t* game, addr_t* address);
  * 
  * Notes:
 */
-void game_move(game_t* game, addr_t* address, int dx, int dy);
+void game_move(game_t* game, addr_t address, int dx, int dy);
 
 
 
@@ -223,7 +221,7 @@ void game_move(game_t* game, addr_t* address, int dx, int dy);
  * 
  * Notes:
 */
-void game_longMove(game_t* game, addr_t* address, int dx, int dy);
+void game_longMove(game_t* game, addr_t address, int dx, int dy);
 
 
 /************* game_over *************/

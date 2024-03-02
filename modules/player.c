@@ -22,14 +22,14 @@
 
 /******************* types *******************************/
 typedef struct player {
-  int x;                    // x-coordinate of the player
-  int y;                    // y-coordinate of the player
-  grid_t* visibleGrid;      // the grid that the player can see
-  int gold;                 // the gold collected by the player
-  char* name;               // the name of the player
-  bool isActive;            // whether the player is active
+  int x;                 // x-coordinate of the player
+  int y;                 // y-coordinate of the player
+  grid_t* visibleGrid;   // the grid that the player can see
+  int gold;              // the gold collected by the player
+  char* name;            // the name of the player
+  bool isActive;         // whether the player is active
   char letter;           // the character representation of the player on the map
-  addr_t* address;          // the address of the player client, for sending messages
+  addr_t address;        // the address of the player client, for sending messages
 } player_t;
 
 /****************** player_new ****************************
@@ -38,9 +38,9 @@ typedef struct player {
  *
  */
 player_t*
-player_new (addr_t* address, int x, int y, char* name, char letter )
+player_new (addr_t address, int x, int y, char* name, char letter )
 {
-  if (address == NULL || name == NULL){
+  if (name == NULL){
     return NULL;
   }
 
@@ -183,15 +183,30 @@ player_getLetter(const player_t* player)
  * see player.h for description and usage
  *
  */
-addr_t*
+addr_t
 player_getAddress(const player_t* player)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot get address of null player.\n");
-        return NULL; 
+        return message_noAddr(); 
     }
 
     return player->address;
+}
+
+/****************** player_isActive ***********************
+ *
+ * see player.h for description and usage
+ *
+ */
+bool
+player_isActive(player_t* player)
+{
+  if (player == NULL){
+    return false;
+  }
+
+  return player->isActive;
 }
 
 /****************** player_setX ****************************
@@ -243,7 +258,23 @@ player_setGold(player_t* player, int gold)
 
 }
 
-/****************** player_setFalse ****************************
+/****************** player_addGold ************************
+ *
+ * see player.h for description and usage
+ *
+ */
+void
+player_addGold(player_t* player, int gold)
+{
+  if (player == NULL){
+    flog_v(stderr, "Cannot add gold for null player.\n");
+    return;
+  }
+
+  player->gold += gold;
+}
+
+/****************** player_setInactive ****************************
  *
  * see player.h for description and usage
  *
@@ -346,10 +377,10 @@ player_setVisibleGrid(player_t* player, grid_t* visibleGrid)
 void
 player_sendMessage(player_t* player, char* message)
 {
-    if(player == NULL || player->address == NULL){
+    if(player == NULL){
         flog_v(stderr, "Cannot send message for null player or address.\n");
         return;
     }
 
-    message_send(*(player->address), message);
+    message_send(player->address, message);
 }

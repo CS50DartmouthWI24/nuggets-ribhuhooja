@@ -2,26 +2,28 @@
  * Team torpedos Winter, 2024
  * 
  * Author:Tayeb Mohammadi
+ *
+ * Modified: Ribhu Hooja, March 2024
  * 
 */
 
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "log.h"
+#include "mem.h"
 #include "spectator.h"
 #include "player.h"
 #include "grid.h" 
-#include "log.h"
-#include "mem.h"
 #include "game.h"
 #include "mapchars.h"
 
-// Global Variables
-static const MaxNameLength = 50;        // max number of chars in playerName
-static const  MaxPlayers = 26;          // maximum number of players
-static int GoldTotal = 250;                 // amount of gold in the game and it is not static because it changes later
-static const GoldMinNumPiles = 10;      // minimum number of gold piles
-static const GoldMaxNumPiles = 30;      // maximum number of gold piles
+// Global Constants
+static const int MaxNameLength = 50;        // max number of chars in playerName
+static const int MaxPlayers = 26;           // maximum number of players
+static const int GoldTotal = 250;           // amount of gold in the game
+static const int GoldMinNumPiles = 10;      // minimum number of gold piles
+static const int GoldMaxNumPiles = 30;      // maximum number of gold piles
 
 typedef struct game{
     player_t** players;         // array of players
@@ -29,11 +31,11 @@ typedef struct game{
     spectator_t* spectator;     // the address of the spectator
     int numPlayer;              // number of players joined the game so far
     int goldRemain;             // the remaining gold in the game
-//    int numPiles;               // the random number of piles between max and min number given as global variables.
 } game_t;
 
 
-// this function initializes the whole game by initializing each small other small part of it.
+// this function initializes the whole game by initializing 
+// each small part of it.
 game_t* game_init(FILE* mapfile){
 
     game_t* game = mem_malloc_assert(sizeof(game_t), "Failed to allocate memory for game.\n");
@@ -42,7 +44,7 @@ game_t* game_init(FILE* mapfile){
     game->masterGrid = grid_fromMap(mapfile);
     
     // which is between max and min number of piles give as global variable.
-    game->numPlayer = 0;// set num of player to zer0
+    game->numPlayer = 0;// set num of player to zero
     game->goldRemain = GoldTotal;// set the gold remaining in the game to GoldTotal.
 
 
@@ -56,14 +58,13 @@ game_t* game_init(FILE* mapfile){
     game->players = mem_calloc_assert(MaxPlayers, sizeof(player_t*), "Failed to allocate memory for Player.\n"); 
 
     // initialize spectator
-    game->spectator = mem_malloc_assert(sizeof(spectator_t), "Failed to allocate memory for Player.\n");
-
-
+    game->spectator = NULL;
     return game;
 }
 
 
-// to add a player to the game.Check game.h for more information.
+// to add a player to the game.
+// Check game.h for more information.
 void game_addPlayer(game_t* game, player_t* player){
     if (game != NULL && player != NULL){
         if (game->numPlayer < MaxPlayers){
@@ -83,12 +84,13 @@ void game_addPlayer(game_t* game, player_t* player){
     }
 }
 
-// to remove player from the game. Check game.h for more information.
+// to remove player from the game.
+// Check game.h for more information.
 void game_removePlayer(game_t* game, player_t* playerA){
     if (game != NULL && playerA != NULL){
         player_t* playerB = game_findPlayer(game,player_getAddress(playerA)); 
         if(playerB == NULL){
-            flogv(stderr, "Cannot remove a player that is not in players array.\n");
+            flog_v(stderr, "Cannot remove a player that is not in players array.\n");
             return;
         }
         player_sendMessage(playerA,"QUIT Thanks for playing!\n");
@@ -98,10 +100,11 @@ void game_removePlayer(game_t* game, player_t* playerA){
     }
 }
 
-// to add a spectator to the game. Check game.h for more information.
-void game_addSpectator(game_t* game, addr_t* address){
+// to add a spectator to the game.
+// Check game.h for more information.
+void game_addSpectator(game_t* game, addr_t address){
     if (game != NULL){
-        if (game->spectator != NULL){ // it means that there is already a spepctator in the game
+        if (game->spectator != NULL){ 
             spectator_sendMessage(game->spectator, "QUIT You have been replaced by a new spectator.\n");
             spectator_delete(game->spectator);
         }
@@ -110,13 +113,13 @@ void game_addSpectator(game_t* game, addr_t* address){
 }
 
 // to remove spectator from the game. Check game.h for more information.
-void game_removeSpectator(game_t* game, addr_t* address){
-    if (game != NULL && address != NULL){
+void game_removeSpectator(game_t* game, addr_t address){
+    if (game != NULL){
 
         // to check if the spectator is already in the game
         spectator_t* spectator = game->spectator;
-        if (!(message_eqAddr(*spectator_getAddress(spectator), *address))){
-            flogv(stderr,"cannot remove a spectator that is not in the game.\n");
+        if (!(message_eqAddr(spectator_getAddress(spectator), address))){
+            flog_v(stderr,"cannot remove a spectator that is not in the game.\n");
             return;
         }
         spectator_sendMessage(spectator,"QUIT Thanks for watching!\n");
@@ -129,7 +132,7 @@ void game_removeSpectator(game_t* game, addr_t* address){
 // to get the players array. Check game.h for more information.
 player_t** game_getPlayers(game_t* game){
     if (game == NULL){
-        flogv(stderr, "Cannot get the players array of null game.\n");
+        flog_v(stderr, "Cannot get the players array of null game.\n");
     }
     return game->players;
 }
@@ -137,28 +140,28 @@ player_t** game_getPlayers(game_t* game){
 // to get the spectator. Check game.h for more information.
 spectator_t* game_getSpectator(game_t* game){
     if (game == NULL){
-        flogv(stderr, "Cannot get the spectator of null game.\n");
+        flog_v(stderr, "Cannot get the spectator of null game.\n");
     }
     return game->spectator;
 }
 
 
 // to find a player by its address. Check game.h for more information.
-player_t* game_findPlayer(game_t* game, addr_t* address){
+player_t* game_findPlayer(game_t* game, addr_t address){
     if (game == NULL){
-        flogv(stderr, "Cannot find player in null game");
+        flog_v(stderr, "Cannot find player in null game");
         return NULL;
     }
     else{
         player_t* player;
         for (int i = 0; i < game->numPlayer; i++){
             player = game->players[i];
-            if (message_eqAddr(*player_getAddress(player), *address)){
+            if (message_eqAddr(player_getAddress(player), address)){
                 return player;
             }
         }
         // after we come out of loop and could not find the player in players array
-        flogv(stderr, "There is no pplayers in array with the given address.\n");
+        flog_v(stderr, "There is no pplayers in array with the given address.\n");
         return NULL;
     }
 }
@@ -166,12 +169,12 @@ player_t* game_findPlayer(game_t* game, addr_t* address){
 
 
 // to change the coordinates and visble grid of player once it moves. 
-void game_move(game_t* game, addr_t* address, int dx, int dy){
+void game_move(game_t* game, addr_t address, int dx, int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to move the player is not with [-1, +1].\n");
         return;
     }
-    if (game == NULL || address == NULL){
+    if (game == NULL){
         flog_v(stderr, "Cannot move player. Either Null player or Null game c.\n");
         return;
     }
@@ -209,17 +212,16 @@ void game_move(game_t* game, addr_t* address, int dx, int dy){
     // update the visible grids for each player
     game_updateAllVisibleGrids(game);
     game_displayAllPlayers(game);
-
 }
 
 
 // this functin is to move the player a long as it can move only to one direction, either diagonally, vertically or horizontally.
-void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
+void game_longMove(game_t* game,addr_t address, int dx ,int dy){
     if (dx > 1 || dx <-1 || dy > 1 || dy <-1){
         flog_v(stderr, "The coordinates to long move the player is not with [-1, +1].\n");
         return;
     }
-    if (game == NULL || address == NULL){
+    if (game == NULL){
         flog_v(stderr, "Cannot long move player. Either Null player or Null game c.\n");
         return;
     }
@@ -240,15 +242,8 @@ void game_longMove(game_t* game,addr_t* address, int dx ,int dy){
 
     if (goldCollected > 0){
         player_addGold(player, goldCollected);
-
-        int purse = player_getGold(player); // the amount of gold player has in its purse.
         game->goldRemain -= goldCollected;
-        int remain = game->goldRemain;      // the amount of gold remaining in the game.
-
-        game_sendAllGoldMessages(game,player,goldCollected);
-//      char message[100];
-//      snprintf(message, sizeof(message), "GOLD %d %d %d", goldCollected, purse, remain);
-//      player_sendMessage(player, message);
+        game_sendAllGoldMessages(game, goldCollected, player);
     }
 
 
@@ -329,7 +324,5 @@ void game_over(game_t* game){
 }
 
 // TODO
-// player_isActive ++++++
-// game_sendAllGoldMessages +++++++
 // game_displayAllPlayers(game); 
 

@@ -251,8 +251,6 @@ bool game_move(game_t* game, addr_t address, int dx, int dy){
         player_setX(other, px);
         player_setY(other, py);
       }
-
-      return false;
     } else {
       player_moveDiagonal(player, dx, dy);
     }
@@ -304,15 +302,16 @@ bool game_longMove(game_t* game,addr_t address, int dx ,int dy){
         return false;
     }
 
-    int px = player_getX(player);
-    int py = player_getY(player);
-
     int returnVal; // return value from move; is -1 if move failed
     int goldCollected = 0;
     while ((returnVal = grid_movePlayer(game->masterGrid, player_getX(player), player_getY(player), dx, dy)) != -1) {
         if (returnVal == -2){
+            int px = player_getX(player);
+            int py = player_getY(player);
+
             grid_swapPlayers(game->masterGrid, px, py, px + dx, py + dy);
             player_t* other = findPlayerByCoords(game, px + dx, py + dy);
+
             if (other != NULL){
                 player_setX(other, px);
                 player_setY(other, py);

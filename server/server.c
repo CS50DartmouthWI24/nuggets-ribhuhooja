@@ -9,6 +9,7 @@
 #include "message.h"
 #include "set.h"
 #include "grid.h"
+#include "mem.h"
 
 static void parseArgs(const int argc, char* argv[],
                       FILE** map, int* seed);
@@ -17,6 +18,7 @@ static void handlePlay(void* arg, const addr_t from, const char* content);
 static void handleKey(void* arg, const addr_t from, const char* content);
 static void handleSpectate(void* arg, const addr_t from, const char* content);
 static void keyQ(const addr_t from);
+static void errorMessage(const addr_t from, const char* content);
 
 const int MAXNAMELENGTH = 50;   // max number of chars in playerName
 const int MAXPLAYERS = 26;      // maximum number of players
@@ -111,7 +113,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
         const char* content = message + strlen("PLAY ");
         handlePlay(arg, from, content);
     } else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) { // KEY
-        const char* content = message + strlen("PLAY ");
+        const char* content = message + strlen("KEY ");
         handleKey(arg, from, content);
     } else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
         const char* content = message + strlen("SPECTATE");
@@ -135,32 +137,40 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             grid_findRandomSpawnPosition(game_masterGrid(game), &x, &y);
             char playerLetter = 'A' + game_numPlayers(game);
             char* name = content;
-            player_t* player = player_new(from, 0, 0, name, playerLetter);
+            player_t* player = player_new(from, x, y, name, playerLetter);
             game_addPlayer(game, player);
 
             // Send OK message
-            char* okMessage = malloc((sizeof(char) * strlen("OK A")) + 1);
+            char* okMessage = mem_malloc((sizeof(char) * strlen("OK A")) + 1);
             sprintf(okMessage, "OK %c", playerLetter);
             message_send(from, okMessage);
+            mem_free(okMessage);
 
             // Send GRID message
-            char* gridMessage = malloc((sizeof(char) * strlen("GRID 1 1")) + 1);
             int nrows = grid_numrows(game_masterGrid(game));
             int ncols = grid_numcols(game_masterGrid(game));
+            int rowsDigitLength = snprintf(NULL, 0, "%d", nrows);
+            int colsDigitLength = snprintf(NULL, 0, "%d", ncols);
+            char* gridMessage = mem_malloc((sizeof(char) * strlen("GRID 1 1")) + rowsDigitLength + colsDigitLength + 1);
             sprintf(gridMessage, "GRID %d %d", nrows, ncols);
             message_send(from, gridMessage);
+            mem_free(gridMessage);
 
             // Send GOLD message
-            char* goldMessage = malloc((sizeof(char) * strlen("GOLD 1 1 1")) + 1);
             int r = game_getGold(game);
+            int digitLength = snprintf(NULL, 0, "%d", r);
+            char* goldMessage = mem_malloc((sizeof(char) * strlen("GOLD 1 1 1")) + digitLength + 1);
             sprintf(goldMessage, "GOLD 0 0 %d", r);
             message_send(from, goldMessage);
+            mem_free(goldMessage);
 
             // Send DISPLAY message
-            char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game_masterGrid(game))))) + 1);
             char* string = grid_getDisplay(game_masterGrid(game));
+            char* displayMessage = mem_malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(string))) + 1);
             sprintf(displayMessage, "DISPLAY\n%s", string);
             message_send(from, displayMessage);
+            mem_free(displayMessage);
+            mem_free(string);
 
         } else {
             message_send(from, "QUIT Game is full: no more players can join.");
@@ -176,7 +186,8 @@ static void handleKey(void* arg, const addr_t from, const char* content) {
     // SYNTAX: KEY k
 
     if(content != NULL) {
-        char letter = content;
+        char letter = content[0];
+        fprintf(stderr, "letter: %c\n", letter);
         switch (letter) {
             case 'Q': keyQ(from); break; // quit
             case 'q': keyQ(from); break; // quit
@@ -196,7 +207,7 @@ static void handleKey(void* arg, const addr_t from, const char* content) {
             case 'U': game_longMove(game, from, 1, -1); break; // LONG up and right
             case 'B': game_longMove(game, from, -1, 1); break; // LONG down and left
             case 'N': game_longMove(game, from, 1, 1); break; // LONG down and right
-            default: message_send(from, "ERROR - key not recognized.");
+            default: errorMessage(from, content);
         }
 
     }
@@ -209,23 +220,30 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
     game_addSpectator(game, from);
 
     // Send grid message
-    char* gridMessage = malloc((sizeof(char) * strlen("GRID 1 1")) + 1);
     int nrows = grid_numrows(game_masterGrid(game));
     int ncols = grid_numcols(game_masterGrid(game));
+    int rowsDigitLength = snprintf(NULL, 0, "%d", nrows);
+    int colsDigitLength = snprintf(NULL, 0, "%d", ncols);
+    char* gridMessage = mem_malloc((sizeof(char) * strlen("GRID 1 1")) + rowsDigitLength + colsDigitLength + 1);
     sprintf(gridMessage, "GRID %d %d", nrows, ncols);
     message_send(from, gridMessage);
+    mem_free(gridMessage);
 
     // Send gold message
-    char* goldMessage = malloc((sizeof(char) * strlen("GOLD 1 1 1")) + 1);
     int r = game_getGold(game);
+    int digitLength = snprintf(NULL, 0, "%d", r);
+    char* goldMessage = mem_malloc((sizeof(char) * strlen("GOLD 1 1 1")) + digitLength + 1);
     sprintf(goldMessage, "GOLD 0 0 %d", r);
     message_send(from, goldMessage);
+    mem_free(goldMessage);
 
     // Send full map
-    char* displayMessage = malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(grid_getDisplay(game_masterGrid(game))))) + 1);
     char* string = grid_getDisplay(game_masterGrid(game));
+    char* displayMessage = mem_malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(string))) + 1);
     sprintf(displayMessage, "DISPLAY\n%s", string);
     message_send(from, displayMessage);
+    mem_free(displayMessage);
+    mem_free(string);
 
 }
 
@@ -238,5 +256,13 @@ static void keyQ(const addr_t from) { // QUIT
     } else { // If the player does exist, remove them
         game_removePlayer(game, player); // handles QUIT messaging
     }
+
+}
+
+static void errorMessage(const addr_t from, const char* content) {
+
+    char* errorMsg = malloc((sizeof(char) * (strlen("ERROR - key '' not recognized")) + strlen(content)) + 1);
+    sprintf(errorMsg, "ERROR - key '%s' not recognized", content);
+    message_send(from, errorMsg);
 
 }

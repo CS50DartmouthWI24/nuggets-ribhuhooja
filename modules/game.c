@@ -258,6 +258,7 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
     }
 
     // update the visible grids for each player
+
     updateAllVisibleGrids(game);
     displayAllPlayers(game);
 }
@@ -378,6 +379,7 @@ static void displayAllPlayers(game_t* game){
         snprintf(message, length, "DISPLAY\n%s", gridString);
         player_sendMessage(player, message);
 
+        mem_free(gridString);
         free(message);
     }
 }

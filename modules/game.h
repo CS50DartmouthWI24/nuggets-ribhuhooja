@@ -140,6 +140,24 @@ void game_removeSpectator(game_t* game, addr_t address);
 */
 player_t** game_getPlayers(game_t* game);
 
+
+/************* game_getGold *************/
+/** Return the amount of players
+
+ * Caller provides: 
+ *  @param game structure pointer, 
+ * 
+ * We do:
+ *  Get the amount of the amount of godd remaining in the game. pointers.
+ * 
+ * We return:
+ *  Amount of gold remaining if the game in not null, otherwise return -1.
+ * 
+ * Notes:
+ *   
+*/
+int game_getGold(game_t* game);
+
 /************* game_getSpectator *************/
 /** 
  * Caller provides: 

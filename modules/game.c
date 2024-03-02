@@ -34,8 +34,11 @@ typedef struct game{
 } game_t;
 
 /****************** local functions **********************/
-static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected,                                                              const int purse,
-                                                            const int goldRemaining);
+static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining);
+static void game_sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int playerGold);
+void static game_updateAllVisibleGrids(game_t* game);
+void static print_result(player_t* player);
+
 
 
 // this function initializes the whole game by initializing 
@@ -140,6 +143,16 @@ player_t** game_getPlayers(game_t* game){
     }
     return game->players;
 }
+
+// to get the players array. Check game.h for more information.
+int game_getGold(game_t* game){
+    if (game == NULL){
+        flog_v(stderr, "Cannot get the amount of gold of null game.\n");
+        return -1;
+    }
+    return game->goldRemain;
+}
+
 
 // to get the spectator. Check game.h for more information.
 spectator_t* game_getSpectator(game_t* game){

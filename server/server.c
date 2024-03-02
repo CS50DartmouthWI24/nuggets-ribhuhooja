@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include "game.h"
 #include "player.h"
@@ -19,6 +20,8 @@ static bool  handleKey(void* arg, const addr_t from, const char* content);
 static void handleSpectate(void* arg, const addr_t from, const char* content);
 static void keyQ(const addr_t from);
 static void errorMessage(const addr_t from, const char* content);
+static bool checkWhitespace(char* name);
+static char* fixName(const char* entry);
 
 const int MAXNAMELENGTH = 50;   // max number of chars in playerName
 const int MAXPLAYERS = 26;      // maximum number of players
@@ -126,7 +129,7 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
 
     // SYNTAX: PLAY real name
     
-    if(content != NULL) {
+    if(!checkWhitespace(content)) {
         if (game_numPlayers(game) != MAXPLAYERS) {
 
             // Intialize and add player
@@ -134,7 +137,7 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             int y;
             grid_findRandomSpawnPosition(game_masterGrid(game), &x, &y);
             char playerLetter = 'A' + game_numPlayers(game);
-            const char* name = content;
+            char* name = fixName(content);
             player_t* player = player_new(from, x, y, name, playerLetter);
             game_addPlayer(game, player);
 
@@ -269,3 +272,40 @@ static void errorMessage(const addr_t from, const char* content) {
     free(errorMsg);
 
 }
+
+// RETURNS TRUE IF A STRING IS BLANK
+static bool checkWhitespace(char* name){
+
+    for (int i = 0; name[i] != '\0'; i++) {
+        if (isalpha(name[i])) {
+            return false; // This contains letters
+        }
+    }
+    return true; // This is just whitespace
+
+}
+
+static char* fixName(const char* entry) {
+    char* name = mem_malloc(MAXNAMELENGTH+1);
+    if (strlen(entry) < MAXNAMELENGTH) {
+        for (int i = 0; entry[i] != '\0'; i++) {
+            if (!isgraph(entry[i]) && !isblank(entry[i])) {
+                name[i] = '_';
+            } else {
+                name[i] = entry[i];
+            }
+        }
+        name[strlen(entry)] = '\0';
+    } else {
+        for (int i = 0; i < (MAXNAMELENGTH); i++) {
+            if (isspace(entry[i])) {
+                name[i] = '_';
+            } else {
+                name[i] = entry[i];
+            }
+        }
+        name[MAXNAMELENGTH] = '\0';
+    }
+    return name;
+}
+

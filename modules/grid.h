@@ -157,6 +157,19 @@ grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid,
                                                const int px,
                                                const int py);
 
+/****************** grid_findRandomSpawnPosition **********
+ *
+ * finds a random spot where a player can be added
+ *
+ * Caller provides:
+ *  valid pointer to a grid
+ *  valid pointers to the x and y coordinates
+ * We do:
+ *  Find a random empty room spot 
+ *  put the coordinates of the spot at the addresses given as parameters
+ */
+void grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
+
 /****************** grid_addPlayer ************************
  *
  * Adds a player to the grid

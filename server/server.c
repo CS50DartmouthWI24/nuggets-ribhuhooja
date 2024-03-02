@@ -12,6 +12,8 @@
 #include "grid.h"
 #include "mem.h"
 
+/**************** local functions ****************/
+/* not visible outside this file */
 static void parseArgs(const int argc, char* argv[],
                       FILE** map, int* seed);
 static bool handleMessage(void* arg, const addr_t from, const char* buf);
@@ -20,9 +22,10 @@ static bool  handleKey(void* arg, const addr_t from, const char* content);
 static void handleSpectate(void* arg, const addr_t from, const char* content);
 static void keyQ(const addr_t from);
 static void errorMessage(const addr_t from, const char* content);
-static bool checkWhitespace(char* name);
+static bool checkWhitespace(const char* name);
 static char* fixName(const char* entry);
 
+/****** global variables *******/
 const int MAXNAMELENGTH = 50;   // max number of chars in playerName
 const int MAXPLAYERS = 26;      // maximum number of players
 const int GOLDTOTAL = 250;      // amount of gold in the game
@@ -35,38 +38,43 @@ game_t* game;
 /**************** main() ****************/
 int main(const int argc, char* argv[]) {
 
+    // Create variables
     FILE* map = NULL;
     int seed;
 
+    // Parse arguments, open map and set seed
     parseArgs(argc, argv, &map, &seed);
+
+    // Intialize game
     game = game_init(map);
+
+    // Close map file
     fclose(map);
 
+    // Open the server up for messages
     int port = message_init(stderr);
     if (port == 0) {
-        return 2; // failure to initialize message module
+        return 2;
     } else {
         printf("serverPort=%d\n", port);
     }
 
+    // Loop through messages and return 0 or 1
     bool ok = message_loop(NULL, 0, NULL, NULL, handleMessage);
-
     message_done();
-
     return ok? 0 : 1;
 
 }
 
 /* ******************* parseArgs ******************* */
 /* Handle the messy business of parsing command-line arguments.
- * We return 'void' because we only return when successful; otherwise,
- * we print error or usage message to stderr and exit non-zero.
  * 
  * Adapted from parseArgs.c on CS50 Github
  */
 static void parseArgs(const int argc, char* argv[],
                       FILE** map, int* seed) {
 
+    // Should only be 2 or 3 arguments
     if (argc == 2 || argc == 3){
 
         char* mapString = argv[1];
@@ -76,6 +84,7 @@ static void parseArgs(const int argc, char* argv[],
             exit(2);
         }
 
+        // If there is indeed a 3rd argument, set up seed
         if (argc == 3) {
             char* seedString = argv[2];
             // Try to convert seedString to an int
@@ -97,26 +106,28 @@ static void parseArgs(const int argc, char* argv[],
             srand(getpid());
         }
 
-        // fclose(fp); 
-
-    } else { // Not enough arguments or too many arguments
+    // If there are an unacceptable number of arguments
+    } else {
         fprintf(stderr, "USAGE: server map.txt [seed]\n");
         exit(1);
     }
 
 }
 
+/**************** handleMessage() ****************/
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
-
 
     bool gameOver = false;
 
-    if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) { // PLAY
+    // PLAY message - SYNTAX: PLAY real name
+    if (strncmp(message, "PLAY ", strlen("PLAY ")) == 0) {
         const char* content = message + strlen("PLAY ");
         handlePlay(arg, from, content);
-    } else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) { // KEY
+    // KEY message - SYNTAX: KEY k
+    } else if (strncmp(message, "KEY ", strlen("KEY ")) == 0) {
         const char* content = message + strlen("KEY ");
         gameOver = handleKey(arg, from, content);
+    // SPECTATE message - SYNTAX: SPECTATE
     } else if (strncmp(message, "SPECTATE", strlen("SPECTATE")) == 0) {
         const char* content = message + strlen("SPECTATE");
         handleSpectate(arg, from, content);
@@ -125,11 +136,12 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     return gameOver;
 }
 
+/**************** handlePlay() ****************/
 static void handlePlay(void* arg, const addr_t from, const char* content) {
-
-    // SYNTAX: PLAY real name
     
+    // Make empty string isn't passed as name
     if(!checkWhitespace(content)) {
+        // Check if game is full
         if (game_numPlayers(game) != MAXPLAYERS) {
 
             // Intialize and add player
@@ -174,6 +186,18 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
             mem_free(displayMessage);
             mem_free(string);
 
+            // Also send DISPLAY message to SPECTATOR if SPECTATOR exists
+            spectator_t* spectator;
+            if ((spectator = game_getSpectator(game)) != NULL) {
+                addr_t to = spectator_getAddress(spectator);
+                char* spectatorString = grid_getDisplay(game_masterGrid(game));
+                char* spectatorDisplayMessage = mem_malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(spectatorString))) + 1);
+                sprintf(spectatorDisplayMessage, "DISPLAY\n%s", spectatorString);
+                message_send(to, spectatorDisplayMessage);
+                mem_free(spectatorDisplayMessage);
+                mem_free(spectatorString);
+            }
+
         } else {
             message_send(from, "QUIT Game is full: no more players can join.");
         }
@@ -183,15 +207,14 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
 
 }
 
+/**************** handleKey() ****************/
 static bool handleKey(void* arg, const addr_t from, const char* content) {
-
-    // SYNTAX: KEY k
 
   bool gameOver = false;
 
+    // Go through each key case if a key was given
     if(content != NULL) {
         char letter = content[0];
-        fprintf(stderr, "letter: %c\n", letter);
         switch (letter) {
             case 'Q': keyQ(from); break; // quit
             case 'q': keyQ(from); break; // quit
@@ -211,20 +234,19 @@ static bool handleKey(void* arg, const addr_t from, const char* content) {
             case 'U': gameOver = game_longMove(game, from, 1, -1); break; // LONG up and right
             case 'B': gameOver = game_longMove(game, from, -1, 1); break; // LONG down and left
             case 'N': gameOver = game_longMove(game, from, 1, 1); break; // LONG down and right
-            default: errorMessage(from, content);
+            default: errorMessage(from, content); // key not recognized
         }
     }
-
     return gameOver;
-
 }
 
+/**************** handleSpectate() ****************/
 static void handleSpectate(void* arg, const addr_t from, const char* content) {
 
     // Add spectator to game
     game_addSpectator(game, from);
 
-    // Send grid message
+    // Send GRID message
     int nrows = grid_numrows(game_masterGrid(game));
     int ncols = grid_numcols(game_masterGrid(game));
     int rowsDigitLength = snprintf(NULL, 0, "%d", nrows);
@@ -234,7 +256,7 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
     message_send(from, gridMessage);
     mem_free(gridMessage);
 
-    // Send gold message
+    // Send GOLD message
     int r = game_getGold(game);
     int digitLength = snprintf(NULL, 0, "%d", r);
     char* goldMessage = mem_malloc((sizeof(char) * strlen("GOLD 1 1 1")) + digitLength + 1);
@@ -242,7 +264,7 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
     message_send(from, goldMessage);
     mem_free(goldMessage);
 
-    // Send full map
+    // Send DISPLAY message
     char* string = grid_getDisplay(game_masterGrid(game));
     char* displayMessage = mem_malloc((sizeof(char) * (strlen("DISPLAY\n") + strlen(string))) + 1);
     sprintf(displayMessage, "DISPLAY\n%s", string);
@@ -252,20 +274,25 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
 
 }
 
-static void keyQ(const addr_t from) { // QUIT
+/**************** keyQ() ****************/
+static void keyQ(const addr_t from) {
 
     player_t* player = game_findPlayer(game, from);
 
-    if (player == NULL) { // If the player doesn't exist, then that should mean a spectator pressed Q instead.
+     // If the player doesn't exist, then that should mean a spectator pressed Q instead.
+    if (player == NULL) {
         game_removeSpectator(game, from); // handles QUIT messaging
-    } else { // If the player does exist, remove them
+    // If the player does exist, remove them
+    } else {
         game_removePlayer(game, player); // handles QUIT messaging
     }
 
 }
 
+/**************** errorMessage() ****************/
 static void errorMessage(const addr_t from, const char* content) {
 
+    // Create error message for when key isn't recognized
     char* errorMsg = malloc((sizeof(char) * (strlen("ERROR - key ' ' not recognized")) + strlen(content)) + 1);
     sprintf(errorMsg, "ERROR - key '%s' not recognized", content);
     message_send(from, errorMsg);
@@ -273,22 +300,28 @@ static void errorMessage(const addr_t from, const char* content) {
 
 }
 
-// RETURNS TRUE IF A STRING IS BLANK
-static bool checkWhitespace(char* name){
+/**************** checkWhitespace() ****************/
+static bool checkWhitespace(const char* name){
 
     for (int i = 0; name[i] != '\0'; i++) {
         if (isalpha(name[i])) {
-            return false; // This contains letters
+            // Return false if the string contains letters
+            return false;
         }
     }
-    return true; // This is just whitespace
+    // Return true if the string is just whitespace
+    return true;
 
 }
 
+/**************** fixName() ****************/
 static char* fixName(const char* entry) {
+
     char* name = mem_malloc(MAXNAMELENGTH+1);
+    // If the entry is less than the max name length
     if (strlen(entry) < MAXNAMELENGTH) {
         for (int i = 0; entry[i] != '\0'; i++) {
+            // Replace with underscore
             if (!isgraph(entry[i]) && !isblank(entry[i])) {
                 name[i] = '_';
             } else {
@@ -296,9 +329,11 @@ static char* fixName(const char* entry) {
             }
         }
         name[strlen(entry)] = '\0';
+    // If the entry exceeds or matches the max name length
     } else {
         for (int i = 0; i < (MAXNAMELENGTH); i++) {
-            if (isspace(entry[i])) {
+            // Replace with underscore
+            if (!isgraph(entry[i]) && !isblank(entry[i])) {
                 name[i] = '_';
             } else {
                 name[i] = entry[i];

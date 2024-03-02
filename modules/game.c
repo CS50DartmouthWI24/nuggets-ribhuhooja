@@ -335,12 +335,14 @@ static char* get_result(game_t* game){
     // create a string result aggregate, mallocing enough space to add all the individual results
     int length = (MaxNameLength + 20) * MaxPlayers;
     char* gmaeOverMessage = mem_malloc_assert(length, "Could not allocate memory for game over message.\n");
+
     for(int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        char* result = mem_calloc_assert(20 + MaxNameLength, sizeof(char), "Out of memory, could not allocate memory for result string\n");
+        char* result = mem_calloc_assert((20 + MaxNameLength), sizeof(char), "Out of memory, could not allocate memory for result string\n");
 
         snprintf(result, MaxNameLength + 20, "QUIT GAME OVER:\n");
         snprintf(result, "%c %10d %s",player_getletter(player), player_getGold(player), player_getName(player));
+        strncat(gmaeOverMessage, result,length);
         // strncat result to resultAggregate
     }
 

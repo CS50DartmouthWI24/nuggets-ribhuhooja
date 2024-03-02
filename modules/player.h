@@ -5,8 +5,8 @@
  * The struct keeps track of all information that defines a player 
  *
  * Paul Cherian, COSC 50, Febuary 2024
- * Tayeb Mohammadi, February 2024
- * Ribhu Hooja, February 2024 - made opaque, protected from multiple includes,
+ * Tayeb Mohammadi, Febuary 2024
+ * Ribhu Hooja, Febuary 2024 - made opaque, protected from multiple includes,
  * added functionality needed by grid
  * 
  */
@@ -114,7 +114,7 @@ int player_getGold(const player_t* player);
  */
 char* player_getName(const player_t* player);
 
-/************* player_getChar *************/
+/************* player_getLetter *************/
 /* 
  * Get the character of the player
  * Caller provides: 
@@ -122,7 +122,7 @@ char* player_getName(const player_t* player);
  * We do: 
  *  Retrieve the letter of the player.
  * We return: 
- *  A pointer to a string containing the letter of the player.
+ *  The letter assigned for the player.
  *  the null character on failure
  */
 char player_getletter(const player_t* player);
@@ -212,7 +212,7 @@ void player_moveX(player_t* player, int direction);
  *  Change the position of the player accordingly
  */
 
-void player_moveX(player_t* player, int direction);
+void player_moveY(player_t* player, int direction);
 
 /****************** player_moveDiagonal ****************************
  * Move player in both X and Y directions diagonally
@@ -256,6 +256,18 @@ void player_setInactive(player_t* player);
  *  Send the message to player
  */
 void player_sendMessage(player_t* player, char* message);
+
+/****************** player_isActive ****************************
+/* 
+ * Send message to a player
+ * Caller provides: 
+ *  A pointer to the player
+ * We do: 
+ *  return true is player is active,
+ *  otherwise false
+ */
+
+bool player_isActive(player_t* player)
 
 #endif // __PLAYER_H
 

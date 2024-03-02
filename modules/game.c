@@ -357,7 +357,7 @@ static void updateAllVisibleGrids(game_t* game){
       if (!player_isActive(curr)){
           continue;
       }
-      player_updateVisibleGrid(player);
+      player_updateVisibleGrid(curr, game->masterGrid);
   }
 
 }

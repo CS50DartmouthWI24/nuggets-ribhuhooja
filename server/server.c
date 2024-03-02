@@ -37,9 +37,7 @@ int main(const int argc, char* argv[]) {
 
     parseArgs(argc, argv, &map, &seed);
     game = game_init(map);
-
-    // const int ncols = grid_numcols(game_masterGrid(game));
-    // const int nrows = grid_numrows(game_masterGrid(game));
+    fclose(map);
 
     int port = message_init(stderr);
     if (port == 0) {
@@ -264,5 +262,6 @@ static void errorMessage(const addr_t from, const char* content) {
     char* errorMsg = malloc((sizeof(char) * (strlen("ERROR - key ' ' not recognized")) + strlen(content)) + 1);
     sprintf(errorMsg, "ERROR - key '%s' not recognized", content);
     message_send(from, errorMsg);
+    free(errorMsg);
 
 }

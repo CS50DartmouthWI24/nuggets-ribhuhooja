@@ -226,15 +226,15 @@ void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection);
 
 
 
-/************* player_setVisibleGrid *************/
+/************* player_updateVisibleGrid *************/
 /* 
- * Set the visible grid for the player
+ * Update the visible grid of the player
  * Caller provides: 
- *  A pointer to the player and a pointer to the new grid.
+ *  A pointer to the player and a pointer to the master grid
  * We do: 
- *  Set the visible grid of the player to the grid.
+ *  We calculate the new visible grid, and update the player's grid to that
  */
-void player_setVisibleGrid(player_t* player, grid_t* visibleGrid);
+void player_updateVisibleGrid(player_t* player, grid_t* masterGrid);
 
 /************* player_setInactive *************/
 /* 

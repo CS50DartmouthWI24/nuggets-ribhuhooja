@@ -58,7 +58,7 @@ game_t* game_init(FILE* mapfile){
 
 
     // initialize gold and set it randomly on the map. 
-    if (grid_nuggetsPopulate(game->masterGrid, GoldMinNumPiles, GoldMaxNumPiles,game->goldRemain)){
+    if (!grid_nuggetsPopulate(game->masterGrid, GoldMinNumPiles, GoldMaxNumPiles,game->goldRemain)){
         flog_v(stderr, "Could not initialie the gold in random spots.\n");
     }
     
@@ -237,6 +237,7 @@ void game_move(game_t* game, addr_t address, int dx, int dy){
     int px = player_getX(player);
     int py = player_getY(player);
     int claimedGold = grid_movePlayer(game->masterGrid, px, py, dx, dy);
+
     
     // to update the coordinates
     if (claimedGold != -1) {
@@ -347,13 +348,17 @@ static void sendGoldMessage(game_t* game, player_t* player, const int goldCollec
 
 // to update the visible grid of each player 
 static void updateAllVisibleGrids(game_t* game){
-    for (int i = 0; i < game->numPlayer; ++i){
-        player_t* curr = game->players[i];
-        if (!player_isActive(curr)){
-            continue;
-        }
-        player_setVisibleGrid(curr, grid_generateVisibleGrid(game->masterGrid, player_getVisibleGrid(curr), player_getX(curr), player_getY(curr)));
-    }
+  if (game == NULL){
+    return;
+  }
+
+  for (int i = 0; i < game->numPlayer; ++i){
+      player_t* curr = game->players[i];
+      if (!player_isActive(curr)){
+          continue;
+      }
+      player_updateVisibleGrid(player);
+  }
 
 }
 

@@ -350,24 +350,23 @@ player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)
 
 
 
-/****************** player_setVisibleGrid ****************************
+/****************** player_updateVisibleGrid ****************************
  *
  * see player.h for description and usage
  *
  */
 void
-player_setVisibleGrid(player_t* player, grid_t* visibleGrid)
+player_updateVisibleGrid(player_t* player, grid_t* masterGrid)
 {
     if(player == NULL){
         flog_v(stderr, "Cannot set grid for null player.\n");
         return;
     }
 
-    if (player->visibleGrid != NULL){
-      grid_delete(player->visibleGrid);
-    }
-
-    player->visibleGrid = visibleGrid;
+    player->visibleGrid = grid_generateVisibleGrid(masterGrid, 
+                                                   player->visibleGrid,
+                                                   player->x,
+                                                   player->y);
 }
 
 /****************** player_sendMessage ****************************

@@ -597,6 +597,11 @@ indexOf(const int x, const int y, const int numcols)
   return (numcols + 1) * y + x;
 }
 
+/****************** getCoordsFromIndex ********************
+ *
+ * gets the coordinates of a point from its index
+ *
+ */
 static void
 getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY)
 {

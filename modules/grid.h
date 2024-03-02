@@ -230,11 +230,25 @@ bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerCha
  *  update the player's internal state. That is handled by the game
  * We return:
  *  -1 if the operation failed
+ *  -2 if there is another player at the location; call swapPlayers
  *  the amount of gold collected if the operation succeeded
  */
 int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
                                                               const int y_move);
 
+/****************** grid_swapPlayers **********************
+ *
+ * swaps two players on the grid
+ *
+ * Caller provides:
+ *  valid pointer to grid
+ *  calid coordiantes on the grid
+ * We do:
+ *  We swap the two players on the grid
+ *  (this does not update game state, only grid)
+ */
+void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2,
+                                                                const int y2);
 /****************** grid_removePlayer *********************
  *
  * removes a player from the grid

@@ -527,15 +527,23 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   // player can only move to a room spot or a passage spot, or a gold spot
   // or there can be another player there, in which case we swap them
-  // TODO: Currently does not support another player standing there
   char moveSpot = grid_charAt(grid, x_new, y_new);
-  if (!(moveSpot == mapchars_roomSpot 
-        || moveSpot == mapchars_passageSpot
-        || moveSpot == mapchars_gold)){
+  if (moveSpot == mapchars_solidRock 
+   || moveSpot == mapchars_horizontalBoundary
+   || moveSpot == mapchars_verticalBoundary
+   || moveSpot == mapchars_cornerBoundary){
     return -1;
   }
 
-  //TODO: add swap code
+  // if it is not blocked, but the char is not a movable char
+  // then another player is there
+  if (!(moveSpot == mapchars_roomSpot
+     || moveSpot == mapchars_gold
+     || moveSpot == mapchars_passageSpot)){
+    return -2;
+  }
+
+
 
   int gold = 0;
   if (moveSpot == mapchars_gold){
@@ -558,6 +566,18 @@ grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
 
   return gold;
 }
+
+/****************** grid_swapPlayers **********************
+ *
+ * see grid.h for usage and description
+ *
+ */
+void
+grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2)
+{
+  if (grid == NULL){
+    return;
+  }
 
 /****************** grid_removePlayer *********************
  *

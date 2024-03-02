@@ -409,7 +409,8 @@ static void handleGOLD(const char* message, void* arg){
   else {
     move(0,0);
     // print player message about current nuggets, and remaining nuggets and the GOLD nuggets they recieved
-    mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", cData->id, purse, remaining, nuggets);
+    mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received:    ", cData->id, purse, remaining);
+    mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d  ", cData->id, purse, remaining, nuggets);
     refresh();
   } 
 }

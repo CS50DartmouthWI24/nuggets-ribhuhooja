@@ -50,7 +50,7 @@ player_new (addr_t address, int x, int y, const char* name, char letter )
   int len = strlen(name);
 
   player->name = mem_malloc_assert((len + 1) * sizeof(char), "Failed to allocate memory for name of the player");
-  strncpy(player->name, name, len); // make a copy of the passed in string
+  strncpy(player->name, name, len + 1); // make a copy of the passed in string
 
   player->letter = letter;
   player->x = x;

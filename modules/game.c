@@ -412,26 +412,21 @@ static char* get_result(game_t* game){
         return NULL;
     }
 
-    int length = (MaxNameLength + 20) * MaxPlayers;
-    char gameOverMessage[message_MaxBytes];
+    int lineLength = MaxNameLength + 20;
 
+    // need to malloc to return from function
+    char* gameOverMessage = mem_calloc_assert(message_MaxBytes, sizeof(char), "out of memory\n");
     sprintf(gameOverMessage, "QUIT GAME OVER:\n");
 
     for(int i = 0; i < game->numPlayer; ++i){
         player_t* player = game->players[i];
-        char result[20 + MaxNameLength];
+        char line[lineLength];
 
-        sprintf(result,"%c %10d %s\n", player_getLetter(player), player_getGold(player), player_getName(player));
-        strncat(gameOverMessage, result, length);
+        snprintf(line, lineLength, "%c %10d %s\n", player_getLetter(player), player_getGold(player), player_getName(player));
+        strncat(gameOverMessage, line, lineLength);
     }
-    
-    // need to malloc to return
-    char* result = mem_calloc_assert(strlen(gameOverMessage), sizeof(char), "out of memory, could not allocate result string\n");
-    // can strcpy because strncat null terminates
-    strcpy(result, gameOverMessage);
 
-
-    return result;
+    return gameOverMessage;
 }
 
 // to delete everything in the game that was initialized before. Check game.h for more information. 

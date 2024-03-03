@@ -505,15 +505,15 @@ findPlayerByCoords(game_t* game, const int x, const int y)
     return NULL;
   }
 
-  char letter = grid_charAt(game->masterGrid, x, y);
-  if (letter == '\0'){
-    return NULL;
-  }
-
+  // we HAVE to do this search, we can't check with the grid
+  // because the grid is decoupled from game state
+  // (when we used the grid to quicken the process it resulted in
+  // bugs)
   player_t** players = game->players;
   for (int i = 0; i < game->numPlayer; ++i) {
     player_t* player = players[i];
-    if (player_getLetter(player) == letter && player_isActive(player)){
+    if (player_isActive(player) && player_getX(player) == x
+                                && player_getY(player) == y){
       return player;
     }
   }

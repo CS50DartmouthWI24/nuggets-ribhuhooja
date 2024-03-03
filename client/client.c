@@ -281,7 +281,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
     
     // print invalid message if incoming message does not adhere to 
     // any of the above conditions, print at bottom row
-    mvprintw((&cData)->rows,0, "Error: message does not have known formatting\n");
+    mvprintw(0,0, "Error: message does not have known formatting\n");
 
   }
 
@@ -492,8 +492,8 @@ static void handleDISPLAY(const char* message, void* arg){
 
   // varaiables for looping
   int cols = cData->cols; // cols needed for the  grid
-  int currY = 1;  // starts out as 1 because 0th row is reserved for status
-	int currX = 0; 
+  int y = 1;  // starts out as 1 because 0th row is reserved for status
+	int x = 0; 
 	int j = 0;  // counter of what column we are at
 
 	// loop through the map
@@ -503,18 +503,18 @@ static void handleDISPLAY(const char* message, void* arg){
 		if (map[i] == '\n' || j >= cols) {
 
 			// reset back to left of line, but go one line down
-			currY++;
-			currX = 0;
+			y++;
+			x = 0;
 			j = 0; // reset cols
 
 		} 
     else {
       
-			// add char at the currX and currY and mv there
-			mvaddch(currY, currX, map[i]);
+			// add char at the x and y and mv there
+			mvaddch(y, x, map[i]);
 
       // increment the currentX and the column we are on
-			currX++;
+			x++;
 			j++;
 
 		}

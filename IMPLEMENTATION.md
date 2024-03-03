@@ -43,31 +43,200 @@ server.
 
 ### Data structures
 
-> For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
-> No need to provide `struct` for existing CS50 data structures like `hashtable`.
+The clientData struct below is used to store all the data that is needed at any point in the client program in one encapsulated place. For instance, the size of the grid that the client is playing on is stored within this struct and then in methods such as `handleGRID` these values are updated and used to check the terminal size. Really, it is create out of a constraint of the message module, which is abstracted so that the specifics of what it is printing can not be specified inside. Additionally, this struct is initialized as a global type because for some of the message modules, there is no `arg` parameter space to pass it in.
+
+```c
+typedef struct clientData {
+  // player's characteristics
+  char id;
+  int purse;
+  int port;
+  int nuggets;
+
+  // the size of the window
+  int rows;
+  int cols;
+  bool spectator;
+  
+} clientData_t;
+```
 
 ### Definition of function prototypes
 
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
-
-A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
+A function to handle the input recieved from stdin (typically the keyboard) and send keystrokes to the server. Called within the message loop.
 
 ```c
-static int parseArgs(const int argc, char* argv[]);
+static bool handleInput(void* arg);
 ```
+
+A function to handle the messages recieved from the server and display, update, begin, or quit the client's interface accordingly.
+
+```c
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+```
+
+A function to parse the command-line arguments and verify their validitiy, and send a message to the server if arguments verified to start a spectator or player in the game.
+
+```c
+static int parseArgs(const int argc, char* argv[], clientData_t* cData);
+```
+
+A function to initialize the ncurses terminal, without echoing, and handle keystrokes continuously.
+
+```c
+static void initializeTerminal(void);
+```
+
+A function to handle a GRID message as sent from the server. Prompts user to resize if neccesary.
+
+```c
+static void handleGRID(const char* message, void* arg);
+```
+
+A function to handle a GOLD message as sent from the server. Displays the status bar with the updated gold counts.
+
+```c
+static void handleGOLD(const char* message, void* arg);
+```
+
+A function to handle a QUIT message as sent from the server. Quits the game and ends the ncurses window.
+
+```c
+static void handleQUIT(const char* message, void *arg);
+```
+
+A function to handle an ERROR messsage as sent from the server. Logs the error sent to stderr (done autonomously by the `message` and `log` modules)
+
+```c
+static void handleERROR(const char* message);
+```
+
+A function to handle a DISPLAY message as sent from the server. Displays the grid to the player that has been sent from the server, with the correct formatting
+
+```c
+static void handleDISPLAY(const char* message, void* arg);
+```
+
+A function to handle an OK message as sent from the server. Initialzes the playerID that will be stored and kept track of in client for displaying
+
+```c
+static void handleOK(const char* message, void* arg);
+```
+
 ### Detailed pseudo code
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+#### `handleInput`:
+	parse the arg to a server
+	read in a keystroke from stdin
+	if key is not Q
+		send a message to server in form of KEY [key]
+		return false
+	else
+		send KEY Q to the server
+		end the window
+		return true
 
+#### `handleMessage`:
+	if NULL message
+		print to stderr error message
+		return false
+	else if GRID message
+		call handleGRID
+	else if QUIT message
+		call handleQUIT
+	else if GOLD message
+		call handleGOLD
+	else if DISPLAY message
+		call handleDISPLAY
+	else if ERROR message
+		call handleERROR
+	else if OK message
+		call handleOK
+	else
+		refresh the screen
+		print an error message to the screen
+	refresh()
+	return false
+		
 #### `parseArgs`:
+	if not 3 or 4 args passed
+		print message to stderr
+		exit non-zero
+	read server host and server port form commandline
+	set up a server from serverHost and serverPort and check initialization 
+	if 3 arguments
+		send a SPECTATE message to the server
+		set cData spectator to true
+	if 4 arguments
+		send a PLAY [playerName] message to the server where [playerName] is the 4th command line argument
+		set cData spectator to false
+	return 0 on success with above
 
-	validate commandline
-	initialize message module
-	print assigned port number
-	decide whether spectator or player
+#### `initializeTerminal`:
+	initialize screen
+	turn off the character break
+	set no echos
+	refresh
+
+#### `handleGRID`:
+	cast the arg to a cData type
+	read in the rows and cols of the GRID r c message
+	store those values in the cData stores
+	get the current terminal size
+	while that size is too small
+		prompt user to increase size
+		wait for them to type a char
+		reread in size after they type anything
+		clear and refresh screen
+	refresh the screen
+
+#### `handleGOLD`:
+	cast arg to cData type
+	read in the GOLD n p r message to a 
+	store the purse and nuggets read in to the cData
+	if spectator
+		print status of specator on the top line (only showing unclaimed nuggets)
+		refresh
+	else if player but no nuggets claimed
+		print status on top with ID, purse and unclaimed
+		refresh
+	else
+		print status with ID, purse, unclaimed, and nuggets just picked up
+		refresh
+
+
+#### `handleQUIT`:
+	copy message to edit
+	skip prefix by incrementing pointer
+	clear the screen, end ncurses
+	print the message to stdout
+	exit zero
+
+#### `handleERROR`:
+	(logging is taken care of by message module so don't do anything)
+
+#### `handleDISPLAY`:
+	cast arg to cData
+	copyMessage to edit
+	increment pointer to get rid of prefix
+	extract cols in the grid
+	set up y=1 (to start on second row)x=0 (track x position), j=0 (track cols in grid)
+	for int i =0; map[i] != '\0'; i++
+		if map[i] == '\n' OR j >= cols
+			y++
+			x=0
+			j=0
+		else
+			move to y and x spot and print map[i] there
+			increment x and increment j
+		if map[i] == '\n'
+			j=0
+	refresh
+
+#### `handleOK`:
+	cast cData to arg
+	read in OK message to get char sent by server
+	store the char in cData
 
 ---
 

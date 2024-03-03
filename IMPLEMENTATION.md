@@ -138,15 +138,66 @@ static int parseArgs(const int argc, char* argv[]);
 
 ### Detailed pseudo code
 
+## Spectator
+
+### Data structures
+
+### Definition of function prototypes
+Here are the function prototypes for functions exported by the grid module.
+All the functions are described by a comment in `grid.h` and so those descriptions
+are not repeated here.
+
+```c
+grid_t* grid_fromMap(FILE* mapFile);
+void grid_delete(grid_t* grid);
+int grid_numrows(grid_t* grid);
+int grid_numcols(grid_t* grid);
+char grid_charAt(grid_t* grid, const int x, const int y);
+char grid_baseCharAt(grid_t* grid, const int x, const int y);
+int grid_goldAt(grid_t* grid, const int x, const int y);
+bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal);
+grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int px, const int py);
+bool  grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
+bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar);
+int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
+void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2);
+bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py);
+int grid_collectGold(grid_t* grid, const int px, const int py);
+char* grid_getDisplay(grid_t* grid);
+void grid_toMap(grid_t* grid, FILE* fp);
+```
+
+Static functions - again, the descriptions are written over their definitions
+in `grid.c`
+
+```c
+static inline int indexOf(const int x, const int y, const int numcols);
+static void getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY);
+static inline bool isValidCoordinate(const int x, const int y, const int numrows, const int numcols);
+static bool isVisible(grid_t* grid, const int px, const int py, const int x, const int y);
+static char getPlayerStandingOn(grid_t* grid, const char playerChar);
+static void setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar);
+static bool isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,  const int y);
+static bool isBlockedVertically(grid_t* grid, const int px, const int py, const int x,  const int y);
+static bool isBlocking(grid_t* grid, const int x, const int y);
+static void freeCharItemdelete(void* pChar);
+```
+
+
+### Detailed pseudo code
+
 ---
 
 ## Testing plan
 
 ### unit testing
 #### Grid
-Grid will be unit tested by a simple C driver that is just going to perform
-some grid actions and print out the resulting grid to stdout. Since the grid
-is a string, this does not require any displaying program to work.
+Grid will be unit tested by a simple C drivers that is just going to perform
+some grid actions and print out the resulting grid to stdout or a logfile. 
+Since the grid is a string, this does not require any displaying 
+program to work.
+
+The testing is handled by `gridtest.c` and `visibilitytest.c`.
 
 #### Game
 
@@ -155,7 +206,9 @@ is a string, this does not require any displaying program to work.
 
 ### integration testing
 
-> How will you test the complete main programs: the server, and for teams of 4, the client?
+#### Server
+
+#### Client
 
 ### system testing
 

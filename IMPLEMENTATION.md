@@ -24,20 +24,28 @@ game logic, including visibility, and testing the grid.
 
 ### Sam
 Sam will write the server program. He is responsible for making sure the program
-starts correctly and to handle/send messages to and from clients, and for making
+starts correctly and to handle messages from clients, and for making
 sure that the right functions for the helper modules are called. He is also 
-responsible for testing the sever module.
+responsible for testing the server module.
 
 ### Tayeb
-Tayeb will write the game module. He is responsible for handling the game 
-and making sure it integrates all the other modules correctly. He is also responsible
+Tayeb will write the game module. He is responsible for handling the game,
+making sure it integrates all the other modules correctly, and making sure it
+sends the right messages when the right actions happen. He is also responsible
 for testing the module.
 
 ### Notes
-This division of labor is note strict, in the sense that we will dynamically
+This division of labor is not strict, in the sense that we will dynamically
 look at the amount of work needed for each person and try to distribute it evenly.
 We especially anticipate a lot of overlap between the duties of the three people assigned to
 server.
+
+### Retrospective
+In retrospect, there was a lot of overlap over the people who were working
+on server-side funtionality. A lot of changes were needed especially in game,
+because it was the connecting link between server and grid. However, the work 
+distribution ended up being fair and we were able to distribute different
+features evenly, if a little differently from what was originally imagined.
 
 ## Client
 

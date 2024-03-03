@@ -88,7 +88,7 @@ grid_t* grid_fromMap(FILE* mapFile){
 
   char* string = calloc(initGridStringSize, sizeof(char));
   mem_assert(string, "out of memory\n");
-  int stringBufsize = initGridStringSize;
+  int stringBufSize = initGridStringSize;
 
   int numcols = 0;
   char readChar;
@@ -99,9 +99,9 @@ grid_t* grid_fromMap(FILE* mapFile){
     }
 
     // expand the string buffer if needed
-    if (numcols > initGridStringSize){
-      stringBufsize *= 2;
-      string = realloc(string, stringBufsize * sizeof(char));
+    if (numcols > stringBufSize){
+      stringBufSize *= 2;
+      string = realloc(string, stringBufSize * sizeof(char));
       mem_assert(string, "out of memory\n");
     }
     string[numcols] = readChar;
@@ -120,9 +120,9 @@ grid_t* grid_fromMap(FILE* mapFile){
     }
 
     // expand the string buffer if needed
-    if (i > initGridStringSize){
-      stringBufsize *= 2;
-      string = realloc(string, stringBufsize * sizeof(char));
+    if (i > stringBufSize){
+      stringBufSize *= 2;
+      string = realloc(string, stringBufSize * sizeof(char));
       mem_assert(string, "out of memory\n");
     }
     string[i] = readChar;

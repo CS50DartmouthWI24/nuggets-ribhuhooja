@@ -245,20 +245,16 @@ bool game_move(game_t* game, addr_t address, int dx, int dy){
       return false;
     } else if (returnVal == -2) {   // player there; swap!
       grid_swapPlayers(game->masterGrid, px, py, px + dx, py + dy);
-      player_moveDiagonal(player, dx, dy);
       player_t* other = findPlayerByCoords(game, px + dx, py + dy);
       if (other != NULL){
         player_setX(other, px);
         player_setY(other, py);
       }
+      player_moveDiagonal(player, dx, dy);
     } else {
       player_moveDiagonal(player, dx, dy);
     }
 
-    // to get the updated x and y position of the player 
-    px = player_getX(player);
-    py = player_getY(player);
-    
     // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
     if (returnVal > 0){
         int claimedGold = returnVal;
@@ -428,6 +424,19 @@ static void displayAllPlayers(game_t* game){
         mem_free(gridString);
         free(message);
     }
+
+    if (game->spectator != NULL){
+        char* gridString = grid_getDisplay(game->masterGrid);
+        int gridLen = strlen(gridString);
+        int length = displayLen + gridLen;
+
+        char* message = mem_calloc_assert(length + 1, sizeof(char), "Could not allocate memory for display grid of each player.\n");
+        snprintf(message, length, "DISPLAY\n%s", gridString);
+        spectator_sendMessage(game->spectator, message);
+
+        mem_free(gridString);
+        free(message);
+    }
 }
 
 // A helper function that returns the result string
@@ -496,15 +505,15 @@ findPlayerByCoords(game_t* game, const int x, const int y)
     return NULL;
   }
 
-  char letter = grid_charAt(game->masterGrid, x, y);
-  if (letter == '\0'){
-    return NULL;
-  }
-
+  // we HAVE to do this search, we can't check with the grid
+  // because the grid is decoupled from game state
+  // (when we used the grid to quicken the process it resulted in
+  // bugs)
   player_t** players = game->players;
   for (int i = 0; i < game->numPlayer; ++i) {
     player_t* player = players[i];
-    if (player_getLetter(player) == letter && player_isActive(player)){
+    if (player_isActive(player) && player_getX(player) == x
+                                && player_getY(player) == y){
       return player;
     }
   }

@@ -304,6 +304,10 @@ where each row is delimited by a newline. This makes it very easy to display
 the grid or print it to a file. It also stores the numbers of rows and columns
 in the grid.
 
+A note about the grid implementation:
+- x increases from left to right. Goind left is negative, going right is positive.
+- y increases from up to down. Going up is negative, goin down is positive.
+
 It stores a counterset that contains information about gold nuggets. The 
 counterset is keyed by the index of the location of the gold in the grid
 string, and the count is the amount of gold at that location.
@@ -554,24 +558,65 @@ The return values for this function have a few roles
 #### `grid_swapPlayer`
 Same note about grid vs game state as the previous one.
 
+  if grid is NULL or any of the passed in coordinates are invalid
+    return
+  get the player characters by indexing the given coordinates
+  swap the characters at those indices at the grid string
+  swap the playerStandingOn characters for both the players
+
 
 #### `grid_removePlayer`
 Same note as the previous one.
+
+  if grid is NULL or the passed in coordinates are invalid
+    return false
+  set the character at the index corresponding to the given coordinates to whatever the player was standing on
+  return true
 
 #### `grid_collectGold`
 Same note as the previous one. This just updates the grid's tracking of its own
 gold, and doesn't change (or even know about) the game state or the player
 purse.
+  
+  if grid is NULL or the nuggets counterset is NULL or the passed in coordinates are invalid
+    return 0
+  set int gold to the amount of gold at the given location
+  set the counterset value of the gold at the given location to 0
+  return gold
 
 #### `grid_getDisplay`
 
+  if grid is NULL return NULL
+  create a new string, mallocing just enough spae to store the grid string (which we can calculate from rows and columns)
+  copy the grid string into the new string
+  return the new string
+
 #### `grid_toMap`
 
+  if grid is NULL or the file pointer is NULL
+    return
+  otherwise, get the display string from getDisplay
+  fputs the string to the file
+  free the string
+
 #### `indexOf`
+See explanatory comment in the file for a derivation of the formula
+
+  return (numcols + 1) * y + x
 
 #### `getCoordsFromIndex`
+Does the exact opposite of numcols. Note that integer division truncates
+towards floor.
+
+  if any of the passed in pointers is NULL, return
+  otherwise,
+  set x to index % (numcols + 1)
+  set y to index / (numcols + 1)
 
 #### `isValidCoordinate`
+- x and y should both be greater than zero
+- x should be less than the number of columns
+- y should be less than the number of rows
 
 #### `getPlayerStandingOn`
 

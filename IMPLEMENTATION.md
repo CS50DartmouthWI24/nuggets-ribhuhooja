@@ -484,20 +484,84 @@ nuggets counterset and the standingOn hashtable.
   if the passed in currentlyVisibleGrid is NULL
     create a new grid, passing in the numrows and numcols but setting its counterset and hashtable to NULL
     malloc the new grid string with the appropriate number of characters
-    populate 
+    populate the string with solid rock characters, except where there are newlines in the original grid string
+    set currentlyVisibleGrid to this newly formed grid
+  iterate over all coordinates in the currentlyVisibleGrid
+    if the point is visible from the player's current location (using isVisible)
+      set the character there to whatever character is in the master grid
+    else if the point is not solid rock aka the point has been "seen before"
+      set the character there to whatever the baseChar is in the master grid
+    else do nothing; the character at this place is solidRock and it remains solid rock (neither visible nor seen before)
+  in the currently visible grid, set the character at the coordinates of the player to the player character '@' (or whatever `mapchars_player` is)
+  return currentlyVisibleGrid
      
 
 #### `grid_findRandomSpawnPosition`
+to avoid an infinite loop we only do the random search a limited number of times. After that we locate all 
+possible free room spots and choose one of them.
+
+  if any of the passed in pointers is NULL, return false
+  for a limited number of times
+    choose a random coordinate
+    if that coordinate is a room spot
+      dereference the x and y pointers and set their value to this coordinate
+      return true
+  if the spot has not been found yet (which is unlikely but possible)
+  initialize an array to the length of the grid string (because that is an upper limit on the number of room spots)
+  iterate over the grid and store all the room spots indices in the array
+  if the number of room spots found is zero then return false
+  otherwise, randomly choose one of the indices found
+  return true
 
 #### `grid_addPlayer`
+This function only adds the player character to the grid. 
+The game and the players within it need to update their state separately.
+
+  if the grid is NULL
+    return false
+  if the passed in coordinates are invalid
+    return false
+  if the character at the passed in coordinates is not a room spot
+    return false
+  otherwise, set the character at that index in the string to the player's letter
+  set the playerStandingOn to a room spot
+  return false
 
 #### `grid_movePlayer`
+Just like the above function, the game and player structs within it need to update their state separately.
+This function only moves the player character inside the grid, keeping grid self-consistent.
+
+The return values for this function have a few roles
+- -1 means the operation failed
+- -2 also means the operation failed, but that there is another player at the spot-to-be-moved to. This must first be resolved through a `grid_swapPlayers`
+- otherwise, the operation succeeded and the return value is the amount of gold collected by the player
+  
+  if grid is NULL or the string within it is null, return -1
+  if the amount to move by for each coordinate is not -1, 0, or 1, return -1
+  if the new coordinates are not valid, return -1
+  if the character at the new coordinate is one of the blocking characters, return -1
+  if the character at the new coordinateis not one of the move-to-able characters
+    return -2, because this now means there is another player there
+  now, finally, we can actually do the move
+  if there is gold at the new spot
+    call `grid_collectGold` on that spot
+  store what the player is curently standing on temporarily
+  set the playerStandingOn to whatever is at the new index
+  set the character at the new index to the player character
+  set the character at the old index to what the player was originally standing on
+  return the amount of gold collected, as returned by `grid_collectGold`
 
 #### `grid_swapPlayer`
+Same note about grid vs game state as the previous one.
+
 
 #### `grid_removePlayer`
+Same note as the previous one.
 
 #### `grid_collectGold`
+Same note as the previous one. This just updates the grid's tracking of its own
+gold, and doesn't change (or even know about) the game state or the player
+purse.
 
 #### `grid_getDisplay`
 

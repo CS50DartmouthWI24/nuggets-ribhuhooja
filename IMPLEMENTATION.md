@@ -311,16 +311,22 @@ is a string, this does not require any displaying program to work.
 
 #### Game
 
+Because Game is essential to the entire system, we test game whenever we test client and server. These conceptual links and dependencies allow us to debug Game while running server.
 
 #### Player
 
+Because Player is essential to the entire system, we test game whenever we test client and server. These conceptual links and dependencies allow us to debug Player while running server.
+
 ### integration testing
 
-> How will you test the complete main programs: the server, and for teams of 4, the client?
+We will use the mini client and mini server modules given in the starter kit to effectively test our programs as we are writing them. For testing client, we will set up a miniserver and try to pass keystrokes with the correctly formatted messages. Additionaly we will manaully call methods in the main (acting as a driver) to verify that when correcly formatted messages are given to the client, it dispalys correctly. For instance, we will call handleOK with an OK message, then handleGRID with a GRID message, then handleDISPLAY with a sample map DISPLAY message and ensure that the manually created messages produce the correct output on the screen.
+
+For server, we will use miniclient to send messages to and engage in a similar process to testing client. Additionally,we hope server will come together after client, so in theory we can use a more finished version of client to correctly test server.
 
 ### system testing
 
-> For teams of 4: How will you test your client and server together?
+
+We will test our program on a series of maps, given in the `maps` directory in the repository. We will test with several clients joining at once on different maps. We will test the functionality of bumping and switching spots with players, in rooms, hallways, and make sure that visibility and lines of sight are always correct. Of course we are also careful to check that gold status bars on each of our clients are consitently updated (correctly) and the final scoreboard also reflects the scores that we had expected to see. 
 
 ---
 

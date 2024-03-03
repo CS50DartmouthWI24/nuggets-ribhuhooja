@@ -286,10 +286,242 @@ static int parseArgs(const int argc, char* argv[]);
 ## Grid
 
 ### Data structures
+The data structure provided by the grid module is the `grid_t` data structure.
+The structure is exposed as an opaque type, but internally, it is defined as:
+
+```c
+typedef struct grid {
+  char* string;         // the string representation of the grid
+  int numrows;          // number of rows
+  int numcols;          // number of columns
+  counters_t* nuggets;  // number of nuggets at a location, keyed by string index
+  hashtable_t* playersStandingOn;   // what character each player is standing on
+} grid_t;
+```
+
+Inside the grid structure, the actual grid is represented as a single string,
+where each row is delimited by a newline. This makes it very easy to display
+the grid or print it to a file. It also stores the numbers of rows and columns
+in the grid.
+
+It stores a counterset that contains information about gold nuggets. The 
+counterset is keyed by the index of the location of the gold in the grid
+string, and the count is the amount of gold at that location.
+
+It also stores a hashtable which contains information about what character
+each player is 'standing' on. This effectively lets us reconstruct the 
+'base map' from the current grid string, as the only characters that differ
+are player characters and gold nuggets. Gold nuggets always 'stand' on room
+spots, so we only need to store what each player is standing on. The hashtable
+is keyed by the letter of the player (technically, because keys need to be
+string, the key is the string with the letter being the first element and 
+the null character being the second) and the value is a pointer to a copy of
+the character the player is standing on (see pseudocode below or comments in
+`grid.c` for an explanation of the pointer fiddling with the hashtable)
+
 
 ### Definition of function prototypes
+Here are the function prototypes for functions exported by the grid module.
+All the functions are described by a comment in `grid.h` and so those descriptions
+are not repeated here.
+
+```c
+grid_t* grid_fromMap(FILE* mapFile);
+void grid_delete(grid_t* grid);
+int grid_numrows(grid_t* grid);
+int grid_numcols(grid_t* grid);
+char grid_charAt(grid_t* grid, const int x, const int y);
+char grid_baseCharAt(grid_t* grid, const int x, const int y);
+int grid_goldAt(grid_t* grid, const int x, const int y);
+bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal);
+grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int px, const int py);
+bool grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
+bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar);
+int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
+void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2);
+bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py);
+int grid_collectGold(grid_t* grid, const int px, const int py);
+char* grid_getDisplay(grid_t* grid);
+void grid_toMap(grid_t* grid, FILE* fp);
+```
+
+Static functions - again, the descriptions are written over their definitions
+in `grid.c`
+
+```c
+static inline int indexOf(const int x, const int y, const int numcols);
+static void getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY);
+static inline bool isValidCoordinate(const int x, const int y, const int numrows, const int numcols);
+static char getPlayerStandingOn(grid_t* grid, const char playerChar);
+static void setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar);
+static bool isVisible(grid_t* grid, const int px, const int py, const int x, const int y);
+static bool isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,  const int y);
+static bool isBlockedVertically(grid_t* grid, const int px, const int py, const int x,  const int y);
+static bool isBlocking(grid_t* grid, const int x, const int y);
+static void freeCharItemdelete(void* pChar);
+```
 
 ### Detailed pseudo code
+
+#### `grid_fromMap`
+  
+  if the file pointer is NULL
+    return NULL
+  malloc a string of size initGridStringSize on the heap
+  store its size in stringBufSize
+  while the current character in file is not a newline
+    if the string is too small to place another character into the string (using stringBufSize)
+      realloc it to double its size
+      store the new size in stringBufSize
+    place the character into the string
+  store the number of columns of the grid, equal to the number of characters read
+  initialize numrows at 0
+  while the current character is not EOF
+    if the string is too small to place another character into the string (using stringBufSize)
+      realloc it to double its size
+      store the new size in stringBufSize
+    read the character into the string
+    if the currently read character is a newline
+      increment the number of rows
+  check that the map read is consistent, i.e. number of characters read matches the number of rows and columns read
+  if not
+    free string
+    print some error messages
+    return NULL
+  now that the map has been read, realloc the string to chop off the empty unused memory at the end
+  malloc a new grid, using `mem_assert` to check that it is not NULL
+  store the string, numrows and numcols inside the grid
+  create a new hashtable and counterset, again asserting that they are not NULL
+  store the pointers inside the grid
+  return the newly formed grid
+
+#### `grid_delete`
+
+  if grid is NULL
+    return, doing nothing
+
+  free the grid string if it is not NULL
+  delete the hashtable and counterset if they are not null
+  free the grid itself
+
+#### `grid_numrows`
+
+  if the grid is NULL return 0
+  return the number of rows in the grid
+
+#### `grid_numcols`
+
+  if the grid is NULL return 0
+  return the number of rows in the grid
+
+#### `grid_charAt`
+In this function we check for coordinates being valid because we don't want any memory
+errors when indexing into the string
+  
+  if grid is NULL return the null character
+  check that the given coordinates are valid
+  find the index of the given x and y coordinates
+  return the character at that index in the grid string
+   
+
+#### `grid_baseCharAt`
+
+  if grid is NULL return the null character
+  get the charAt the given location
+  if the returned character is any of the mapchars other then gold
+    return it
+  if the returned char is the gold nugget
+    return the room character
+  else (the character is a player character)
+    return the character that the player is standing on using the helper function
+
+#### `grid_goldAt`
+
+  if grid is NULL or the counterset inside grid is NULL
+    return 0
+  otherwise, return the count of the index of the given coordinates inside the counterset
+
+#### `grid_nuggetsPopulate`
+The algorithm for populating with gold is
+- first choose a random number between minNumPiles and maxNumPiles
+- find that many spots on the map and save their indices
+- now for each single piece of gold, randomly add it to one of the piles
+  
+  if grid is NULL
+    return false
+  check the given parameters are valid
+  if not
+    return false
+  loop over the grid string, counting the number of room spots
+  if there aren't enough room spots
+    return false
+  choose a random number between the min and max as the number of piles
+  initialize an array to store the chosen gold pile spots
+  keep looping until enough spots have been chosen
+    choose a random index in the array
+    if it is a room spot
+      add its location to the array
+      replace its character with a gold character
+      set the value of that index in the nuggets counterset to 0
+  now loop goldTotal times
+    randomly choose one of the chosen pile spots
+    add a single gold to the counterset at that spot
+  return true
+    
+
+#### `grid_generateVisibleGrid`
+This both updates the grid passed into it and returns it. This is useful 
+for when a player has not been initialized with a visible grid yet, because it
+NULL is passed in as the reference visible grid, the function generates a new grid
+which is then (inside the player module) assigned to the player.
+
+The grid that this function creates does not have the full functionality of
+a grid and should only be used for display purposes. This is because it lacks the 
+nuggets counterset and the standingOn hashtable.
+
+  if grid is NULL or the given coordinates are invalid
+    return NULL
+  if the passed in currentlyVisibleGrid is NULL
+    create a new grid, passing in the numrows and numcols but setting its counterset and hashtable to NULL
+    malloc the new grid string with the appropriate number of characters
+    populate 
+     
+
+#### `grid_findRandomSpawnPosition`
+
+#### `grid_addPlayer`
+
+#### `grid_movePlayer`
+
+#### `grid_swapPlayer`
+
+#### `grid_removePlayer`
+
+#### `grid_collectGold`
+
+#### `grid_getDisplay`
+
+#### `grid_toMap`
+
+#### `indexOf`
+
+#### `getCoordsFromIndex`
+
+#### `isValidCoordinate`
+
+#### `getPlayerStandingOn`
+
+#### `setPlayerStandingOn`
+
+#### `isVisible`
+
+#### `isBlockedHorizontally`
+
+#### `isBlockedVertically`
+
+#### `isBlocking`
+
+#### `freeCharItemDelete`
 
 ## Game
 
@@ -312,45 +544,6 @@ static int parseArgs(const int argc, char* argv[]);
 ### Data structures
 
 ### Definition of function prototypes
-Here are the function prototypes for functions exported by the grid module.
-All the functions are described by a comment in `grid.h` and so those descriptions
-are not repeated here.
-
-```c
-grid_t* grid_fromMap(FILE* mapFile);
-void grid_delete(grid_t* grid);
-int grid_numrows(grid_t* grid);
-int grid_numcols(grid_t* grid);
-char grid_charAt(grid_t* grid, const int x, const int y);
-char grid_baseCharAt(grid_t* grid, const int x, const int y);
-int grid_goldAt(grid_t* grid, const int x, const int y);
-bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal);
-grid_t* grid_generateVisibleGrid(grid_t* grid, grid_t* currentlyVisibleGrid, const int px, const int py);
-bool  grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY);
-bool grid_addPlayer(grid_t* grid, const int x, const int y, const char playerChar);
-int grid_movePlayer(grid_t* grid, const int px, const int py, const int x_move,
-void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2);
-bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py);
-int grid_collectGold(grid_t* grid, const int px, const int py);
-char* grid_getDisplay(grid_t* grid);
-void grid_toMap(grid_t* grid, FILE* fp);
-```
-
-Static functions - again, the descriptions are written over their definitions
-in `grid.c`
-
-```c
-static inline int indexOf(const int x, const int y, const int numcols);
-static void getCoordsFromIndex(const int index, const int numcols, int* pX, int* pY);
-static inline bool isValidCoordinate(const int x, const int y, const int numrows, const int numcols);
-static bool isVisible(grid_t* grid, const int px, const int py, const int x, const int y);
-static char getPlayerStandingOn(grid_t* grid, const char playerChar);
-static void setPlayerStandingOn(grid_t* grid, const char playerChar, const char newChar);
-static bool isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,  const int y);
-static bool isBlockedVertically(grid_t* grid, const int px, const int py, const int x,  const int y);
-static bool isBlocking(grid_t* grid, const int x, const int y);
-static void freeCharItemdelete(void* pChar);
-```
 
 
 ### Detailed pseudo code
@@ -369,7 +562,6 @@ program to work.
 The testing is handled by `gridtest.c` and `visibilitytest.c`.
 
 #### Game
-
 
 #### Player
 

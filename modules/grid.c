@@ -41,7 +41,7 @@ static const int numAttemptsSpawning = 100;
 /****************** global constants *********************/
 /* the map characters are defined as global constants here;
  * they are declared in mapchars.h, which is included by
- * all files that need to uses them
+ * all files that need to use them
  */
 const char mapchars_player= '@';
 const char mapchars_solidRock = ' ';

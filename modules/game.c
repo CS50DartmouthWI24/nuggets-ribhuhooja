@@ -245,20 +245,16 @@ bool game_move(game_t* game, addr_t address, int dx, int dy){
       return false;
     } else if (returnVal == -2) {   // player there; swap!
       grid_swapPlayers(game->masterGrid, px, py, px + dx, py + dy);
-      player_moveDiagonal(player, dx, dy);
       player_t* other = findPlayerByCoords(game, px + dx, py + dy);
       if (other != NULL){
         player_setX(other, px);
         player_setY(other, py);
       }
+      player_moveDiagonal(player, dx, dy);
     } else {
       player_moveDiagonal(player, dx, dy);
     }
 
-    // to get the updated x and y position of the player 
-    px = player_getX(player);
-    py = player_getY(player);
-    
     // to update the gold claimed by the player to new coordinates if the player steped on a gold pile.
     if (returnVal > 0){
         int claimedGold = returnVal;

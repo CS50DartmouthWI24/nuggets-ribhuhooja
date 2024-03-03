@@ -97,6 +97,8 @@ static void parseArgs(const int argc, char* argv[],
             if (*seed < 0) {
                 fprintf(stderr, "ERROR: '%d' must be > 0\n", *seed);
                 exit(5);
+            } else {
+                srand(*seed);
             }
         } else {
             srand(getpid());

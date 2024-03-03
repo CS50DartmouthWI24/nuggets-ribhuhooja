@@ -244,30 +244,72 @@ static void handleOK(const char* message, void* arg);
 
 ### Data structures
 
-> For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
-> No need to provide `struct` for existing CS50 data structures like `hashtable`.
+The server module does not create any new structures.
 
 ### Definition of function prototypes
-
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
 
 A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
-### Detailed pseudo code
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+A function that will be called in `message_loop()` to handle incoming messages from client.
+
+```c
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+```
+
+A function that will be called when the PLAY message is sent to handle the PLAY functionality.
+
+```c
+static void handlePlay(void* arg, const addr_t from, const char* content);
+```
+
+A function that will be called when the KEY message is sent to handle the KEY functionality.
+
+```c
+static bool handleKey(void* arg, const addr_t from, const char* content);
+```
+
+A function that will be called when the SPECTATE message is sent to handle the SPECTATE functionality.
+
+```c
+static void handleSpectate(void* arg, const addr_t from, const char* content);
+```
+
+A function to handle the client quitting.
+
+```c
+static void keyQ(const addr_t from);
+```
+
+A function to generate an error message. Will be called when an incorrect key is pressed.
+
+```c
+static void errorMessage(const addr_t from, const char* content);
+```
+
+A function to check if a given string is empty.
+
+```c
+static bool checkWhitespace(const char* name)
+```
+
+A function to normalize a given string to match the requirements of a player name.
+
+```c
+static char* fixName(const char* entry)
+```
+
+### Detailed pseudo code
 
 #### `parseArgs`:
 
-	validate commandline
-	verify map file can be opened for reading
-	if seed provided
+	if 2 or 3 args given
+		check if map file can be opened for reading
+		if 3 args are given
+			seed the random-number generator with the given seed
 		verify it is a valid seed number
 		seed the random-number generator with that seed
 	else

@@ -1,0 +1,8 @@
+TODO: remove this once the bug is fixed
+
+Bug description - it seems that sometimes players turn "invisible", leaving
+their "corpses" behind. Under the hood teh grid has somehow been tricked into 
+representing the players with a roomSpot or a passageSpot
+
+The problem likely lies in grid_swapPlayers being called on a wrong coordinate,
+perhaps because of a player leaving the game?

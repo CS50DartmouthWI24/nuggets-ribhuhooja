@@ -678,7 +678,7 @@ Thus, we check (xi, yi) and (xi, yi + 1)
   if px == x, then there are no x-values to check (this is to prevent slopeDenominator from being 0)
   otherwise, store a sign to know whether to increment or decrement when going from px to x
   store slope numerator and slope denominator 
-  go from px + sign to x
+  go from px to x
     find yi according to the formula described above
     if gridpoint
       if that gridpoint is blocking, return true

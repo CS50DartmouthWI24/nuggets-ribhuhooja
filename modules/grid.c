@@ -792,7 +792,7 @@ isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,
   int slopeNumerator = py - y;
   int slopeDenominator = px - x;
 
-  for (int xi = px + sign; xi != x; xi += sign){
+  for (int xi = px; xi != x; xi += sign){
     int delta = xi - px;
     int numerator = slopeNumerator * delta;
     bool isGridpoint = numerator % slopeDenominator == 0;
@@ -834,7 +834,7 @@ isBlockedVertically(grid_t* grid, const int px, const int py, const int x,
   int slopeNumerator = px - x;
   int slopeDenominator = py - y;
 
-  for (int yi = py + sign; yi != y; yi += sign){
+  for (int yi = py; yi != y; yi += sign){
     int delta = yi - py;
     int numerator = slopeNumerator * delta;
     bool isGridpoint = numerator % slopeDenominator == 0;

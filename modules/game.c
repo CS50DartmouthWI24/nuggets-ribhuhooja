@@ -107,6 +107,10 @@ void game_removePlayer(game_t* game, player_t* playerA){
         player_setInactive(playerA);
 
         grid_removePlayer(game->masterGrid, player_getLetter(playerA), player_getX(playerA), player_getY(playerA));
+
+        updateAllVisibleGrids(game);
+        displayAllPlayers(game);
+        
     }
 }
 
@@ -485,6 +489,7 @@ void game_over(game_t* game){
 
     // delete spectator
     if (game->spectator != NULL){
+      spectator_sendMessage(game->spectator, result);
       spectator_delete(game->spectator);
     }
     // delete grid

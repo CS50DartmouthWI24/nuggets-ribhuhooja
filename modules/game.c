@@ -84,9 +84,9 @@ void game_addPlayer(game_t* game, player_t* player){
             char letter = player_getLetter(player);
 
             grid_addPlayer(game->masterGrid, player_getX(player), player_getY(player), letter);
+            updateAllVisibleGrids(game);
+            displayAllPlayers(game);
             
-            // make and send message
-            // player_sendMessage(player, "OK \n");
         }
         else{
             player_sendMessage(player, "QUIT Game is full: no more players can join.\n");

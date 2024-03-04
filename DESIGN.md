@@ -32,10 +32,16 @@ The program will also display a status line. See the requirements spec for the f
 
 Our client comprises the following modules or functions:
 
-1. `parseArgs`, which parses the command line arguments
-2. `messageHandler`, which handles the messages received from the server
-3. `inputHandler`, which handles player input
-4. `displayer`, which displays the grid and status line to the user
+`static bool handleInput(void* arg)` which handles the input from the clients' keyboard
+`static bool handleMessage(void* arg, const addr_t from, const char* message)` which handles the message sent to the client from the server
+`static int parseArgs(const int argc, char* argv[], clientData_t* cData)` which parses and verifies the commmand line arguments
+`static void initializeTerminal(void)` which initalizes an ncurses terminal
+`static void handleGRID(const char* message, void* arg)` which handles the GRID message from server
+`static void handleGOLD(const char* message, void* arg)` which hadnles the GOLD message from server
+`static void handleQUIT(const char* message, void *arg)` which handles the QUIT message from server
+`static void handleERROR(const char* message)` which handles the ERROR message from server
+`static void handleDISPLAY(const char* message, void* arg)` which handles the DISPLAY message from server
+`static void handleOK(const char* message, void* arg)` which handles the OK message from server
  
 ### Pseudo code for logic/algorithmic flow
 
@@ -56,10 +62,7 @@ The client will run as follows:
 
 ### Major data structures
     
-The client uses a data structure `status` to keep track of the status line.
-
-It doesn't need any other data structure to keep track of the grid or player position
-because the map to display is sent by te server.
+The client uses a data structure `cData` to keep track of the data needed for displaying messages at any point in the program. It serves as a useful way to package data needed
     
 ---
 
@@ -81,12 +84,17 @@ to tell them about the game state.
 
 ### Functional decomposition into modules
 
-The server is composed of the following modules (other than main)
+The server is composed of the following functions (other than main)
 
-1. `parseArgs`, parses the command line arguments to the server
-2. `gameInitializer`, which sets up the data structures
-3. `messageHandler`, which handles messages
-4. `gameUpdater`, which updates the game based on player actions
+`static void parseArgs(const int argc, char* argv[], FILE** map, int* seed)` which parses and verifies the arguments
+`static bool handleMessage(void* arg, const addr_t from, const char* buf)` which handles the messages coming from the client
+`static void handlePlay(void* arg, const addr_t from, const char* content)` which handles the PLAY message sent client
+`static bool handleKey(void* arg, const addr_t from, const char* content)` which handles the KEY message sent from the client
+`static void handleSpectate(void* arg, const addr_t from, const char* content)` which handles the SPECTATE message sent from the client
+`static void keyQ(const addr_t from)` which handles the KEY Q message sent from the client
+`static void errorMessage(const addr_t from, const char* content)` which is called when someone hits an improper key and tells the user so
+`static bool checkWhitespace(const char* name)` which takes a name and returns whether it is empty or not
+`static char* fixName(const char* entry)` which normalizes the string with the requirements of the specs (truncating, and adding underscores if neccesary)
 
 
 ### Pseudo code for logic/algorithmic flow
@@ -127,12 +135,28 @@ A data structure to store the data of each player. Stores:
 - address (to send messages to)
 
 ### Functional Decomposition
-1. `player_join` - joins a player into a game
-2. `player_leave` - leaves a player from a game
-3. `player_collectGold` - adds the current gold on player (x,y) coordinate
-4. `player_move` - moves a player into a spot on the grid
-5. `player_new` - makes a new player with the given arguments
-6. `player_delete` - deletes the palyer. 
+`player_t* player_new(addr_t address, int x, int y, const char* name, char letter)` which creates a new player with addres, at x and y with name and letter ID
+`void player_delete(player_t* player)` which deletes a player
+`int player_getX(const player_t* player)` which gets the X value of a player
+`int player_getY(const player_t* player)` which gets the Y value of the player
+`grid_t* player_getVisibleGrid(const player_t* player)` which gets the visible grid for the player at their x and y
+`int player_getGold(const player_t* player)` which gets the gold of the player
+`char* player_getName(const player_t* player)` which gets the name of the player
+`char player_getLetter(const player_t* player)` which gets the letterID of the player
+`addr_t player_getAddress(const player_t* player)` which gets the addr_t adress of the player
+`bool player_isActive(player_t* player)` which returns true or false if the player is player is playing (active)
+`void player_setX(player_t* player, int x)` which sets the x of the player
+`void player_setY(player_t* player, int y)` which sets the y of the player
+`void player_setGold(player_t* player, int gold)` which sets the gold of the player
+`void player_addGold(player_t* player, int gold)` which adds to the gold of the player
+`void player_moveX(player_t* player, int direction)` which moves the x of the player in int direction
+`void player_moveY(player_t* player, int direction)` which moves the y of the player in int direction
+`void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)` which moves the player in the diagonal direction 
+`void player_updateVisibleGrid(player_t* player, grid_t* masterGrid)` which updates the visible grid
+`void player_setInactive(player_t* player)` whicih sets the layer to be inactive 
+`void player_sendMessage(player_t* player, char* message)` which sends the message to a player
+`bool player_isActive(player_t* player)` which returns if player is active or not
+
 
 #### Game
 A data structure to hold global game state. Stores:
@@ -151,20 +175,23 @@ game grid
 
 ### Functional decomposition
 
-  1. `grid_fromMap` - creates a new grid from a map file
-  2. `grid_charAt` - returns the character at a given point
-  3. `grid_goldAt` - returns the amount of gold at a given point
-  4. `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  5. `grid_addPlayer` - adds a player to a grid
-  6. `grid_movePlayer` - moves the players within the grid
-  7. `grid_collectGold` - changes the grid to represent gold being collected by a player
-  8. `grid_getDisplay` - returns the grid string
-  9. `grid_toMap` - saves the grid to a file for debug purposes
-
-Static helper functions
-
-  - `indexOf` - returns the index of an (x,y) point in the string
-  - `isVisible` - tells whether a point is visible from another
+  `grid_fromMap` which creates a new grid from a map file
+  `void grid_delete(grid_t* grid)` which deletes the grid and frees memory
+  `grid_charAt` which returns the character at a given point
+  `char grid_baseCharAt(grid_t* grid, const int x, const int y)` which returns the base character of the underlying map at the passed coordinate (what is in the map file)
+  `int grid_numrows(grid_t* grid)` which returns the number of rows in grid
+  `int grid_numcols(grid_t* grid)` which returns the number of columns in grid
+  `grid_goldAt` - returns the amount of gold at a given point
+  `bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal)` which adds nuggets within the specified parameters to the map
+  `bool grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)` which finds a random empty spot on the map and populates the passed coordiantes by reference to the coordaintes of that spot
+  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  `grid_addPlayer` which adds a player to a grid
+  `grid_movePlayer` which moves the players within the grid
+  `void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2)` which swaps two players on the grid who are on (x1,y1) and (x2,y2) points on the map
+  `bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py)` which removes a player on the map 
+   `grid_collectGold` which changes the grid to represent gold being collected by a player
+   `grid_getDisplay` which returns the grid string
+   `grid_toMap` which saves the grid to a file for debug purposes
 
 ### Pseudo code for logic/algorithmic flow
 

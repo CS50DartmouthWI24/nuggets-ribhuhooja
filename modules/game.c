@@ -369,6 +369,14 @@ static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer,
                                                          remain);
         }
     }
+
+
+    // also send the message to the specator
+    if (game->spectator != NULL){
+        char message[100];
+        snprintf(message, sizeof(message), "GOLD %d %d %d", 0, 0, remain);
+        spectator_sendMessage(game->spectator, message);
+    }
 }
 
 /****************** sendGoldMessage ***********************

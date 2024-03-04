@@ -16,7 +16,7 @@ int
 main()
 {
   printf("Test: Loading map\n\n");
-  FILE* fp = fopen("../maps/fewspots.txt", "r");
+  FILE* fp = fopen("../maps/torpedos.txt", "r");
   if (fp == NULL){
     printf("null fp\n");
     return 1;

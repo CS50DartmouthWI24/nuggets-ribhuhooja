@@ -41,7 +41,7 @@ static const int numAttemptsSpawning = 100;
 /****************** global constants *********************/
 /* the map characters are defined as global constants here;
  * they are declared in mapchars.h, which is included by
- * all files that need to uses them
+ * all files that need to use them
  */
 const char mapchars_player= '@';
 const char mapchars_solidRock = ' ';
@@ -756,6 +756,10 @@ isValidCoordinate(const int x, const int y, const int numrows, const int numcols
 static bool
 isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
 {
+  if (grid == NULL){
+    return false;
+  }
+
   if (isBlockedHorizontally(grid, px, py, x, y)){
     return false;
   }
@@ -861,6 +865,9 @@ static bool
 isBlocking(grid_t* grid, const int x, const int y)
 {
   char toCheck = grid_charAt(grid, x, y);
+  if (toCheck == '\0'){
+    return true;
+  }
   
   // players and gold do not block vision
   return toCheck == mapchars_solidRock

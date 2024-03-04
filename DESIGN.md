@@ -135,27 +135,27 @@ A data structure to store the data of each player. Stores:
 - address (to send messages to)
 
 ### Functional Decomposition
-`player_t* player_new(addr_t address, int x, int y, const char* name, char letter)` which creates a new player with addres, at x and y with name and letter ID
-`void player_delete(player_t* player)` which deletes a player
-`int player_getX(const player_t* player)` which gets the X value of a player
-`int player_getY(const player_t* player)` which gets the Y value of the player
-`grid_t* player_getVisibleGrid(const player_t* player)` which gets the visible grid for the player at their x and y
-`int player_getGold(const player_t* player)` which gets the gold of the player
-`char* player_getName(const player_t* player)` which gets the name of the player
-`char player_getLetter(const player_t* player)` which gets the letterID of the player
-`addr_t player_getAddress(const player_t* player)` which gets the addr_t adress of the player
-`bool player_isActive(player_t* player)` which returns true or false if the player is player is playing (active)
-`void player_setX(player_t* player, int x)` which sets the x of the player
-`void player_setY(player_t* player, int y)` which sets the y of the player
-`void player_setGold(player_t* player, int gold)` which sets the gold of the player
-`void player_addGold(player_t* player, int gold)` which adds to the gold of the player
-`void player_moveX(player_t* player, int direction)` which moves the x of the player in int direction
-`void player_moveY(player_t* player, int direction)` which moves the y of the player in int direction
-`void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)` which moves the player in the diagonal direction 
-`void player_updateVisibleGrid(player_t* player, grid_t* masterGrid)` which updates the visible grid
-`void player_setInactive(player_t* player)` whicih sets the layer to be inactive 
-`void player_sendMessage(player_t* player, char* message)` which sends the message to a player
-`bool player_isActive(player_t* player)` which returns if player is active or not
+1. `player_t* player_new(addr_t address, int x, int y, const char* name, char letter)` which creates a new player with address, at x and y with name and letter ID
+2. `void player_delete(player_t* player)` which deletes a player
+3. `int player_getX(const player_t* player)` which gets the X value of a player
+4. `int player_getY(const player_t* player)` which gets the Y value of the player
+5. `grid_t* player_getVisibleGrid(const player_t* player)` which gets the visible grid for the player at their x and y
+6. `int player_getGold(const player_t* player)` which gets the gold of the player
+7. `char* player_getName(const player_t* player)` which gets the name of the player
+8. `char player_getLetter(const player_t* player)` which gets the letterID of the player
+9. `addr_t player_getAddress(const player_t* player)` which gets the addr_t adress of the player
+10. `bool player_isActive(player_t* player)` which returns true or false if the player is player is playing (active)
+11. `void player_setX(player_t* player, int x)` which sets the x of the player
+12. `void player_setY(player_t* player, int y)` which sets the y of the player
+13. `void player_setGold(player_t* player, int gold)` which sets the gold of the player
+14. `void player_addGold(player_t* player, int gold)` which adds to the gold of the player
+15. `void player_moveX(player_t* player, int direction)` which moves the x of the player in int direction
+16. `void player_moveY(player_t* player, int direction)` which moves the y of the player in int direction
+17. `void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)` which moves the player in the diagonal direction 
+18. `void player_updateVisibleGrid(player_t* player, grid_t* masterGrid)` which updates the visible grid
+19. `void player_setInactive(player_t* player)` whicih sets the layer to be inactive 
+20. `void player_sendMessage(player_t* player, char* message)` which sends the message to a player
+21. `bool player_isActive(player_t* player)` which returns if player is active or not
 
 
 #### Game
@@ -175,23 +175,23 @@ game grid
 
 ### Functional decomposition
 
-  `grid_fromMap` which creates a new grid from a map file
-  `void grid_delete(grid_t* grid)` which deletes the grid and frees memory
-  `grid_charAt` which returns the character at a given point
-  `char grid_baseCharAt(grid_t* grid, const int x, const int y)` which returns the base character of the underlying map at the passed coordinate (what is in the map file)
-  `int grid_numrows(grid_t* grid)` which returns the number of rows in grid
-  `int grid_numcols(grid_t* grid)` which returns the number of columns in grid
-  `grid_goldAt` - returns the amount of gold at a given point
-  `bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal)` which adds nuggets within the specified parameters to the map
-  `bool grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)` which finds a random empty spot on the map and populates the passed coordiantes by reference to the coordaintes of that spot
-  `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
-  `grid_addPlayer` which adds a player to a grid
-  `grid_movePlayer` which moves the players within the grid
-  `void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2)` which swaps two players on the grid who are on (x1,y1) and (x2,y2) points on the map
-  `bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py)` which removes a player on the map 
-   `grid_collectGold` which changes the grid to represent gold being collected by a player
-   `grid_getDisplay` which returns the grid string
-   `grid_toMap` which saves the grid to a file for debug purposes
+  1. `grid_fromMap` which creates a new grid from a map file
+  2. `void grid_delete(grid_t* grid)` which deletes the grid and frees memory
+  3. `grid_charAt` which returns the character at a given point
+  4. `char grid_baseCharAt(grid_t* grid, const int x, const int y)` which returns the base character of the underlying map at the passed coordinate (what is in the map file)
+  5. `int grid_numrows(grid_t* grid)` which returns the number of rows in grid
+  6. `int grid_numcols(grid_t* grid)` which returns the number of columns in grid
+  7. `grid_goldAt` - returns the amount of gold at a given point
+  8. `bool grid_nuggetsPopulate(grid_t* grid, const int minNumPiles, const int maxNumPiles, const int goldTotal)` which adds nuggets within the specified parameters to the map
+  9. `bool grid_findRandomSpawnPosition(grid_t* grid, int* pX, int* pY)` which finds a random empty spot on the map and populates the passed coordiantes by reference to the coordaintes of that spot
+  10. `grid_generateVisibleGrid` - given the base grid and the player, it generates each player's visible grid
+  11. `grid_addPlayer` which adds a player to a grid
+  12. `grid_movePlayer` which moves the players within the grid
+  13. `void grid_swapPlayers(grid_t* grid, const int x1, const int y1, const int x2, const int y2)` which swaps two players on the grid who are on (x1,y1) and (x2,y2) points on the map
+  14. `bool grid_removePlayer(grid_t* grid, const char playerChar, const int px, const int py)` which removes a player on the map 
+  15. `grid_collectGold` which changes the grid to represent gold being collected by a player
+  16. `grid_getDisplay` which returns the grid string
+  17. `grid_toMap` which saves the grid to a file for debug purposes
 
 ### Pseudo code for logic/algorithmic flow
 

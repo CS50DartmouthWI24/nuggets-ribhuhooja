@@ -83,34 +83,218 @@ static int parseArgs(const int argc, char* argv[]);
 
 ### Data structures
 
-> For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
-> No need to provide `struct` for existing CS50 data structures like `hashtable`.
+The server module does not create any new structures.
 
 ### Definition of function prototypes
-
-> For function, provide a brief description and then a code block with its function prototype.
-> For example:
 
 A function to parse the command-line arguments, initialize the game struct, initialize the message module, and (BEYOND SPEC) initialize analytics module.
 
 ```c
 static int parseArgs(const int argc, char* argv[]);
 ```
+
+A function that will be called in `message_loop()` to handle incoming messages from client.
+
+```c
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+```
+
+A function that will be called when the PLAY message is sent to handle the PLAY functionality.
+
+```c
+static void handlePlay(void* arg, const addr_t from, const char* content);
+```
+
+A function that will be called when the KEY message is sent to handle the KEY functionality.
+
+```c
+static bool handleKey(void* arg, const addr_t from, const char* content);
+```
+
+A function that will be called when the SPECTATE message is sent to handle the SPECTATE functionality.
+
+```c
+static void handleSpectate(void* arg, const addr_t from, const char* content);
+```
+
+A function to handle the client quitting.
+
+```c
+static void keyQ(const addr_t from);
+```
+
+A function to generate an error message. Will be called when an incorrect key is pressed.
+
+```c
+static void errorMessage(const addr_t from, const char* content);
+```
+
+A function to check if a given string is empty.
+
+```c
+static bool checkWhitespace(const char* name)
+```
+
+A function to normalize a given string to match the requirements of a player name.
+
+```c
+static char* fixName(const char* entry)
+```
+
 ### Detailed pseudo code
 
-> For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
-> Much easier than writing as a bulleted list!
-> For example:
+#### `main`:
+
+	create map and seed variables
+	parseArgs
+	intialize game
+	if game == NULL
+		exit with non-zero error code
+	close map file
+	initialize messages, load port
+	if port == 0
+		return 2
+	else
+		print port
+	loop through messages
+	close messages
+	return 1 or 2 depending on success of messages loop
 
 #### `parseArgs`:
 
-	validate commandline
-	verify map file can be opened for reading
-	if seed provided
-		verify it is a valid seed number
-		seed the random-number generator with that seed
+	if 2 or 3 args given
+		check if map file can be opened for reading
+		if 3 args are given
+			make sure its a valid seed number
+			seed the random-number generator with the given seed
+		else
+			seed the random-number generator with getpid()
 	else
-		seed the random-number generator with getpid()
+		print correct usage
+
+#### `handleMessage`:
+
+	gameOver = false
+	if message starts with PLAY
+		save content of message
+		handlePlay()
+	if message starts with KEY
+		save content of message
+		handleKey()
+	if message starts with SPECTATE
+		save content of message
+		handleSpectate()
+	return gameOver
+
+#### `handlePlay`:
+
+	if string isn't empty
+		if game isn't at full capacity
+			find random spawn location for player
+			calculate player letter
+			normalize player name
+			create new player
+			add player to the game
+			create OK message
+			send OK message
+			find nrows
+			find ncols
+			create GRID message
+			send GRID message
+			find amount of gold
+			create GOLD message
+			send GOLD message
+			find relevant display
+			craete DISPLAY message
+			send DISPLAY message
+			if game has a spectator
+				get spectator address
+				get the master display
+				create DISPLAY message
+				send DISPLAY message
+		else
+			send QUIT message
+	else
+		send QUIT message
+
+#### `handleKey`:
+
+	gameOver = false
+	if string passed is valid
+		switch letter
+			case Q: keyQ()
+			case q: keyQ()
+			case h: move left
+			case l: move right
+			case j: move down
+			case k: move up
+			case y: move up and left
+			case u: move up and right
+			case b: move down and left
+			case n: move down and right
+			case H: long move left
+			case L: long move right
+			case J: long move down
+			case K: long move up
+			case Y: long move up and left
+			case U: long move up and right
+			case B: long move down and left
+			case N: long move down and right
+			default: errorMessage()
+	return gameOver
+
+#### `handleSpectate`:
+
+	add spectator to game
+	find nrows
+	find ncols
+	create GRID message
+	send GRID message
+	find gold amount
+	create GOLD message
+	send GOLD message
+	find master display
+	create DISPLAY message
+	send DISPLAY message
+
+#### `keyQ`:
+
+	find player from address
+	if play doesn't exist (its a spectator)
+		remove spectator from game
+	else
+		remove player from game
+
+#### `errorMessage`:
+
+	create ERROR message
+	send ERROR message
+
+#### `checkWhitespace`:
+
+	for each character in given string
+		if its a letter in the alphabet
+			return false
+	return true
+
+#### `fixName`:
+
+	create empty name string
+	if given string is less than max length
+		for each letter
+			if !isgraph and !isblank
+				make that index in name an underscore
+			else
+				make that index in name the same letter
+		add '\0' at end
+	else
+		for each letter
+			if !isgraph and !isblank
+				make that index in name an underscore
+			else
+				make that index in name the same letter
+		add '\0' at end
+	return name
 
 ---
 

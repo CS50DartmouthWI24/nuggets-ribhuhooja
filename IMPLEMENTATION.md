@@ -383,7 +383,8 @@ static void freeCharItemdelete(void* pChar);
 ### Detailed pseudo code
 
 #### `grid_fromMap`
-  
+
+```  
   if the file pointer is NULL
     return NULL
   malloc a string of size initGridStringSize on the heap
@@ -413,38 +414,48 @@ static void freeCharItemdelete(void* pChar);
   create a new hashtable and counterset, again asserting that they are not NULL
   store the pointers inside the grid
   return the newly formed grid
+```
 
 #### `grid_delete`
 
+```
   if grid is NULL
     return, doing nothing
 
   free the grid string if it is not NULL
   delete the hashtable and counterset if they are not null
   free the grid itself
+```
 
 #### `grid_numrows`
 
+```
   if the grid is NULL return 0
   return the number of rows in the grid
+```
 
 #### `grid_numcols`
 
+```
   if the grid is NULL return 0
   return the number of rows in the grid
+```
 
 #### `grid_charAt`
 In this function we check for coordinates being valid because we don't want any memory
 errors when indexing into the string
   
+```
   if grid is NULL return the null character
   check that the given coordinates are valid
   find the index of the given x and y coordinates
   return the character at that index in the grid string
+```
    
 
 #### `grid_baseCharAt`
 
+```
   if grid is NULL return the null character
   get the charAt the given location
   if the returned character is any of the mapchars other then gold
@@ -453,12 +464,15 @@ errors when indexing into the string
     return the room character
   else (the character is a player character)
     return the character that the player is standing on using the helper function
+```
 
 #### `grid_goldAt`
 
+```
   if grid is NULL or the counterset inside grid is NULL
     return 0
   otherwise, return the count of the index of the given coordinates inside the counterset
+```
 
 #### `grid_nuggetsPopulate`
 The algorithm for populating with gold is
@@ -466,6 +480,7 @@ The algorithm for populating with gold is
 - find that many spots on the map and save their indices
 - now for each single piece of gold, randomly add it to one of the piles
   
+```
   if grid is NULL
     return false
   check the given parameters are valid
@@ -486,6 +501,7 @@ The algorithm for populating with gold is
     randomly choose one of the chosen pile spots
     add a single gold to the counterset at that spot
   return true
+```
     
 
 #### `grid_generateVisibleGrid`
@@ -498,6 +514,7 @@ The grid that this function creates does not have the full functionality of
 a grid and should only be used for display purposes. This is because it lacks the 
 nuggets counterset and the standingOn hashtable.
 
+```
   if grid is NULL or the given coordinates are invalid
     return NULL
   if the passed in currentlyVisibleGrid is NULL
@@ -513,12 +530,14 @@ nuggets counterset and the standingOn hashtable.
     else do nothing; the character at this place is solidRock and it remains solid rock (neither visible nor seen before)
   in the currently visible grid, set the character at the coordinates of the player to the player character '@' (or whatever `mapchars_player` is)
   return currentlyVisibleGrid
+```
      
 
 #### `grid_findRandomSpawnPosition`
 to avoid an infinite loop we only do the random search a limited number of times. After that we locate all 
 possible free room spots and choose one of them.
 
+```
   if any of the passed in pointers is NULL, return false
   for a limited number of times
     choose a random coordinate
@@ -531,11 +550,13 @@ possible free room spots and choose one of them.
   if the number of room spots found is zero then return false
   otherwise, randomly choose one of the indices found
   return true
+```
 
 #### `grid_addPlayer`
 This function only adds the player character to the grid. 
 The game and the players within it need to update their state separately.
 
+```
   if the grid is NULL
     return false
   if the passed in coordinates are invalid
@@ -545,6 +566,7 @@ The game and the players within it need to update their state separately.
   otherwise, set the character at that index in the string to the player's letter
   set the playerStandingOn to a room spot
   return false
+```
 
 #### `grid_movePlayer`
 Just like the above function, the game and player structs within it need to update their state separately.
@@ -555,6 +577,7 @@ The return values for this function have a few roles
 - -2 also means the operation failed, but that there is another player at the spot-to-be-moved to. This must first be resolved through a `grid_swapPlayers`
 - otherwise, the operation succeeded and the return value is the amount of gold collected by the player
   
+```
   if grid is NULL or the string within it is null, return -1
   if the amount to move by for each coordinate is not -1, 0, or 1, return -1
   if the new coordinates are not valid, return -1
@@ -569,76 +592,94 @@ The return values for this function have a few roles
   set the character at the new index to the player character
   set the character at the old index to what the player was originally standing on
   return the amount of gold collected, as returned by `grid_collectGold`
+```
 
 #### `grid_swapPlayer`
 Same note about grid vs game state as the previous one.
 
+```
   if grid is NULL or any of the passed in coordinates are invalid
     return
   get the player characters by indexing the given coordinates
   swap the characters at those indices at the grid string
   swap the playerStandingOn characters for both the players
+```
 
 
 #### `grid_removePlayer`
 Same note as the previous one.
 
+```
   if grid is NULL or the passed in coordinates are invalid
     return false
   set the character at the index corresponding to the given coordinates to whatever the player was standing on
   return true
+```
 
 #### `grid_collectGold`
 Same note as the previous one. This just updates the grid's tracking of its own
 gold, and doesn't change (or even know about) the game state or the player
 purse.
   
+```
   if grid is NULL or the nuggets counterset is NULL or the passed in coordinates are invalid
     return 0
   set int gold to the amount of gold at the given location
   set the counterset value of the gold at the given location to 0
   return gold
+```
 
 #### `grid_getDisplay`
 
+```
   if grid is NULL return NULL
   create a new string, mallocing just enough spae to store the grid string (which we can calculate from rows and columns)
   copy the grid string into the new string
   return the new string
+```
 
 #### `grid_toMap`
 
+```
   if grid is NULL or the file pointer is NULL
     return
   otherwise, get the display string from getDisplay
   fputs the string to the file
   free the string
+```
 
 #### `indexOf`
 See explanatory comment in the file for a derivation of the formula
 
+```
   return (numcols + 1) * y + x
+```
 
 #### `getCoordsFromIndex`
 Does the exact opposite of numcols. Note that integer division truncates
 towards floor.
 
+```
   if any of the passed in pointers is NULL, return
   otherwise,
   set x to index % (numcols + 1)
   set y to index / (numcols + 1)
+```
 
 #### `isValidCoordinate`
 - x and y should both be greater than zero
 - x should be less than the number of columns
 - y should be less than the number of rows
 
+```
   return x is positive AND y is positive AND x < numcols AND y < numrows
+```
 
 #### `getPlayerStandingOn`
 The hashtable must be keys by a string so for any character 'x', we create
 the string ['x', '\0']
   
+```
   if grid is NULL
     return roomSpot (default value)
   create a string to store the letter 
@@ -646,6 +687,7 @@ the string ['x', '\0']
   if the return value is NULL
     return the roomSpot
   otherwise, return whatever the hashtable returned
+```
 
 #### `setPlayerStandingOn`
 We can't insert a character, we need to insert a pointer to one.
@@ -653,6 +695,7 @@ If the player is new, then we malloc space for a character and insert a pointer
 to that into the hashtable. If the player isn't new, then we retrieve the pointer,
 dereference it, and update the value of the character stored at that memory location.
 
+```
   if grid is NULL
     return
   create the key string for the character, as in the last function
@@ -663,14 +706,17 @@ dereference it, and update the value of the character stored at that memory loca
     insert tht pointer into the hashtable with the key string
   dereference the pointer and set the value of the character to the new character
   free the key string
+```
 
 #### `isVisible`
 
+```
   if grid is NULL
     return false
   if isBlockedHorizontally or isBlockedVertically
     return false
   return true
+```
 
 #### `isBlockedHorizontally`
 Does the visibility check for all the x-values between px and x (both exclusive).
@@ -690,6 +736,7 @@ where delta = xi - px. To check if yi is an integer, we check whether
 integers surrounding the 'true' value of yi (because integer division rounds down).
 Thus, we check (xi, yi) and (xi, yi + 1)
 
+```
   if px == x, then there are no x-values to check (this is to prevent slopeDenominator from being 0)
   otherwise, store a sign to know whether to increment or decrement when going from px to x
   store slope numerator and slope denominator 
@@ -700,6 +747,7 @@ Thus, we check (xi, yi) and (xi, yi + 1)
     else
       if (xi, yi) and (xi, yi + 1) are both blocking, return true
   return false
+```
 
 #### `isBlockedVertically`
 Does exactly the same thing as the above function, but with x and y interchanged.
@@ -707,16 +755,20 @@ Does exactly the same thing as the above function, but with x and y interchanged
 #### `isBlocking`
 returns whether a character blocks line-of-sight
 
+```
   get the character at the given location
   if the character is a boundary or solid rock or a passage spot
     return true
   return false
+```
 
 #### `freeCharItemDelete`
 An itemdelete to delete the hashtable. Deletes a pointer a to a character
 
+```
   if the passed in pointer is not NULL
     free the passed in pointer
+```
 
 ## Game
 

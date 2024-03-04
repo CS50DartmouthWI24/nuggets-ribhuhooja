@@ -1,3 +1,15 @@
+/*
+ * server.c
+ *
+ * Launches the server for the Nuggets game. 
+ * The server manages all messaging and game logic to all the clients.
+ *
+ * Usage: server map.txt [seed]
+ *
+ * Author: TEAM TORPEDOS - Sam Starrs, March 2024
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -113,6 +125,11 @@ static void parseArgs(const int argc, char* argv[],
 }
 
 /**************** handleMessage() ****************/
+/* Takes an optional pointer, address of the player, and string. 
+ * Called in the message_loop() function.
+ * Handles messaging from client.
+ * Returns true/false based on if the game is over.
+ */
 static bool handleMessage(void* arg, const addr_t from, const char* message) {
 
     bool gameOver = false;
@@ -135,6 +152,10 @@ static bool handleMessage(void* arg, const addr_t from, const char* message) {
 }
 
 /**************** handlePlay() ****************/
+/* Takes an optional pointer, address of the player, and string. 
+ * Called in the handlePlay() function.
+ * Handles message for when client says PLAY
+ */
 static void handlePlay(void* arg, const addr_t from, const char* content) {
     
     // Make empty string isn't passed as name
@@ -206,6 +227,11 @@ static void handlePlay(void* arg, const addr_t from, const char* content) {
 }
 
 /**************** handleKey() ****************/
+/* Takes an optional pointer, address of the player, and string. 
+ * Called in the handleMessage() function.
+ * Handles KEY message.
+ * Returns true/false based on if the game is over.
+ */
 static bool handleKey(void* arg, const addr_t from, const char* content) {
 
   bool gameOver = false;
@@ -239,6 +265,10 @@ static bool handleKey(void* arg, const addr_t from, const char* content) {
 }
 
 /**************** handleSpectate() ****************/
+/* Takes an optional pointer, address of the player, and string. 
+ * Called in the handleMessage() function.
+ * Handles SPECTATE message from client.
+ */
 static void handleSpectate(void* arg, const addr_t from, const char* content) {
 
     // Add spectator to game
@@ -273,6 +303,10 @@ static void handleSpectate(void* arg, const addr_t from, const char* content) {
 }
 
 /**************** keyQ() ****************/
+/* Takes address of the player.
+ * Called in the handleKey() function.
+ * Handles scenario of KEY q and KEY Q
+ */
 static void keyQ(const addr_t from) {
 
     player_t* player = game_findPlayer(game, from);
@@ -288,6 +322,10 @@ static void keyQ(const addr_t from) {
 }
 
 /**************** errorMessage() ****************/
+/* Takes address of the player and string.
+ * Called in the handleKey() function.
+ * Handles scenario of invalid KEY.
+ */
 static void errorMessage(const addr_t from, const char* content) {
 
     // Create error message for when key isn't recognized
@@ -299,6 +337,9 @@ static void errorMessage(const addr_t from, const char* content) {
 }
 
 /**************** checkWhitespace() ****************/
+/* Takes a string.
+ * Returns true if the string is just whitespace, false if not.
+ */
 static bool checkWhitespace(const char* name){
 
     for (int i = 0; name[i] != '\0'; i++) {
@@ -313,6 +354,11 @@ static bool checkWhitespace(const char* name){
 }
 
 /**************** fixName() ****************/
+/* Takes a string.
+ * Truncates string based on max name length and replaces
+ * with underscores 
+ * User must free the produced string!
+ */
 static char* fixName(const char* entry) {
 
     char* name = mem_malloc(MAXNAMELENGTH+1);

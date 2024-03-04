@@ -618,19 +618,90 @@ towards floor.
 - x should be less than the number of columns
 - y should be less than the number of rows
 
+  return x is positive AND y is positive AND x < numcols AND y < numrows
+
 #### `getPlayerStandingOn`
+The hashtable must be keys by a string so for any character 'x', we create
+the string ['x', '\0']
+  
+  if grid is NULL
+    return roomSpot (default value)
+  create a string to store the letter 
+  key into the hashtable and free the string just created
+  if the return value is NULL
+    return the roomSpot
+  otherwise, return whatever the hashtable returned
 
 #### `setPlayerStandingOn`
+We can't insert a character, we need to insert a pointer to one.
+If the player is new, then we malloc space for a character and insert a pointer
+to that into the hashtable. If the player isn't new, then we retrieve the pointer,
+dereference it, and update the value of the character stored at that memory location.
+
+  if grid is NULL
+    return
+  create the key string for the character, as in the last function
+  get the pointer at that key
+  if it is NULL
+    malloc some space for a new character
+    set the pointer to the return value of that malloc
+    insert tht pointer into the hashtable with the key string
+  dereference the pointer and set the value of the character to the new character
+  free the key string
 
 #### `isVisible`
 
+  if grid is NULL
+    return false
+  if isBlockedHorizontally or isBlockedVertically
+    return false
+  return true
+
 #### `isBlockedHorizontally`
+Does the visibility check for all the x-values between px and x (both exclusive).
+What this means is that for each of those x-values (call it xi),
+it checks where the line segment joining (px, py)-(x,y) intersects the
+line x=xi (let's call it yi). If yi is an integer i.e. the line intersects
+at a grid point, it checks whether that point blocks vision. Otherwise, the 
+line is in the middle of two gridpoints, in which case it checks whether BOTH
+of those gridpoints block vision.
+
+This implementation avoids floating point math, only using integer division.
+The slope of the line segment is (py - y) / (px - x), which are stored 
+separately as slopeNumerator and slopeDenominator. yi = slope * delta + py,
+where delta = xi - px. To check if yi is an integer, we check whether
+(slopeNumerator * delta) % slopeDenominator is 0. If it is, we only check
+(xi, yi) for blocking. Otherwise, we know that yi is the smaller of the two
+integers surrounding the 'true' value of yi (because integer division rounds down).
+Thus, we check (xi, yi) and (xi, yi + 1)
+
+  if px == x, then there are no x-values to check (this is to prevent slopeDenominator from being 0)
+  otherwise, store a sign to know whether to increment or decrement when going from px to x
+  store slope numerator and slope denominator 
+  go from px + sign to x
+    find yi according to the formula described above
+    if gridpoint
+      if that gridpoint is blocking, return true
+    else
+      if (xi, yi) and (xi, yi + 1) are both blocking, return true
+  return false
 
 #### `isBlockedVertically`
+Does exactly the same thing as the above function, but with x and y interchanged.
 
 #### `isBlocking`
+returns whether a character blocks line-of-sight
+
+  get the character at the given location
+  if the character is a boundary or solid rock or a passage spot
+    return true
+  return false
 
 #### `freeCharItemDelete`
+An itemdelete to delete the hashtable. Deletes a pointer a to a character
+
+  if the passed in pointer is not NULL
+    free the passed in pointer
 
 ## Game
 

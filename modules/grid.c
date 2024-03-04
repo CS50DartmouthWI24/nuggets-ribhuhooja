@@ -756,6 +756,10 @@ isValidCoordinate(const int x, const int y, const int numrows, const int numcols
 static bool
 isVisible(grid_t* grid, const int px, const int py, const int x, const int y)
 {
+  if (grid == NULL){
+    return false;
+  }
+
   if (isBlockedHorizontally(grid, px, py, x, y)){
     return false;
   }
@@ -788,7 +792,7 @@ isBlockedHorizontally(grid_t* grid, const int px, const int py, const int x,
   int slopeNumerator = py - y;
   int slopeDenominator = px - x;
 
-  for (int xi = px; xi != x; xi += sign){
+  for (int xi = px + sign; xi != x; xi += sign){
     int delta = xi - px;
     int numerator = slopeNumerator * delta;
     bool isGridpoint = numerator % slopeDenominator == 0;
@@ -830,7 +834,7 @@ isBlockedVertically(grid_t* grid, const int px, const int py, const int x,
   int slopeNumerator = px - x;
   int slopeDenominator = py - y;
 
-  for (int yi = py; yi != y; yi += sign){
+  for (int yi = py + sign; yi != y; yi += sign){
     int delta = yi - py;
     int numerator = slopeNumerator * delta;
     bool isGridpoint = numerator % slopeDenominator == 0;
@@ -861,6 +865,9 @@ static bool
 isBlocking(grid_t* grid, const int x, const int y)
 {
   char toCheck = grid_charAt(grid, x, y);
+  if (toCheck == '\0'){
+    return true;
+  }
   
   // players and gold do not block vision
   return toCheck == mapchars_solidRock

@@ -56,6 +56,11 @@ int main(const int argc, char* argv[]) {
     // Intialize game
     game = game_init(map);
 
+    // Check if successful
+    if (game == NULL) {
+        exit(1);
+    }
+
     // Close map file
     fclose(map);
 

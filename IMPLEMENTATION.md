@@ -309,6 +309,8 @@ static char* fixName(const char* entry)
 	create map and seed variables
 	parseArgs
 	intialize game
+	if game == NULL
+		exit with non-zero error code
 	close map file
 	initialize messages, load port
 	if port == 0

@@ -14,7 +14,7 @@ The code is broken up into numerous modules. Please see [design specs](DESIGN.md
 
 ## Materials used
 
-We used the [support library](support/README.md) for some useful modules.
+We used the [support library](support/README.md) as well as [libcs50](libcs50/README.md) for some useful modules.
 
 We also used the [maps](maps/README.md) for some draft maps.
 

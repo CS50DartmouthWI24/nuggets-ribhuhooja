@@ -111,10 +111,6 @@ The server will run as follows:
 	clean up
 
 
-#### game initializer
-
-  load and validate map from the given map file into a grid object
-  places nuggets in the grid
   
 ### Major data structures
 
@@ -123,6 +119,7 @@ A data structure to represent a grid. Stores:
 
 - the grid string
 - a `counterset` (from libcs50) of nuggets - indexed by the index of the position in the grid string
+- a `hashtable` (from libcs50) to store what character each player is standing on - keyed by a string version of the player's letter
 
 #### Player
 A data structure to store the data of each player. Stores:
@@ -134,40 +131,17 @@ A data structure to store the data of each player. Stores:
 - assigned letter
 - address (to send messages to)
 
-### Functional Decomposition
-1. `player_t* player_new(addr_t address, int x, int y, const char* name, char letter)` which creates a new player with address, at x and y with name and letter ID
-2. `void player_delete(player_t* player)` which deletes a player
-3. `int player_getX(const player_t* player)` which gets the X value of a player
-4. `int player_getY(const player_t* player)` which gets the Y value of the player
-5. `grid_t* player_getVisibleGrid(const player_t* player)` which gets the visible grid for the player at their x and y
-6. `int player_getGold(const player_t* player)` which gets the gold of the player
-7. `char* player_getName(const player_t* player)` which gets the name of the player
-8. `char player_getLetter(const player_t* player)` which gets the letterID of the player
-9. `addr_t player_getAddress(const player_t* player)` which gets the addr_t adress of the player
-10. `bool player_isActive(player_t* player)` which returns true or false if the player is player is playing (active)
-11. `void player_setX(player_t* player, int x)` which sets the x of the player
-12. `void player_setY(player_t* player, int y)` which sets the y of the player
-13. `void player_setGold(player_t* player, int gold)` which sets the gold of the player
-14. `void player_addGold(player_t* player, int gold)` which adds to the gold of the player
-15. `void player_moveX(player_t* player, int direction)` which moves the x of the player in int direction
-16. `void player_moveY(player_t* player, int direction)` which moves the y of the player in int direction
-17. `void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)` which moves the player in the diagonal direction 
-18. `void player_updateVisibleGrid(player_t* player, grid_t* masterGrid)` which updates the visible grid
-19. `void player_setInactive(player_t* player)` whicih sets the layer to be inactive 
-20. `void player_sendMessage(player_t* player, char* message)` which sends the message to a player
-21. `bool player_isActive(player_t* player)` which returns if player is active or not
+
+#### game
+
+- Array of players
+- Master Grid to old the whole map
+- The spectator
+- Number of players joined the game so far
+- The remaining gold in the game
 
 
-#### Game
-A data structure to hold global game state. Stores:
-
-- the 'base' grid which is the actual game map (as opposed to the)
-limited-visibility grids seen by each player
-- the total amount of nuggets left
-- an array of active players
-- an array of removed players
-
----
+-------
 
 ## Grid
 This module implements the grid datastructure, which provides an abstraction for the 
@@ -269,6 +243,9 @@ A data structure to represent a grid. Stores:
 
 ## Player
 
+
+### Major data structures
+
 A data structure to store the data of each player. Stores:
 
 - x and y coordinates
@@ -277,60 +254,91 @@ A data structure to store the data of each player. Stores:
 - name
 - assigned letter
 - address (for the server to send messages to)
+- boolean to check if the player is active
 
 ### Functional decomposition
 
 The player is composed of the following modules (other than main)
 
-1. `player_join` - joins a player into a game
-2. `player_leave` - leaves a player from a game
-3. `player_move` - moves a player into a spot on grid
-4. `handleMessage` - handles a message from the server and updates the player data structure variables accordingly (will call the above methods)
+### Functional Decomposition
+1. `player_t* player_new(addr_t address, int x, int y, const char* name, char letter)` which creates a new player with address, at x and y with name and letter ID
+2. `void player_delete(player_t* player)` which deletes a player
+3. `int player_getX(const player_t* player)` which gets the X value of a player
+4. `int player_getY(const player_t* player)` which gets the Y value of the player
+5. `grid_t* player_getVisibleGrid(const player_t* player)` which gets the visible grid for the player at their x and y
+6. `int player_getGold(const player_t* player)` which gets the gold of the player
+7. `char* player_getName(const player_t* player)` which gets the name of the player
+8. `char player_getLetter(const player_t* player)` which gets the letterID of the player
+9. `addr_t player_getAddress(const player_t* player)` which gets the addr_t adress of the player
+10. `bool player_isActive(player_t* player)` which returns true or false if the player is player is playing (active)
+11. `void player_setX(player_t* player, int x)` which sets the x of the player
+12. `void player_setY(player_t* player, int y)` which sets the y of the player
+13. `void player_setGold(player_t* player, int gold)` which sets the gold of the player
+14. `void player_addGold(player_t* player, int gold)` which adds to the gold of the player
+15. `void player_moveX(player_t* player, int direction)` which moves the x of the player in int direction
+16. `void player_moveY(player_t* player, int direction)` which moves the y of the player in int direction
+17. `void player_moveDiagonal(player_t* player, int Xdirection, int Ydirection)` which moves the player in the diagonal direction 
+18. `void player_updateVisibleGrid(player_t* player, grid_t* masterGrid)` which updates the visible grid
+19. `void player_setInactive(player_t* player)` whicih sets the layer to be inactive 
+20. `void player_sendMessage(player_t* player, char* message)` which sends the message to a player
+21. `bool player_isActive(player_t* player)` which returns if player is active or not
 
 ### Pseudo code for logic/algorithmic flow
 
 The player module will just include simple functions.
 
-### Major data structures
 
-We use a `grid` data structure to store the visibility grid of the player. All other aspects of the `player` struct will be defined as integers thus do not need a data struct
+--------
+
 
 ## Game
 
+### Major data structures
+
 The game data structure will keep track of the following data which defines a game. 
 
-`grid_t*` stores the underlying grid with full visibility (as opposed to the limited-visibility grids seen by each player)
+- `grid_t*` stores the underlying grid with full visibility (as opposed to the limited-visibility grids seen by each player)
 
-`player_t** activePlayers` an array of the active players who are playing the game
-`player_t** inactivePlayers` an array of the active players who have finished playing the game
+- `player_t** activePlayers` an array of the active players who are playing the game
+- `player_t** inactivePlayers` an array of the active players who have finished playing the game
 
-`int maxNameChars` stores the maximum number of charachters a player can name themselves
-`int maxPlayers` stores the maximum number of players a game can have
-`int goldTotal` stores the total amount of gold ot be distributed
-`int minNumGoldPiles` stores the minimum number of goldPiles
-`int maxNumGoldPiles` stores the maximum number of goldPiles
+- `int maxNameChars` stores the maximum number of charachters a player can name themselves
+- `int maxPlayers` stores the maximum number of players a game can have
+- `int goldTotal` stores the total amount of gold ot be distributed
+- `int minNumGoldPiles` stores the minimum number of goldPiles
+- `int maxNumGoldPiles` stores the maximum number of goldPiles
+
 
 ### Functional decomposition
 
-  1. `addClient` - adds a client with a port number to the array of clients
-  2. `removeClient` - removes a client with a port number from the array of clients
-  3. `endGame` - handles game over
+  1. `game_t* game_init(FILE* mapfile)` to initialize the game 
+  2. `void game_addPlayer(game_t* game, player_t* player)` to add new player in the game
+  3. `void game_removePlayer(game_t* game, player_t* player)` to remove the player
+  4. `void game_addSpectator(game_t* game, addr_t address)` to add spectator
+  5. `void game_removeSpectator(game_t* game, addr_t address)` to remove spectator
+  6. `grid_t* game_masterGrid(game_t* game)` to get the master map of the game
+  7. `int game_numPlayers(game_t* game)` to get number of the players joined so far
+  8. `player_t** game_getPlayers(game_t* game)` to get list of players in the game
+  9. `int game_getGold(game_t* game)` to get the amount of gold in the game
+  10. `spectator_t* game_getSpectator(game_t* game)` to get the spectator in the game
+  11. `player_t* game_findPlayer(game_t* game, addr_t address)` to find the player in the game 
+  12. `bool game_move(game_t* game, addr_t address, int dx, int dy)` to check if a player moved in the game
+  13. `bool game_longMove(game_t* game, addr_t address, int dx, int dy)` to tcheck if the player moves all the way down before it hits the wall
+
+
 
 ### Pseudo code for logic/algorithmic flow
 
 The game module will just consist of helper functions.
 
-#### endGame
+`static void sendGoldMessage(game_t* game, player_t* player, const int goldCollected, const int purse, const int goldRemaining)` to send the gold to a payer 
+`static void sendAllGoldMessages(game_t* game, player_t* goldJustCollectedPlayer, int goldJustCollected)` to send the gold messsage to allplayer
+`static void displayAllPlayers(game_t* game)` to display the all players 
+`static void updateAllVisibleGrids(game_t* game)` to update the visiblity of all players
+`static char* get_result(game_t* game)` to get the result when the game is over
+`static player_t* findPlayerByCoords(game_t* game, const int x, const int y)` to find a player by coordinates
 
-    change display from map to a blank screen
-    display leaderboard of gold
-    while (players in game)
-    removeClient
-    close port
 
-
-### Major data structures
-We make ample use of `grid_t*` and `player_t*` data structures to store the `grid_t*` that defines the underlying map and a `player_t*` that defines each player who is added to the game
 
 
 
